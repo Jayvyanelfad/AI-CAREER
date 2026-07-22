@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Sign Up - AI Career Platform</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+
+  <main class="auth-section">
+    <div class="container">
+      <div class="auth-box" role="region" aria-labelledby="signup-title">
+        <h1 id="signup-title">Start Your AI Career Journey</h1>
+
+        <div id="error-message" class="error-message" aria-live="polite" style="display:none;"></div>
+
+        <form id="signup-form" novalidate>
+          <div class="form-group">
+            <label for="name">Full Name</label>
+            <input id="name" name="name" type="text" placeholder="John Doe" required autocomplete="name" />
+          </div>
+
+          <div class="form-group">
+            <label for="email">Email Address</label>
+            <input id="email" name="email" type="email" placeholder="you@example.com" required autocomplete="email" />
+          </div>
+
+          <div class="form-group">
+            <label for="careerGoal">Career Goal</label>
+            <select id="careerGoal" name="careerGoal" required>
+              <option value="">Select your goal...</option>
+              <option value="ai_engineer">AI/ML Engineer</option>
+              <option value="data_scientist">Data Scientist</option>
+              <option value="web_developer">Web Developer</option>
+              <option value="product_manager">Product Manager</option>
+              <option value="cloud_engineer">Cloud Engineer</option>
+              <option value="cybersecurity">Cybersecurity</option>
+              <option value="undecided">Still exploring</option>
+            </select>
+          </div>
+
+          <div class="form-group password-group">
+            <label for="password">Password</label>
+            <input id="password" name="password" type="password" placeholder="Create a strong password" required autocomplete="new-password" />
+            <button type="button" class="password-toggle" aria-label="Toggle password visibility">
+              <i class="fas fa-eye"></i>
+            </button>
+          </div>
+
+          <div class="form-group password-group">
+            <label for="confirmPassword">Confirm Password</label>
+            <input id="confirmPassword" name="confirmPassword" type="password" placeholder="Re-enter your password" required />
+            <button type="button" class="password-toggle" aria-label="Toggle confirm password visibility">
+              <i class="fas fa-eye"></i>
+            </button>
+          </div>
+
+          <button type="submit" class="btn-primary" id="submit-btn" aria-live="polite">
+            <span class="btn-text">Create Account</span>
+            <span class="spinner hidden" aria-hidden="true"><i class="fas fa-spinner fa-spin"></i></span>
+          </button>
+        </form>
+
+        <div class="divider">or</div>
+
+        <div style="display:flex; justify-content:center; gap:1rem; margin:var(--space-6) 0;">
+          <button id="google-signin" class="google-signin-btn" type="button" aria-label="Sign in with Google">
+            <img src="https://www.gstatic.com/devrel-devsite/prod/v.../google.svg" alt="" style="width:18px;height:auto;" />
+            Continue with Google
+          </button>
+        </div>
+
+        <p style="text-align:center; margin-top:var(--space-4); color:var(--green_light);">
+          Already have an account? <a href="login.html">Log in</a>
+        </p>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Minimal JS to toggle password visibility and show spinner on submit
+    document.querySelectorAll('.password-toggle').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const input = btn.previousElementSibling;
+        if (!input) return;
+        const isPwd = input.type === 'password';
+        input.type = isPwd ? 'text' : 'password';
+        btn.querySelector('i').classList.toggle('fa-eye');
+        btn.querySelector('i').classList.toggle('fa-eye-slash');
+      });
+    });
+
+    const form = document.getElementById('signup-form');
+    const submitBtn = document.getElementById('submit-btn');
+    const spinner = submitBtn.querySelector('.spinner');
+    const btnText = submitBtn.querySelector('.btn-text');
+    const errorBox = document.getElementById('error-message');
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      // basic client-side validation
+      const pwd = form.password.value;
+      const confirm = form.confirmPassword.value;
+      if (pwd !== confirm) {
+        errorBox.textContent = 'Passwords do not match.';
+        errorBox.style.display = 'block';
+        return;
+      }
+      errorBox.style.display = 'none';
+      // show spinner
+      spinner.classList.remove('hidden');
+      btnText.style.opacity = '0.6';
+      submitBtn.disabled = true;
+
+      // Simulate async registration (replace with real request)
+      setTimeout(() => {
+        spinner.classList.add('hidden');
+        btnText.style.opacity = '1';
+        submitBtn.disabled = false;
+        // on success, redirect or show success UI
+        window.location.href = '/welcome.html';
+      }, 1200);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Content</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1 id="course-title">Course Title</h1>
+    </header>
+
+    <main>
+        <div id="course-content">
+            <p>Loading course details...</p>
+        </div>
+        <button onclick="goToDashboard()">Back to Dashboard</button>
+    </main>
+
+    <script>
+        // Course content data
+        const courses = {
+            time_management: {
+                title: "Time Management",
+                content: "Learn how to manage your time effectively and increase productivity."
+            },
+            productivity_hacks: {
+                title: "Productivity Hacks",
+                content: "Discover life-changing productivity tips to maximize your efficiency."
+            },
+            communication_skills: {
+                title: "Communication Skills",
+                content: "Master the art of effective communication in personal and professional life."
+            },
+            stress_management: {
+                title: "Stress Management",
+                content: "Understand how to deal with stress and maintain a healthy lifestyle."
+            },
+            goal_setting: {
+                title: "Goal Setting",
+                content: "Learn strategies to set and achieve your personal and professional goals."
+            },
+            public_speaking: {
+                title: "Public Speaking",
+                content: "Gain confidence and improve your public speaking skills."
+            },
+            leadership_basics: {
+                title: "Leadership Basics",
+                content: "Learn the fundamentals of becoming a great leader."
+            }
+        };
+
+        // Get selected course from URL
+        function getCourseFromURL() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get("course");
+        }
+
+        // Load course details dynamically
+        function loadCourseContent() {
+            const courseKey = getCourseFromURL();
+            if (courses[courseKey]) {
+                document.getElementById("course-title").innerText = courses[courseKey].title;
+                document.getElementById("course-content").innerHTML = `<p>${courses[courseKey].content}</p>`;
+            } else {
+                document.getElementById("course-content").innerHTML = "<p>Course not found.</p>";
+            }
+        }
+
+        function goToDashboard() {
+            window.location.href = "dashboard.html"; // Redirect to user dashboard
+        }
+
+        window.onload = loadCourseContent;
+    </script>
+</body>
+</html>

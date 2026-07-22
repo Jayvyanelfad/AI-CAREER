@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enroll in Free Career Courses</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body>
+    <header>
+        <div class="logo"><i class="fas fa-robot"></i> AI Career Platform</div>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="courses.html">Career Courses</a>
+            <a href="dashboard.html">Dashboard</a>
+        </nav>
+    </header>
+
+    <main class="enroll-container">
+        <h1>Choose a Free Career Course</h1>
+        <p>Start your journey with our free AI and career-focused courses.</p>
+
+        <form id="free-course-form">
+            <div class="form-group">
+                <label for="course">Select a Course:</label>
+                <select id="course" name="course">
+                    <option value="intro_to_ai">Introduction to AI & Machine Learning</option>
+                    <option value="python_for_careers">Python for Career Development</option>
+                    <option value="data_analytics_basics">Data Analytics Basics</option>
+                    <option value="resume_optimization">Resume Optimization with AI</option>
+                    <option value="interview_skills">Interview Skills & Mock Practice</option>
+                    <option value="linkedin_personal_branding">LinkedIn & Personal Branding</option>
+                    <option value="cloud_fundamentals">Cloud Computing Fundamentals</option>
+                    <option value="cybersecurity_intro">Introduction to Cybersecurity</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="experience">Current Experience Level:</label>
+                <select id="experience" name="experience">
+                    <option value="beginner">Beginner</option>
+                    <option value="intermediate">Intermediate</option>
+                    <option value="advanced">Advanced</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn-primary">Enroll Now</button>
+        </form>
+    </main>
+
+    <script>
+        document.getElementById("free-course-form").addEventListener("submit", function(event) {
+            event.preventDefault();
+            const selectedCourse = document.getElementById("course").value;
+            const experience = document.getElementById("experience").value;
+            window.location.href = "course-content.html?course=" + selectedCourse + "&level=" + experience;
+        });
+    </script>
+</body>
+</html>

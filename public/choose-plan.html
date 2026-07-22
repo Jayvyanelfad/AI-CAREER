@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Choose Your Learning Plan</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="choose-plan.js" defer></script>
+
+</head>
+<body>
+    <header class="header-transparent" aria-label="Main navigation">
+        <nav>
+            <a href="index.html" class="nav-link" aria-label="Return to home page">
+                <i class="fas fa-arrow-left" aria-hidden="true"></i> Back to Home
+            </a>
+        </nav>
+        <div class="user-profile">
+            <img src="user.png" alt="User profile icon" class="profile-icon">
+            <span id="username">Guest</span>
+        </div>
+    </header>
+
+    <main class="plan-page">
+        <h1>Choose Your Learning Plan</h1>
+        <p class="subtitle">Start your learning journey with a plan that suits you best.</p>
+
+        <!-- Currency Toggle -->
+        <div class="currency-toggle" role="group" aria-label="Currency selection">
+            <button class="currency-btn active" data-currency="USD" aria-pressed="true">USD</button>
+            <button class="currency-btn" data-currency="INR" aria-pressed="false">INR</button>
+        </div>
+
+        <!-- Plan Cards -->
+        <div class="plan-container">
+            <div class="plan-card free-plan" aria-labelledby="free-plan-heading">
+                <h2 id="free-plan-heading">Free Plan</h2>
+                <p class="price"><span class="amount" data-usd="0">$0</span>/month</p>
+                <ul class="features">
+                    <li><i class="fas fa-check" aria-hidden="true"></i> Access 5 free courses</li>
+                    <li><i class="fas fa-check" aria-hidden="true"></i> Limited resources</li>
+                    <li><i class="fas fa-check" aria-hidden="true"></i> Community support</li>
+                </ul>
+                <button class="plan-btn free-btn" aria-label="Select Free Plan">Select Free Plan</button>
+            </div>
+
+            <div class="plan-card premium-plan" aria-labelledby="premium-plan-heading">
+                <h2 id="premium-plan-heading">Premium Plan</h2>
+                <p class="price"><span class="amount" data-usd="20">$5</span>/month</p>
+                <ul class="features">
+                    <li><i class="fas fa-check" aria-hidden="true"></i> Unlimited courses</li>
+                    <li><i class="fas fa-check" aria-hidden="true"></i> Downloadable resources</li>
+                    <li><i class="fas fa-check" aria-hidden="true"></i> Priority support</li>
+                    <li><i class="fas fa-check" aria-hidden="true"></i> Exclusive content</li>
+                </ul>
+                <button class="plan-btn premium-btn" aria-label="Select Premium Plan">Select Premium Plan</button>
+            </div><!DOCTYPE html>
+            <html lang="en">
+            <head>
+              <meta charset="UTF-8" />
+              <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+              <title>Choose Your Learning Plan</title>
+              <link rel="stylesheet" href="styles.css" />
+              <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+              <script src="choose-plan.js" defer></script>
+            </head>
+            <body>
+              <header class="header-transparent" aria-label="Main navigation">
+                <nav>
+                  <a href="index.html" class="nav-link" aria-label="Return to home page">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Back to Home
+                  </a>
+                </nav>
+                <div class="user-profile">
+                  <img src="assets/images/profile.png" alt="User profile icon" class="profile-icon">
+                  <span id="username">Guest</span>
+                </div>
+              </header>
+            
+              <main class="plan-page">
+                <h1>Choose Your Learning Plan</h1>
+                <p class="subtitle">Start your journey with a plan that suits you best.</p>
+            
+                <div class="currency-toggle" role="group" aria-label="Currency selection">
+                  <button class="currency-btn active" data-currency="USD" aria-pressed="true">USD</button>
+                  <button class="currency-btn" data-currency="INR" aria-pressed="false">INR</button>
+                </div>
+            
+                <div class="plan-container">
+                  <!-- Free Plan -->
+                  <div class="plan-card free-plan" aria-labelledby="free-plan-heading">
+                    <h2 id="free-plan-heading">Free Plan</h2>
+                    <p class="price"><span class="amount" data-usd="0">$0</span>/month</p>
+                    <ul class="features">
+                      <li><i class="fas fa-check"></i> Access 6 free courses</li>
+                      <li><i class="fas fa-check"></i> Limited downloadable resources</li>
+                      <li><i class="fas fa-check"></i> Basic community support</li>
+                    </ul>
+                    <button class="plan-btn free-btn" onclick="window.location.href='free-courses.html'" aria-label="Select Free Plan">Select Free Plan</button>
+                  </div>
+            
+                  <!-- Premium Plan -->
+                  <div class="plan-card premium-plan" aria-labelledby="premium-plan-heading">
+                    <h2 id="premium-plan-heading">Premium Plan</h2>
+                    <p class="price"><span class="amount" data-usd="5">$5</span>/month</p>
+                    <ul class="features">
+                      <li><i class="fas fa-check"></i> Unlimited course access</li>
+                      <li><i class="fas fa-check"></i> Premium resources + downloads</li>
+                      <li><i class="fas fa-check"></i> Priority email/chat support</li>
+                      <li><i class="fas fa-check"></i> Bonus modules & exclusive tools</li>
+                    </ul>
+                    <button class="plan-btn premium-btn" onclick="window.location.href='paying-courses.html'" aria-label="Select Premium Plan">Select Premium Plan</button>
+                  </div>
+                </div>
+              </main>
+            
+              <div class="loading-overlay hidden" aria-live="polite" aria-busy="false">
+                <div class="loading-spinner"></div>
+                <p>Preparing your learning environment...</p>
+              </div>
+            
+              <script>
+                // Optional: Greet the user by token presence
+                const token = localStorage.getItem("token");
+                const nameEl = document.getElementById("username");
+                if (token && nameEl) {
+                  nameEl.textContent = "Member";
+                }
+              </script>
+            </body>
+            </html>
+            
+        </div>
+    </main>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay hidden" aria-live="polite" aria-busy="false">
+        <div class="loading-spinner" aria-hidden="true"></div>
+        <p>Preparing your learning environment...</p>
+    </div>
+</body>
+</html>

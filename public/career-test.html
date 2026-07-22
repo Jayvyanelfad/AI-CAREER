@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Career Test - AI Career Platform</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body>
+
+  <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">
+    <i class="fas fa-moon moon-icon"></i>
+    <i class="fas fa-sun sun-icon"></i>
+  </button>
+
+  <header>
+    <div class="logo"><i class="fas fa-robot"></i> AI Career Platform</div>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="courses.html">Career Courses</a>
+      <a href="career-test.html">Career Test</a>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="contactus.html">Contact</a>
+      <button class="cta-button" onclick="location.href='register.html'">Get Started</button>
+    </nav>
+  </header>
+
+  <main class="test-container">
+    <h1>AI Career Assessment</h1>
+    <p>Answer a few questions and our AI will recommend the best career path for you.</p>
+
+    <form id="career-test-form">
+      <div class="question">
+        <h3>1. What do you enjoy most?</h3>
+        <label><input type="radio" name="q1" value="problem_solving" required> Solving complex problems with code</label>
+        <label><input type="radio" name="q1" value="creating"> Creating visual designs and user experiences</label>
+        <label><input type="radio" name="q1" value="analyzing"> Analyzing data and finding patterns</label>
+        <label><input type="radio" name="q1" value="leading"> Leading teams and managing projects</label>
+      </div>
+
+      <div class="question">
+        <h3>2. Which tool would you prefer to work with?</h3>
+        <label><input type="radio" name="q2" value="code" required> Code editors (VS Code, PyCharm)</label>
+        <label><input type="radio" name="q2" value="design"> Design tools (Figma, Adobe XD)</label>
+        <label><input type="radio" name="q2" value="data"> Spreadsheets, SQL & databases</label>
+        <label><input type="radio" name="q2" value="cloud"> Cloud platforms (AWS, Azure)</label>
+      </div>
+
+      <div class="question">
+        <h3>3. What's your current experience level?</h3>
+        <label><input type="radio" name="q3" value="beginner" required> Complete beginner - just starting out</label>
+        <label><input type="radio" name="q3" value="some"> Some experience - familiar with basics</label>
+        <label><input type="radio" name="q3" value="experienced"> Experienced - worked on projects before</label>
+      </div>
+
+      <div class="question">
+        <h3>4. Which industry excites you most?</h3>
+        <label><input type="radio" name="q4" value="tech" required> Big Tech (Google, Microsoft, Meta)</label>
+        <label><input type="radio" name="q4" value="startup"> Startups & Innovation</label>
+        <label><input type="radio" name="q4" value="finance"> Finance & Fintech</label>
+        <label><input type="radio" name="q4" value="healthcare"> Healthcare & Biotech</label>
+      </div>
+
+      <button type="submit" class="btn-primary" id="submit-test">Get My Career Recommendation</button>
+    </form>
+
+    <div id="result" style="display:none;" class="result-box">
+      <h2><i class="fas fa-bullseye"></i> Your Recommended Career Path</h2>
+      <p id="recommendation"></p>
+      <div id="recommended-courses" style="margin: var(--space-6) 0;"></div>
+      <a href="courses.html" class="btn-primary" style="width: auto; display: inline-block; padding: var(--space-3) var(--space-8);">Explore Recommended Courses</a>
+      <a href="dashboard.html" class="btn-primary" style="width: auto; display: inline-block; padding: var(--space-3) var(--space-8); background: var(--surface); color: var(--primary); border: 2px solid var(--primary); margin-left: var(--space-4);">Go to Dashboard</a>
+    </div>
+  </main>
+
+  <footer>
+    <p>© 2025 AI Career Development Platform. All Rights Reserved.</p>
+  </footer>
+
+  <script src="theme.js"></script>
+  <script src="career-test.js"></script>
+</body>
+</html>

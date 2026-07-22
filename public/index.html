@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CareerPath AI — Find Your Tech Career</title>
+  <meta name="description" content="AI-powered career assessment and technical learning platform. Discover your ideal tech career and start learning for free.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,600;1,400;1,500&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body>
+
+  <!-- ===== NAVIGATION ===== -->
+  <div class="nav-wrapper-absolute">
+    <div class="navbar">
+      <div class="container">
+        <div class="nav-wrapper">
+          <a href="index.html" aria-current="page" class="w--current">
+            <span class="text-h6" style="font-size: 1.5rem; color: var(--bege_light);">
+              <em>CareerPath</em> AI
+            </span>
+          </a>
+          <div class="div-block-2" style="display: flex; gap: 4px; align-items: center;">
+            <a href="index.html" class="text-menu color-bege_light nav-item w--current">Home</a>
+            <a href="career-test.html" class="text-menu color-bege_light nav-item">Career Test</a>
+            <a href="courses.html" class="text-menu color-bege_light nav-item">Courses</a>
+            <a href="dashboard.html" class="text-menu color-bege_light nav-item">Dashboard</a>
+            <a href="about.html" class="text-menu color-bege_light nav-item">About</a>
+          </div>
+          <div class="menu-button w-nav-button">
+            <i class="fas fa-bars" style="color: var(--bege_light); font-size: 1.25rem;"></i>
+          </div>
+          <a href="login.html" class="header-book-link-buttom">
+            <div class="text-button">Login</div>
+            <i class="fas fa-arrow-right" style="font-size: 0.8rem;"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Nav -->
+  <nav role="navigation" class="nav-mobile" id="nav-mobile">
+    <div style="display: flex; justify-content: space-between; align-items: center; padding: 20px;">
+      <span class="text-h6" style="font-size: 1.25rem; color: var(--bege_light);"><em>CareerPath</em> AI</span>
+      <button onclick="document.getElementById('nav-mobile').classList.remove('active')" style="color: var(--bege_light); background: none; border: none; font-size: 1.5rem;">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div style="display: flex; flex-direction: column; padding: 20px; gap: 8px;">
+      <a href="index.html" class="text-menu color-bege_light nav-item" style="font-size: 1rem; padding: 12px 0;">Home</a>
+      <a href="career-test.html" class="text-menu color-bege_light nav-item" style="font-size: 1rem; padding: 12px 0;">Career Test</a>
+      <a href="courses.html" class="text-menu color-bege_light nav-item" style="font-size: 1rem; padding: 12px 0;">Courses</a>
+      <a href="dashboard.html" class="text-menu color-bege_light nav-item" style="font-size: 1rem; padding: 12px 0;">Dashboard</a>
+      <a href="about.html" class="text-menu color-bege_light nav-item" style="font-size: 1rem; padding: 12px 0;">About</a>
+      <a href="login.html" class="header-book-link-buttom" style="margin-top: 20px; justify-content: center;">
+        <div class="text-button">Login</div>
+        <i class="fas fa-arrow-right" style="font-size: 0.8rem;"></i>
+      </a>
+    </div>
+  </nav>
+
+  <!-- ===== HERO ===== -->
+  <section class="section-hero">
+    <div class="background-video">
+      <img src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=1920&q=80"
+           alt="Career background"
+           style="width: 100%; height: 100%; object-fit: cover;" />
+    </div>
+    <div class="hero-video-shadow"></div>
+    <div class="hero-content-wrapper">
+      <div class="container">
+        <h1 class="text-h1 color-bege_light">Find your<br/><em>Perfect</em><br/>Career</h1>
+        <div style="margin-top: 40px; display: flex; gap: 20px; flex-wrap: wrap;">
+          <a href="career-test.html" class="component-button">Take Career Test</a>
+          <a href="register.html" class="component-button" style="background: transparent; border: 1px solid var(--bege_light); color: var(--bege_light);">Create Account</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== ABOUT SECTION ===== -->
+  <section class="section-about" id="about">
+    <div class="container">
+      <div class="about-grid">
+        <div class="about-content">
+          <h2 class="text-title_small color-green_light">About</h2>
+          <div class="text-h4 color-bege_light">Discover Your <br/>Future<br/><em>with AI Guidance</em></div>
+          <div class="text-body_small color-white" style="margin-top: 24px;">
+            CareerPath AI is a free career development platform dedicated to helping students find the right tech path and start learning immediately. With guidance across AI/ML, Data Science, Software Development, and UI/UX Design, CareerPath AI closes the loop between assessment, learning, and real progress.
+          </div>
+        </div>
+        <div class="about-images">
+          <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=600&q=80" alt="Team collaboration" class="about-image" />
+          <img src="https://images.unsplash.com/photo-1531482615713-2afd69097998?w=600&q=80" alt="Learning environment" class="about-image" />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FEATURED COURSES ===== -->
+  <section class="section-properties" id="featured-courses">
+    <div class="container">
+      <div class="properties-header">
+        <h2 class="text-title_small color-green_light">Courses</h2>
+      </div>
+
+      <div class="property-card">
+        <h3 class="text-h2 color-white property-title">Python for Tech Careers</h3>
+        <div class="text-title-location color-white property-location" style="font-family: var(--font-display); font-size: 0.875rem; opacity: 0.7; margin-bottom: 24px;">Beginner · 4 Weeks</div>
+        <div class="property-slider">
+          <img src="https://images.unsplash.com/photo-1526379095098-d400fd0bf935?w=1200&q=80" alt="Python Programming" />
+        </div>
+        <div class="container" style="padding: 0;">
+          <div class="property-description">
+            <div class="text-body_small color-white">Master Python fundamentals — variables, loops, functions, OOP, and libraries like NumPy &amp; Pandas. The perfect starting point for any tech career path.</div>
+            <a href="courses.html#python_for_careers" class="component-button">Know more</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="property-card">
+        <h3 class="text-h2 color-white property-title">Data Structures &amp; Algorithms</h3>
+        <div class="text-title-location color-white property-location" style="font-family: var(--font-display); font-size: 0.875rem; opacity: 0.7; margin-bottom: 24px;">Essential · 6 Weeks</div>
+        <div class="property-slider">
+          <img src="https://images.unsplash.com/photo-1516116216624-53e697fedbea?w=1200&q=80" alt="Data Structures" />
+        </div>
+        <div class="container" style="padding: 0;">
+          <div class="property-description">
+            <div class="text-body_small color-white">Arrays, linked lists, trees, graphs, sorting, and searching. The foundation for cracking technical interviews at top companies.</div>
+            <a href="courses.html#dsa" class="component-button">Know more</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="text-h4 color-white" style="text-align: center; margin-top: 60px; font-size: clamp(1.5rem, 3vw, 2.5rem);">
+      Discover all <em>courses</em>
+    </div>
+    <div style="text-align: center; margin-top: 20px;">
+      <a href="courses.html" style="display: inline-block;">
+        <img src="https://cdn.prod.website-files.com/686baa6dcb68b80c7dc411ba/686d4d139453466410bc869e_arrow-long-right_white.svg" style="width: 40px; opacity: 0.7; transition: opacity 0.3s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.7" alt="View all" />
+      </a>
+    </div>
+  </section>
+
+  <!-- ===== SERVICES SECTION ===== -->
+  <section class="section-services" id="services">
+    <div class="container">
+      <div class="services-header">
+        <h2 class="text-title_small color-white">Services</h2>
+        <div class="text-h6 color-white">Tell us what are you looking for</div>
+      </div>
+      <ul class="services-list">
+        <li class="services-list-item">
+          <a href="career-test.html" class="services-list-item-link">
+            <div class="text-price">AI Career Test</div>
+            <img src="https://cdn.prod.website-files.com/686baa6dcb68b80c7dc411ba/686d4d139453466410bc869e_arrow-long-right_white.svg" alt="" />
+          </a>
+        </li>
+        <li class="services-list-item">
+          <a href="courses.html" class="services-list-item-link">
+            <div class="text-price">Learning Paths</div>
+            <img src="https://cdn.prod.website-files.com/686baa6dcb68b80c7dc411ba/686d4d139453466410bc869e_arrow-long-right_white.svg" alt="" />
+          </a>
+        </li>
+        <li class="services-list-item">
+          <a href="#" class="services-list-item-link" onclick="window.bot?.toggleChat?.(); return false;">
+            <div class="text-price">Gemini AI Mentor</div>
+            <img src="https://cdn.prod.website-files.com/686baa6dcb68b80c7dc411ba/686d4d139453466410bc869e_arrow-long-right_white.svg" alt="" />
+          </a>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ===== HOW IT WORKS ===== -->
+  <section class="steps-section" id="how-it-works">
+    <div class="container">
+      <h2>How CareerPath AI Works</h2>
+      <div class="steps-grid">
+        <div class="step-card animate-on-scroll">
+          <div class="step-number">1</div>
+          <h3>Take the Test</h3>
+          <p>Answer simple questions about your interests, skills, and goals. Our intelligent algorithm analyzes your responses using weighted career mapping.</p>
+        </div>
+        <div class="step-card animate-on-scroll">
+          <div class="step-number">2</div>
+          <h3>Get Your Path</h3>
+          <p>Receive a personalized career recommendation with tailored course suggestions based on your unique profile and ambitions.</p>
+        </div>
+        <div class="step-card animate-on-scroll">
+          <div class="step-number">3</div>
+          <h3>Track Progress</h3>
+          <p>Enroll in free courses, track your learning progress on your dashboard, and earn certificates as you complete each module.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FREE COURSES GRID ===== -->
+  <section class="section-dark" id="all-courses">
+    <div class="container">
+      <h2 class="text-h3 color-bege_light" style="text-align: center; margin-bottom: var(--space-12);">100% Free Career Courses</h2>
+      <div class="courses-grid">
+        <div class="course-card animate-on-scroll">
+          <div class="course-image">
+            <img src="https://images.unsplash.com/photo-1526379095098-d400fd0bf935?w=600&q=80" alt="Python Programming">
+            <div class="course-overlay">Beginner</div>
+          </div>
+          <h3>Python for Tech Careers</h3>
+          <p>Master Python fundamentals — variables, loops, functions, OOP, and libraries like NumPy &amp; Pandas.</p>
+          <div class="course-meta">
+            <span><i class="fas fa-clock"></i> 4 weeks</span>
+            <span><i class="fas fa-signal"></i> Beginner</span>
+          </div>
+          <a href="courses.html#python_for_careers" class="course-btn">Enroll Free</a>
+        </div>
+
+        <div class="course-card animate-on-scroll">
+          <div class="course-image">
+            <img src="https://images.unsplash.com/photo-1516116216624-53e697fedbea?w=600&q=80" alt="Data Structures">
+            <div class="course-overlay">Essential</div>
+          </div>
+          <h3>Data Structures &amp; Algorithms</h3>
+          <p>Arrays, linked lists, trees, graphs, sorting, and searching. Foundation for technical interviews.</p>
+          <div class="course-meta">
+            <span><i class="fas fa-clock"></i> 6 weeks</span>
+            <span><i class="fas fa-signal"></i> Intermediate</span>
+          </div>
+          <a href="courses.html#dsa" class="course-btn">Enroll Free</a>
+        </div>
+
+        <div class="course-card animate-on-scroll">
+          <div class="course-image">
+            <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&q=80" alt="Data Analytics">
+            <div class="course-overlay">Trending</div>
+          </div>
+          <h3>Data Analytics Basics</h3>
+          <p>Learn SQL, data cleaning, visualization with Python, and statistical analysis.</p>
+          <div class="course-meta">
+            <span><i class="fas fa-clock"></i> 3 weeks</span>
+            <span><i class="fas fa-signal"></i> Beginner</span>
+          </div>
+          <a href="courses.html#data_analytics_basics" class="course-btn">Enroll Free</a>
+        </div>
+
+        <div class="course-card animate-on-scroll">
+          <div class="course-image">
+            <img src="https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=600&q=80" alt="Web Development">
+            <div class="course-overlay">Popular</div>
+          </div>
+          <h3>Web Development Fundamentals</h3>
+          <p>HTML, CSS, JavaScript, and responsive design. Build your first portfolio website.</p>
+          <div class="course-meta">
+            <span><i class="fas fa-clock"></i> 5 weeks</span>
+            <span><i class="fas fa-signal"></i> Beginner</span>
+          </div>
+          <a href="courses.html#web_dev" class="course-btn">Enroll Free</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== BUILT FOR ===== -->
+  <section class="audience-section">
+    <div class="container">
+      <h2>Who Is This For?</h2>
+      <div class="audience-grid">
+        <div class="audience-card animate-on-scroll">
+          <i class="fas fa-user-graduate"></i>
+          <h3>Students</h3>
+          <p>Confused about which tech field to pursue? Get clarity with data-driven career recommendations.</p>
+        </div>
+        <div class="audience-card animate-on-scroll">
+          <i class="fas fa-exchange-alt"></i>
+          <h3>Career Changers</h3>
+          <p>Transitioning from non-tech to tech? Our structured paths guide you step-by-step.</p>
+        </div>
+        <div class="audience-card animate-on-scroll">
+          <i class="fas fa-laptop-code"></i>
+          <h3>Self-Learners</h3>
+          <p>Learn at your own pace with progress tracking and achievement certificates.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== AI CHAT CTA ===== -->
+  <section class="ai-chat-cta">
+    <h2><i class="fas fa-robot" style="margin-right: 12px;"></i>Have Questions?</h2>
+    <p>Our Gemini-powered AI Career Mentor is available 24/7 to help with career advice, course recommendations, and learning tips.</p>
+    <button class="component-button" onclick="window.bot?.toggleChat?.()">
+      <i class="fas fa-comments" style="margin-right: 8px;"></i> Chat with AI Mentor
+    </button>
+  </section>
+
+  <!-- ===== TESTIMONIALS ===== -->
+  <section class="section-about" id="testimonials">
+    <div class="container">
+      <h2 class="text-h3 color-bege_light" style="text-align: center; margin-bottom: var(--space-12);">What Users Say</h2>
+      <div class="testimonial-carousel">
+        <div class="testimonial-card animate-on-scroll">
+          <div class="stars">
+            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+          </div>
+          <p>"The career test accurately recommended Data Science for me. Now I'm learning Python and SQL with clear direction!"</p>
+          <div class="testimonial-author">
+            <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80" alt="Student">
+            <div>
+              <strong>Laxmi Sah</strong>
+              <span>CSE Student</span>
+            </div>
+          </div>
+        </div>
+        <div class="testimonial-card animate-on-scroll">
+          <div class="stars">
+            <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
+          </div>
+          <p>"Finally, a platform that doesn't just dump videos on you. The structured paths and progress tracking keep me motivated."</p>
+          <div class="testimonial-author">
+            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80" alt="Student">
+            <div>
+              <strong>Garv Kashyap</strong>
+              <span>Career Changer</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FAQ ===== -->
+  <section class="section-dark" id="faq">
+    <div class="container">
+      <h2 class="text-h3 color-bege_light" style="text-align: center; margin-bottom: var(--space-12);">Common Questions</h2>
+
+      <div class="faq-item">
+        <button class="faq-question" onclick="this.parentElement.classList.toggle('active')">
+          <span>How does the career test work?</span>
+          <i class="fas fa-chevron-down"></i>
+        </button>
+        <div class="faq-answer">
+          <p>Our algorithm uses weighted scoring across 4 dimensions: problem-solving style, preferred tools, experience level, and industry interest, mapping your answers to a career path.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question" onclick="this.parentElement.classList.toggle('active')">
+          <span>Are the courses really free?</span>
+          <i class="fas fa-chevron-down"></i>
+        </button>
+        <div class="faq-answer">
+          <p>Yes — all courses are 100% free and created specifically for this academic project. No payment required, no ads, no upsells.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question" onclick="this.parentElement.classList.toggle('active')">
+          <span>What technologies power this platform?</span>
+          <i class="fas fa-chevron-down"></i>
+        </button>
+        <div class="faq-answer">
+          <p>Node.js + Express backend, SQLite database, JWT authentication, Gemini AI integration, and vanilla HTML/CSS/JavaScript frontend.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question" onclick="this.parentElement.classList.toggle('active')">
+          <span>Can I track my learning progress?</span>
+          <i class="fas fa-chevron-down"></i>
+        </button>
+        <div class="faq-answer">
+          <p>Absolutely. Your personal dashboard shows enrolled courses, completion percentage, and earned certificates — all persisted in our SQLite database.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FINAL CTA ===== -->
+  <section class="cta-section">
+    <h2>Ready to Find Your Path?</h2>
+    <p>Join students who are already using CareerPath AI to make informed career decisions. It takes 2 minutes.</p>
+    <div style="display: flex; gap: var(--space-4); justify-content: center; flex-wrap: wrap;">
+      <a href="career-test.html" class="component-button" style="display: inline-flex; align-items: center; gap: 8px;">
+        <i class="fas fa-rocket"></i> Take the Career Test
+      </a>
+      <a href="register.html" class="component-button" style="background: transparent; border: 1px solid var(--bege); color: var(--bege); display: inline-flex; align-items: center; gap: 8px;">
+        <i class="fas fa-user-plus"></i> Create Free Account
+      </a>
+    </div>
+  </section>
+
+  <!-- ===== FOOTER ===== -->
+  <div class="container footer-wrapper" style="padding-top: var(--space-16);">
+    <div style="text-align: center; margin-bottom: var(--space-8);">
+      <span class="text-h2" style="font-size: clamp(3rem, 8vw, 6rem); opacity: 0.15; color: var(--bege_light); letter-spacing: 0.2em;">CAREERPATH</span>
+    </div>
+    <footer class="footer-content">
+      <div class="footer-block">
+        <span class="text-footer color-bege_light" style="display: block; opacity: 0.6;">B.Tech Final Year Project</span>
+      </div>
+      <div class="footer-block" style="text-align: center;">
+        <div class="text-footer color-bege_light" style="opacity: 0.7;">© 2025 CareerPath AI | Powered by Gemini AI</div>
+      </div>
+      <div class="footer-block" style="text-align: right;">
+        <span class="text-footer color-bege_light" style="opacity: 0.6;">Symbiosis Institute of Technology, Pune</span>
+      </div>
+    </footer>
+    <div class="footer-bottom">
+      <p>© 2025 CareerPath AI. B.Tech Final Year Project. Built with <i class="fas fa-heart" style="color: var(--bege); margin: 0 4px;"></i> for academic purposes.</p>
+    </div>
+  </div>
+
+  <!-- ===== COOKIE BANNER ===== -->
+  <div class="cookies-wrapper container" id="cookie-banner">
+    <div style="display: flex; justify-content: space-between; align-items: center; gap: 24px; flex-wrap: wrap;">
+      <div class="text-body_small">This website uses cookies to improve your experience.</div>
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <button class="button text-button" id="accept-cookies" style="background: var(--bege_light); color: var(--green); padding: 10px 24px; border-radius: 60px; font-family: var(--font-display); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; border: none; cursor: pointer;">Continue</button>
+        <i class="fas fa-arrow-right" style="color: var(--bege); font-size: 0.8rem;"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SCRIPTS ===== -->
+  <script src="chatbot.js"></script>
+
+  <script>
+    document.querySelector('.menu-button').addEventListener('click', function() {
+      document.getElementById('nav-mobile').classList.add('active');
+    });
+
+    const observerOptions = { threshold: 0.1, rootMargin: '0px 0px -50px 0px' };
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) entry.target.classList.add('visible');
+      });
+    }, observerOptions);
+    document.querySelectorAll('.animate-on-scroll').forEach(el => observer.observe(el));
+
+    document.addEventListener("DOMContentLoaded", function () {
+      const cookieBanner = document.getElementById("cookie-banner");
+      const acceptBtn = document.getElementById("accept-cookies");
+      if (!localStorage.getItem("cookiesAccepted")) {
+        cookieBanner.style.display = "block";
+      }
+      acceptBtn.addEventListener("click", function () {
+        localStorage.setItem("cookiesAccepted", "true");
+        cookieBanner.style.display = "none";
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard - AI Career Platform</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body>
+
+  <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">
+    <i class="fas fa-moon moon-icon"></i>
+    <i class="fas fa-sun sun-icon"></i>
+  </button>
+
+  <header>
+    <div class="logo"><i class="fas fa-robot"></i> AI Career Platform</div>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="courses.html">Career Courses</a>
+      <a href="career-test.html">Career Test</a>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="contactus.html">Contact</a>
+      <button class="cta-button" onclick="logout()">Logout</button>
+    </nav>
+  </header>
+
+  <main class="dashboard-container">
+    <h1>Welcome back, <span id="user-name">Learner</span>! <i class="fas fa-hand-wave" style="color: var(--warning);"></i></h1>
+
+    <div class="dashboard-grid">
+      <!-- Career Path Card -->
+      <div class="dashboard-card">
+        <h3><i class="fas fa-bullseye"></i> Career Path</h3>
+        <div id="career-path">
+          <p style="color: var(--text-muted);">Take the <a href="career-test.html">Career Test</a> to get personalized recommendations.</p>
+        </div>
+      </div>
+
+      <!-- My Courses Card -->
+      <div class="dashboard-card">
+        <h3><i class="fas fa-book-open"></i> My Courses</h3>
+        <div id="my-courses">
+          <p style="color: var(--text-muted);">No courses enrolled yet. <a href="courses.html">Browse courses</a></p>
+        </div>
+      </div>
+
+      <!-- Progress Card -->
+      <div class="dashboard-card">
+        <h3><i class="fas fa-chart-line"></i> Progress</h3>
+        <div id="my-progress">
+          <div style="text-align: center; padding: var(--space-6);">
+            <div style="font-size: 3rem; color: var(--primary); font-weight: 700;">0%</div>
+            <p style="color: var(--text-muted);">Overall Progress</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Certificates Card -->
+      <div class="dashboard-card">
+        <h3><i class="fas fa-certificate"></i> Certificates</h3>
+        <div id="my-certificates">
+          <p style="color: var(--text-muted);">Complete courses to earn certificates!</p>
+        </div>
+      </div>
+
+      <!-- AI Tools Quick Access -->
+      <div class="dashboard-card" style="grid-column: 1 / -1;">
+        <h3><i class="fas fa-robot"></i> AI Tools</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--space-4); margin-top: var(--space-4);">
+          <a href="resume-builder.html" class="tool-card" style="padding: var(--space-5);">
+            <i class="fas fa-file-alt"></i>
+            <h3>Resume Builder</h3>
+          </a>
+          <a href="mock-interview.html" class="tool-card" style="padding: var(--space-5);">
+            <i class="fas fa-comments"></i>
+            <h3>Mock Interview</h3>
+          </a>
+          <a href="ai-chat.html" class="tool-card" style="padding: var(--space-5);">
+            <i class="fas fa-robot"></i>
+            <h3>AI Career Chat</h3>
+          </a>
+          <a href="study-planner.html" class="tool-card" style="padding: var(--space-5);">
+            <i class="fas fa-calendar-check"></i>
+            <h3>Study Planner</h3>
+          </a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <p>© 2025 AI Career Development Platform. All Rights Reserved.</p>
+  </footer>
+
+  <script src="theme.js"></script>
+  <script src="dashboard.js"></script>
+</body>
+</html>

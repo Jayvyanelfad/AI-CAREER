@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Profile - CareerPath AI</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+<base target="_blank">
+</head>
+<body>
+
+  <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">
+    <i class="fas fa-moon moon-icon"></i>
+    <i class="fas fa-sun sun-icon"></i>
+  </button>
+
+  <header>
+    <div class="logo"><i class="fas fa-compass"></i> CareerPath AI</div>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="career-test.html">Career Test</a>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="profile.html">Profile</a>
+      <a href="contactus.html">Contact</a>
+      <button class="cta-button" onclick="logout()">Logout</button>
+    </nav>
+  </header>
+
+  <main class="dashboard-container" style="max-width: 600px;">
+    <h1><i class="fas fa-user-circle" style="color: var(--primary);"></i> My Profile</h1>
+
+    <div class="dashboard-card" style="margin-bottom: var(--space-6);">
+      <h3><i class="fas fa-id-card"></i> Personal Information</h3>
+      <div id="profile-info" style="padding: var(--space-4);">
+        <p style="color: var(--text-muted);">Loading profile...</p>
+      </div>
+    </div>
+
+    <div class="dashboard-card">
+      <h3><i class="fas fa-shield-alt"></i> Account Security</h3>
+      <div style="padding: var(--space-4);">
+        <p style="color: var(--text-secondary); margin-bottom: var(--space-4);">
+          <i class="fas fa-check-circle" style="color: var(--success);"></i> 
+          Password protected with bcrypt hashing
+        </p>
+        <p style="color: var(--text-secondary); margin-bottom: var(--space-4);">
+          <i class="fas fa-check-circle" style="color: var(--success);"></i> 
+          JWT token authentication active
+        </p>
+        <button class="explore-btn secondary" onclick="logout()" style="margin-top: var(--space-4);">
+          <i class="fas fa-sign-out-alt"></i> Log Out
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <p>© 2025 CareerPath AI. B.Tech Final Year Project. Built for academic purposes.</p>
+  </footer>
+
+  <script src="theme.js"></script>
+  <script>
+    // Load profile from backend
+    (async function() {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      try {
+        const res = await fetch('http://localhost:5000/api/auth/me', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!res.ok) throw new Error('Failed to load profile');
+
+        const user = await res.json();
+
+        document.getElementById('profile-info').innerHTML = `
+          <div style="display: flex; flex-direction: column; gap: var(--space-4);">
+            <div style="display: flex; align-items: center; gap: var(--space-4);">
+              <div style="width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--accent)); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; font-weight: 700;">
+                ${user.name.charAt(0).toUpperCase()}
+              </div>
+              <div>
+                <strong style="font-size: 1.25rem; color: var(--text);">${user.name}</strong>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">${user.email}</p>
+              </div>
+            </div>
+            <div style="padding: var(--space-4); background: var(--bg); border-radius: var(--radius-md); margin-top: var(--space-2);">
+              <p style="color: var(--text-secondary); font-size: 0.9rem;">
+                <strong>Career Goal:</strong> ${user.careerGoal || 'Not set yet'}
+              </p>
+              <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: var(--space-2);">
+                <strong>Member ID:</strong> #${user.id.toString().padStart(4, '0')}
+              </p>
+            </div>
+          </div>
+        `;
+      } catch (err) {
+        document.getElementById('profile-info').innerHTML = `
+          <p style="color: var(--danger);">Error loading profile. Please try again.</p>
+        `;
+      }
+    })();
+
+    function logout() {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = 'index.html';
+    }
+  </script>
+</body>
+</html>

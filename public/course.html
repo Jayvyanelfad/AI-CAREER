@@ -1,0 +1,21 @@
+export const checkSession = () => {
+    const token = localStorage.getItem("token");
+    const session = JSON.parse(sessionStorage.getItem("userSession"));
+    return token && session?.authenticated;
+  };
+  
+  export const updateSession = () => {
+    sessionStorage.setItem("userSession", JSON.stringify({
+      authenticated: true,
+      lastActivity: Date.now()
+    }));
+  };
+  
+  export const protectRoute = () => {
+    if (!checkSession()) {
+      window.location.href = "login.html";
+      return false;
+    }
+    return true;
+  };
+  

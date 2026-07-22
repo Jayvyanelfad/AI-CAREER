@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Career Courses - AI Career Platform</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body>
+
+  <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">
+    <i class="fas fa-moon moon-icon"></i>
+    <i class="fas fa-sun sun-icon"></i>
+  </button>
+
+  <header>
+    <div class="logo"><i class="fas fa-robot"></i> AI Career Platform</div>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="courses.html">Career Courses</a>
+      <a href="career-test.html">Career Test</a>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="contactus.html">Contact</a>
+      <button class="cta-button" onclick="location.href='register.html'">Get Started</button>
+    </nav>
+  </header>
+
+  <main class="courses-page">
+    <h1 style="text-align:center; margin-top: var(--space-8);">Explore Career Courses</h1>
+    <p class="subtitle">Master AI, Data Science, and tech skills with expert-led courses.</p>
+
+    <div class="course-list" id="course-list">
+      <!-- Free Courses -->
+      <div class="course-card">
+        <div class="course-image">
+          <img src="" alt="Intro to AI">
+        </div>
+        <h2>Introduction to AI & ML</h2>
+        <p>Learn the fundamentals of Artificial Intelligence and Machine Learning.</p>
+        <div class="course-meta">
+          <span><i class="fas fa-clock"></i> 8 weeks</span>
+          <span><i class="fas fa-signal"></i> Beginner</span>
+        </div>
+        <a href="enroll-free.html?course=intro_to_ai" class="course-btn">Enroll Free</a>
+      </div>
+
+      <div class="course-card">
+        <div class="course-image">
+          <img src="" alt="Python">
+        </div>
+        <h2>Python for Career Development</h2>
+        <p>Master Python programming for data science and automation.</p>
+        <div class="course-meta">
+          <span><i class="fas fa-clock"></i> 6 weeks</span>
+          <span><i class="fas fa-signal"></i> Beginner</span>
+        </div>
+        <a href="enroll-free.html?course=python_for_careers" class="course-btn">Enroll Free</a>
+      </div>
+
+      <div class="course-card">
+        <div class="course-image">
+          <img src="" alt="Data Analytics">
+        </div>
+        <h2>Data Analytics Basics</h2>
+        <p>Learn to analyze data and create insightful visualizations.</p>
+        <div class="course-meta">
+          <span><i class="fas fa-clock"></i> 5 weeks</span>
+          <span><i class="fas fa-signal"></i> Beginner</span>
+        </div>
+        <a href="enroll-free.html?course=data_analytics_basics" class="course-btn">Enroll Free</a>
+      </div>
+
+      <!-- Premium Courses -->
+      <div class="course-card">
+        <div class="premium-banner"><i class="fas fa-crown"></i> Premium</div>
+        <div class="course-image">
+          <img src="" alt="Advanced AI">
+        </div>
+        <h2>Advanced Machine Learning</h2>
+        <p>Deep dive into neural networks, NLP, and computer vision.</p>
+        <div class="course-meta">
+          <span><i class="fas fa-clock"></i> 12 weeks</span>
+          <span><i class="fas fa-signal"></i> Advanced</span>
+        </div>
+        <a href="choose-plan.html" class="course-btn">Get Premium</a>
+      </div>
+
+      <div class="course-card">
+        <div class="premium-banner"><i class="fas fa-crown"></i> Premium</div>
+        <div class="course-image">
+          <img src="" alt="Cloud Computing">
+        </div>
+        <h2>Cloud Computing with AWS</h2>
+        <p>Deploy and scale applications on Amazon Web Services.</p>
+        <div class="course-meta">
+          <span><i class="fas fa-clock"></i> 10 weeks</span>
+          <span><i class="fas fa-signal"></i> Intermediate</span>
+        </div>
+        <a href="choose-plan.html" class="course-btn">Get Premium</a>
+      </div>
+
+      <div class="course-card">
+        <div class="premium-banner"><i class="fas fa-crown"></i> Premium</div>
+        <div class="course-image">
+          <img src="" alt="Cybersecurity">
+        </div>
+        <h2>Cybersecurity Fundamentals</h2>
+        <p>Protect systems and networks from cyber threats.</p>
+        <div class="course-meta">
+          <span><i class="fas fa-clock"></i> 8 weeks</span>
+          <span><i class="fas fa-signal"></i> Intermediate</span>
+        </div>
+        <a href="choose-plan.html" class="course-btn">Get Premium</a>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <p>© 2025 AI Career Development Platform. All Rights Reserved.</p>
+  </footer>
+
+  <script src="theme.js"></script>
+</body>
+</html>

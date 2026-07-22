@@ -1,0 +1,17 @@
+import React from 'react';
+
+const TimeManagementPage = () => {
+  return (
+    <div>
+      <h1>Time Management & Productivity</h1>
+      <p>Learn how to effectively manage your time and boost your productivity with proven strategies and tools.</p>
+      <ul>
+        <li>Goal Setting</li>
+        <li>Prioritization Techniques</li>
+        <li>Time Tracking</li>
+      </ul>
+    </div>
+  );
+};
+
+export default TimeManagementPage;

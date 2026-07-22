@@ -1,0 +1,22 @@
+<div id="chatbot">
+  <button class="chatbot-button" onclick="window.chatbotInstance?.toggleChat?.()">
+    <i class="fas fa-robot"></i> AI Assistant
+  </button>
+
+  <div class="chatbox" id="chatbot-window" style="display: none;">
+    <div class="chat-header">
+      <h3><i class="fas fa-robot"></i> Career Assistant</h3>
+      <button onclick="window.chatbotInstance?.toggleChat?.()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="chat-body" id="chatbot-body"></div>
+    <div id="quick-replies" class="quick-replies"></div>
+
+    <div class="chat-input-container">
+      <input type="text" id="chat-input" placeholder="Ask about careers, courses, resume..." />
+      <button id="send-message"><i class="fas fa-paper-plane"></i></button>
+    </div>
+  </div>
+</div>
