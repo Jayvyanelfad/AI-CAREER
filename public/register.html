@@ -65,13 +65,8 @@
         </form>
 
         <div class="divider">or</div>
-
-        <div style="display:flex; justify-content:center; gap:1rem; margin:var(--space-6) 0;">
-          <button id="google-signin" class="google-signin-btn" type="button" aria-label="Sign in with Google">
-            <img src="https://www.gstatic.com/devrel-devsite/prod/v.../google.svg" alt="" style="width:18px;height:auto;" />
-            Continue with Google
-          </button>
-        </div>
+        <div id="google-signin-container"></div>
+        <p id="google-signin-message" style="text-align:center;margin-top:10px;"></p>
 
         <p style="text-align:center; margin-top:var(--space-4); color:var(--green_light);">
           Already have an account? <a href="login.html">Log in</a>
@@ -79,51 +74,6 @@
       </div>
     </div>
   </main>
-
-  <script>
-    // Minimal JS to toggle password visibility and show spinner on submit
-    document.querySelectorAll('.password-toggle').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const input = btn.previousElementSibling;
-        if (!input) return;
-        const isPwd = input.type === 'password';
-        input.type = isPwd ? 'text' : 'password';
-        btn.querySelector('i').classList.toggle('fa-eye');
-        btn.querySelector('i').classList.toggle('fa-eye-slash');
-      });
-    });
-
-    const form = document.getElementById('signup-form');
-    const submitBtn = document.getElementById('submit-btn');
-    const spinner = submitBtn.querySelector('.spinner');
-    const btnText = submitBtn.querySelector('.btn-text');
-    const errorBox = document.getElementById('error-message');
-
-    form.addEventListener('submit', (e) => {
-      e.preventDefault();
-      // basic client-side validation
-      const pwd = form.password.value;
-      const confirm = form.confirmPassword.value;
-      if (pwd !== confirm) {
-        errorBox.textContent = 'Passwords do not match.';
-        errorBox.style.display = 'block';
-        return;
-      }
-      errorBox.style.display = 'none';
-      // show spinner
-      spinner.classList.remove('hidden');
-      btnText.style.opacity = '0.6';
-      submitBtn.disabled = true;
-
-      // Simulate async registration (replace with real request)
-      setTimeout(() => {
-        spinner.classList.add('hidden');
-        btnText.style.opacity = '1';
-        submitBtn.disabled = false;
-        // on success, redirect or show success UI
-        window.location.href = '/welcome.html';
-      }, 1200);
-    });
-  </script>
+  <<script src="register.js"></script>
 </body>
 </html>

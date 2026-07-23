@@ -25,7 +25,9 @@ function handleGoogleSignIn(response) {
         fetch(`${API_BASE}/api/auth/google`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ tokenId: credential, email, name, picture })
+            body: JSON.stringify({
+                tokenId: credential
+            })
         })
         .then(res => res.json())
         .then(data => {
@@ -135,7 +137,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Initialize Google Sign-In
     google.accounts.id.initialize({
-        client_id: '828346901046-c2b5f5v0j9q8f5v0j9q8f5v0j9q8f5v0.apps.googleusercontent.com',
+        client_id: '84029214791-p6lpcphardq45ph5h2u9opvo40b7r0vl.apps.googleusercontent.com',
         callback: handleGoogleSignIn
     });
 

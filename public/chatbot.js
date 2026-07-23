@@ -17,10 +17,10 @@ class Chatbot {
   }
 
   init() {
-    // Create chatbot HTML if not exists
+    // Only build the widget if the page didn't already include its own
+    // #chatbot markup (index.html ships one inline).
     this.createChatbotHTML();
 
-    // Set up event listeners
     const sendBtn = document.getElementById("send-message");
     const input = document.getElementById("chat-input");
 
@@ -37,24 +37,22 @@ class Chatbot {
       });
     }
 
-    // Show welcome message
     this.addMessage("bot", "👋 Hi! I'm CareerPath AI Assistant. I can help with career advice, courses, resume tips, and interview prep. What would you like to know?");
     this.showQuickReplies();
   }
 
   createChatbotHTML() {
-    // Check if already exists
     if (document.getElementById("chatbot")) return;
 
     const html = `
       <div id="chatbot">
-        <button class="chatbot-button" onclick="window.chatbotInstance?.toggleChat?.()">
+        <button class="chatbot-button" onclick="window.bot.toggleChat()">
           <i class="fas fa-robot"></i> AI Assistant
         </button>
         <div class="chatbox" id="chatbot-window" style="display: none;">
           <div class="chat-header">
             <h3><i class="fas fa-robot"></i> Career Assistant</h3>
-            <button onclick="window.chatbotInstance?.toggleChat?.()">
+            <button onclick="window.bot.toggleChat()">
               <i class="fas fa-times"></i>
             </button>
           </div>
@@ -75,6 +73,7 @@ class Chatbot {
 
   toggleChat() {
     const chatWindow = document.getElementById("chatbot-window");
+    if (!chatWindow) return;
     this.isOpen = !this.isOpen;
     chatWindow.style.display = this.isOpen ? "flex" : "none";
   }
@@ -118,11 +117,9 @@ class Chatbot {
 
     if (!message) return;
 
-    // Add user message
     this.addMessage("user", message);
     input.value = "";
 
-    // Show typing indicator
     const typingDiv = document.createElement("div");
     typingDiv.className = "message bot typing";
     typingDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Thinking...';
@@ -131,25 +128,29 @@ class Chatbot {
     try {
       const token = localStorage.getItem("token");
 
-      // Call backend API
+      if (!token) {
+        typingDiv.remove();
+        this.addMessage("bot", "Please log in first — the AI assistant needs your account to save your conversation and give personalized advice.");
+        this.showQuickReplies();
+        return;
+      }
+
       const response = await fetch("/api/ai/chat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          ...(token && { "Authorization": `Bearer ${token}` }),
+          "Authorization": `Bearer ${token}`,
         },
         body: JSON.stringify({ message }),
       });
 
       const data = await response.json();
-
-      // Remove typing indicator
       typingDiv.remove();
 
-      if (data.reply) {
+      if (response.ok && data.reply) {
         this.addMessage("bot", data.reply);
       } else {
-        this.addMessage("bot", "❌ Sorry, I couldn't understand. Can you rephrase?");
+        this.addMessage("bot", data.error || "❌ Sorry, I couldn't understand. Can you rephrase?");
       }
     } catch (error) {
       console.error("Chat error:", error);
@@ -157,12 +158,13 @@ class Chatbot {
       this.addMessage("bot", "⚠️ Connection error. Please try again.");
     }
 
-    // Show quick replies again
     this.showQuickReplies();
   }
 }
 
-// Initialize chatbot when page loads
+// Initialize chatbot when page loads.
+// IMPORTANT: exposed as window.bot because every page's inline HTML calls
+// onclick="bot.toggleChat()" — it must match this exact name.
 document.addEventListener("DOMContentLoaded", () => {
-  window.chatbotInstance = new Chatbot();
+  window.bot = new Chatbot();
 });

@@ -171,64 +171,155 @@ app.get('/api/auth/me', authMiddleware, (req, res) => {
     res.json(user);
   });
 });
+// Google stuffs
+app.post("/api/auth/google", async (req, res) => {
+    try {
+        const { tokenId } = req.body;
 
-// Google OAuth Handler
-app.post('/api/auth/google', async (req, res) => {
-  try {
-    const { tokenId, email, name, picture } = req.body;
+        if (!tokenId) {
+            return res.status(400).json({
+                error: "Google token missing"
+            });
+        }
 
-    if (!email) {
-      return res.status(400).json({ error: 'Email required from Google' });
+        // Verify token with Google
+        const ticket = await googleClient.verifyIdToken({
+            idToken: tokenId,
+            audience: process.env.GOOGLE_CLIENT_ID
+        });
+
+        const payload = ticket.getPayload();
+
+        const providerId = payload.sub;
+        const email = payload.email;
+        const name = payload.name;
+        const picture = payload.picture;
+
+        if (!email) {
+            return res.status(400).json({
+                error: "Google account has no email."
+            });
+        }
+
+        db.get(
+            "SELECT * FROM users WHERE email = ?",
+            [email],
+            (err, user) => {
+
+                if (err)
+                    return res.status(500).json({
+                        error: err.message
+                    });
+
+                // Existing user
+                if (user) {
+
+                    db.run(
+                        `INSERT OR IGNORE INTO oauth_accounts
+                        (user_id, provider, provider_id, email, name, picture)
+                        VALUES (?, ?, ?, ?, ?, ?)`,
+                        [
+                            user.id,
+                            "google",
+                            providerId,
+                            email,
+                            name,
+                            picture
+                        ]
+                    );
+
+                    const token = jwt.sign(
+                        {
+                            userId: user.id
+                        },
+                        SECRET,
+                        {
+                            expiresIn: "7d"
+                        }
+                    );
+
+                    return res.json({
+                        success: true,
+                        token,
+                        user: {
+                            id: user.id,
+                            name: user.name,
+                            email: user.email,
+                            careerGoal: user.careerGoal
+                        }
+                    });
+
+                }
+
+                // New user
+                db.run(
+                    `INSERT INTO users
+                    (name,email,password,careerGoal)
+                    VALUES (?,?,?,?)`,
+                    [
+                        name,
+                        email,
+                        "",
+                        "undecided"
+                    ],
+                    function (err) {
+
+                        if (err)
+                            return res.status(500).json({
+                                error: err.message
+                            });
+
+                        const userId = this.lastID;
+
+                        db.run(
+                            `INSERT INTO oauth_accounts
+                            (user_id,provider,provider_id,email,name,picture)
+                            VALUES (?,?,?,?,?,?)`,
+                            [
+                                userId,
+                                "google",
+                                providerId,
+                                email,
+                                name,
+                                picture
+                            ]
+                        );
+
+                        const token = jwt.sign(
+                            {
+                                userId
+                            },
+                            SECRET,
+                            {
+                                expiresIn: "7d"
+                            }
+                        );
+
+                        return res.status(201).json({
+                            success: true,
+                            token,
+                            user: {
+                                id: userId,
+                                name,
+                                email,
+                                careerGoal: "undecided"
+                            }
+                        });
+
+                    });
+
+            });
+
+    } catch (error) {
+
+        console.error(error);
+
+        return res.status(401).json({
+            error: "Google authentication failed."
+        });
+
     }
-
-    db.get('SELECT * FROM users WHERE email = ?', [email], (err, user) => {
-      if (err) return res.status(500).json({ error: err.message });
-
-      if (user) {
-        db.get('SELECT * FROM oauth_accounts WHERE user_id = ? AND provider = ?',
-          [user.id, 'google'],
-          (err, oauth) => {
-            if (!oauth) {
-              db.run('INSERT INTO oauth_accounts (user_id, provider, provider_id, email, name, picture) VALUES (?, ?, ?, ?, ?, ?)',
-                [user.id, 'google', tokenId, email, name, picture],
-                (err) => {
-                  if (err) console.error('OAuth link error:', err);
-                });
-            }
-            const token = jwt.sign({ userId: user.id }, SECRET, { expiresIn: '7d' });
-            return res.json({
-              success: true,
-              token,
-              user: { id: user.id, name: user.name, email: user.email, careerGoal: user.careerGoal }
-            });
-          });
-      } else {
-        db.run('INSERT INTO users (name, email, careerGoal) VALUES (?, ?, ?)',
-          [name || 'User', email, 'undecided'],
-          function(err) {
-            if (err) return res.status(500).json({ error: err.message });
-
-            const userId = this.lastID;
-            db.run('INSERT INTO oauth_accounts (user_id, provider, provider_id, email, name, picture) VALUES (?, ?, ?, ?, ?, ?)',
-              [userId, 'google', tokenId, email, name, picture],
-              (err) => {
-                if (err) console.error('OAuth creation error:', err);
-              });
-
-            const token = jwt.sign({ userId: userId }, SECRET, { expiresIn: '7d' });
-            return res.status(201).json({
-              success: true,
-              token,
-              user: { id: userId, name: name || 'User', email, careerGoal: 'undecided' }
-            });
-          });
-      }
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
 });
-
 // ==================== CAREER TEST ALGORITHM (BACKEND) ====================
 
 function calculateCareer(answers) {
