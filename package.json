@@ -1,32 +1,37 @@
 {
-  "name": "personal-development-website",
+  "name": "ai-career",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "AI Career Guidance Platform with Gemini",
+  "main": "server.js",
+  "type": "commonjs",
+
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/jayvyanel/personal-development-website.git"
+
+  "engines": {
+    "node": "20.x"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
-  "bugs": {
-    "url": "https://github.com/jayvyanel/personal-development-website/issues"
-  },
-  "homepage": "https://github.com/jayvyanel/personal-development-website#readme",
+
+  "keywords": [
+    "career",
+    "ai",
+    "gemini",
+    "education"
+  ],
+
+  "author": "Jayvyanelfad",
+
+  "license": "MIT",
+
   "dependencies": {
     "@google/genai": "^2.13.0",
     "bcryptjs": "^3.0.3",
-    "cors": "^2.8.6",
+    "cors": "^2.8.5",
     "dotenv": "^17.4.2",
-    "express": "^5.2.1",
-    "google-auth-library": "^10.9.0",
-    "jsonwebtoken": "^9.0.3",
-    "sqlite3": "^6.0.1"
+    "express": "^5.1.0",
+    "google-auth-library": "^10.4.1",
+    "jsonwebtoken": "^9.0.2",
+    "sqlite3": "^5.1.7"
   }
 }
