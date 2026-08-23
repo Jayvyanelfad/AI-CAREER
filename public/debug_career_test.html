@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Debug Career Test</title>
+  <style>
+    .log-entry { padding: 5px; border-bottom: 1px solid #eee; font-family: monospace; font-size: 12px; }
+    .log-error { color: red; }
+    .log-info { color: blue; }
+  </style>
+</head>
+<body>
+  <h1>Career Test Debug</h1>
+  <div id="log-container"></div>
+
+  <div id="quiz-container" style="display: none;">
+    <!-- Header -->
+    <div class="dashboard-header" style="margin-bottom: var(--space-6);">
+      <h1><i class="fas fa-star"></i> Career Assessment</h1>
+      <p style="color: var(--text-muted);">Answer a few questions and our AI will recommend the best career path for you.</p>
+    </div>
+
+    <!-- Progress Section -->
+    <div class="progress-section">
+      <div class="progress-text" id="progress-text">Question 1 of 15</div>
+      <div class="progress-bar">
+        <div class="progress-bar-fill" id="progress-fill"></div>
+      </div>
+    </div>
+
+    <!-- Question Card -->
+    <div class="dashboard-card" style="margin: var(--space-6) 0;">
+      <div class="question-card" id="question-card">
+        <h2 class="question-title" id="question-title"></h2>
+        <div class="options-container" id="options-container"></div>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="navigation-container" style="display: flex; justify-content: space-between; margin-top: var(--space-4); flex-wrap: wrap; gap: var(--space-2);">
+      <button class="btn-outline" id="prev-btn" disabled>Previous</button>
+      <div style="flex-grow: 1; text-align: center;">
+        <span id="question-counter">1 / 15</span>
+      </div>
+      <button class="btn-primary" id="next-btn">Next</button>
+      <button class="btn-primary" id="submit-btn" style="display:none;">Submit Test</button>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div id="loading-spinner" style="display:none; text-align:center; padding: var(--space-8);">
+      <div class="spinner"></div>
+      <p>Calculating your career path...</p>
+    </div>
+  </div>
+
+  <!-- Results Container -->
+  <div id="results-container" style="display:none;">
+    <div class="dashboard-header" style="margin-bottom: var(--space-6);">
+      <h2><i class="fas fa-bullseye"></i> Your Career Assessment Results</h2>
+      <p style="color: var(--text-muted);">Based on your answers, here are your top career matches:</p>
+    </div>
+
+    <!-- Results Content -->
+    <div id="results-content"></div>
+
+    <!-- Strengths Section -->
+    <div class="strengths-section" id="strengths-section" style="display:none;">
+      <h3><i class="fas fa-star"></i> Your Key Strengths</h3>
+      <div id="strengths-list"></div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-buttons" style="display: flex; gap: var(--space-4); flex-wrap: wrap; justify-content: center; margin-top: var(--space-6);">
+      <a href="courses.html" class="btn-primary">Explore Recommended Courses</a>
+      <a href="dashboard.html" class="btn-secondary">Go to Dashboard</a>
+      <button class="btn-outline" id="retake-btn">Retake Test</button>
+    </div>
+  </div>
+
+  <script>
+    // Simple logger
+    function log(message, type = 'info') {
+      const container = document.getElementById('log-container');
+      const entry = document.createElement('div');
+      entry.className = `log-entry log-${type}`;
+      entry.textContent = new Date().toLocaleTimeString() + ' - ' + message;
+      container.appendChild(entry);
+      console.log(message);
+    }
+
+    // Override console.log to capture to our display
+    const originalLog = console.log;
+    console.log = function(...args) {
+      log(args.join(' '), 'info');
+      originalLog.apply(console, args);
+    };
+
+    const originalError = console.error;
+    console.error = function(...args) {
+      log(args.join(' '), 'error');
+      originalError.apply(console, args);
+    };
+
+    log('Starting debug...');
+
+    // Set token in localStorage to simulate logged-in user
+    log('Setting token in localStorage...');
+    localStorage.setItem('token', 'REDACTED_TOKEN');
+    log('Token set');
+
+    // Check the token
+    const token = localStorage.getItem('token');
+    log('Retrieved token: ' + (token ? 'present' : 'missing'));
+
+    // Load and execute career-test.js
+    log('Loading career-test.js...');
+    const script = document.createElement('script');
+    script.src = 'career-test.js';
+
+    script.onload = () => {
+      log('career-test.js loaded successfully');
+      // Check if our elements exist
+      log('Checking DOM elements...');
+      log('quiz-container: ' + !!document.getElementById('quiz-container'));
+      log('question-title: ' + !!document.getElementById('question-title'));
+      log('options-container: ' + !!document.getElementById('options-container'));
+      log('progress-text: ' + !!document.getElementById('progress-text'));
+      log('prev-btn: ' + !!document.getElementById('prev-btn'));
+      log('next-btn: ' + !!document.getElementById('next-btn'));
+      log('submit-btn: ' + !!document.getElementById('submit-btn'));
+      log('quiz-container display: ' + document.getElementById('quiz-container').style.display);
+    };
+
+    script.onerror = () => {
+      log('Failed to load career-test.js', 'error');
+    };
+
+    document.head.appendChild(script);
+  </script>
+</body>
+</html>

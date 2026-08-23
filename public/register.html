@@ -1,79 +1,99 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Sign Up - AI Career Platform</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sign Up - CareerPath AI</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
-  <main class="auth-section">
-    <div class="container">
-      <div class="auth-box" role="region" aria-labelledby="signup-title">
-        <h1 id="signup-title">Start Your AI Career Journey</h1>
+  <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">
+    <i class="fas fa-moon moon-icon"></i>
+    <i class="fas fa-sun sun-icon"></i>
+  </button>
 
-        <div id="error-message" class="error-message" aria-live="polite" style="display:none;"></div>
+  <header>
+    <div class="logo"><i class="fas fa-robot"></i> AI Career Platform</div>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="courses.html">Career Courses</a>
+      <a href="career-test.html">Career Test</a>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="contactus.html">Contact</a>
+      <button class="cta-button" onclick="location.href='login.html'">Get Started</button>
+    </nav>
+  </header>
 
-        <form id="signup-form" novalidate>
-          <div class="form-group">
-            <label for="name">Full Name</label>
-            <input id="name" name="name" type="text" placeholder="John Doe" required autocomplete="name" />
-          </div>
+  <main class="dashboard-container" style="max-width: 440px; margin: 0 auto; padding: var(--space-4); min-height: calc(100vh - 120px);">
+    <div class="auth-box">
+      <h1>Start Your AI Career Journey</h1>
+      <div id="error-message" class="error-message" style="display:none;"></div>
 
-          <div class="form-group">
-            <label for="email">Email Address</label>
-            <input id="email" name="email" type="email" placeholder="you@example.com" required autocomplete="email" />
-          </div>
+      <form id="signup-form" novalidate>
+        <div class="form-group">
+          <label for="name">Full Name</label>
+          <input id="name" name="name" type="text" placeholder="John Doe" required autocomplete="name" />
+        </div>
 
-          <div class="form-group">
-            <label for="careerGoal">Career Goal</label>
-            <select id="careerGoal" name="careerGoal" required>
-              <option value="">Select your goal...</option>
-              <option value="ai_engineer">AI/ML Engineer</option>
-              <option value="data_scientist">Data Scientist</option>
-              <option value="web_developer">Web Developer</option>
-              <option value="product_manager">Product Manager</option>
-              <option value="cloud_engineer">Cloud Engineer</option>
-              <option value="cybersecurity">Cybersecurity</option>
-              <option value="undecided">Still exploring</option>
-            </select>
-          </div>
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input id="email" name="email" type="email" placeholder="you@example.com" required autocomplete="email" />
+        </div>
 
-          <div class="form-group password-group">
-            <label for="password">Password</label>
-            <input id="password" name="password" type="password" placeholder="Create a strong password" required autocomplete="new-password" />
-            <button type="button" class="password-toggle" aria-label="Toggle password visibility">
-              <i class="fas fa-eye"></i>
-            </button>
-          </div>
+        <div class="form-group">
+          <label for="careerGoal">Career Goal</label>
+          <select id="careerGoal" name="careerGoal" required>
+            <option value="">Select your goal...</option>
+            <option value="ai_engineer">AI/ML Engineer</option>
+            <option value="data_scientist">Data Scientist</option>
+            <option value="web_developer">Web Developer</option>
+            <option value="product_manager">Product Manager</option>
+            <option value="cloud_engineer">Cloud Engineer</option>
+            <option value="cybersecurity">Cybersecurity</option>
+            <option value="undecided">Still exploring</option>
+          </select>
+        </div>
 
-          <div class="form-group password-group">
-            <label for="confirmPassword">Confirm Password</label>
-            <input id="confirmPassword" name="confirmPassword" type="password" placeholder="Re-enter your password" required />
-            <button type="button" class="password-toggle" aria-label="Toggle confirm password visibility">
-              <i class="fas fa-eye"></i>
-            </button>
-          </div>
-
-          <button type="submit" class="btn-primary" id="submit-btn" aria-live="polite">
-            <span class="btn-text">Create Account</span>
-            <span class="spinner hidden" aria-hidden="true"><i class="fas fa-spinner fa-spin"></i></span>
+        <div class="form-group password-group">
+          <label for="password">Password</label>
+          <input id="password" name="password" type="password" placeholder="Create a strong password" required autocomplete="new-password" />
+          <button type="button" class="password-toggle" aria-label="Toggle password visibility">
+            <i class="fas fa-eye"></i>
           </button>
-        </form>
+        </div>
 
-        <div class="divider">or</div>
-        <div id="google-signin-container"></div>
-        <p id="google-signin-message" style="text-align:center;margin-top:10px;"></p>
+        <div class="form-group password-group">
+          <label for="confirmPassword">Confirm Password</label>
+          <input id="confirmPassword" name="confirmPassword" type="password" placeholder="Re-enter your password" required />
+          <button type="button" class="password-toggle" aria-label="Toggle confirm password visibility">
+            <i class="fas fa-eye"></i>
+          </button>
+        </div>
 
-        <p style="text-align:center; margin-top:var(--space-4); color:var(--green_light);">
-          Already have an account? <a href="login.html">Log in</a>
-        </p>
-      </div>
+        <button type="submit" class="btn-primary" id="submit-btn">
+          <span class="btn-text">Create Account</span>
+          <span class="spinner hidden" aria-hidden="true"><i class="fas fa-spinner fa-spin"></i></span>
+        </button>
+      </form>
+
+      <div class="divider">or</div>
+
+      <button type="button" id="google-signin-btn" class="btn-primary" style="background:#fff; color:#333; border:1px solid #ddd; display:flex; align-items:center; justify-content:center; gap:10px;">
+        <i class="fab fa-google"></i> Continue with Google
+      </button>
+      <div id="google-signin-message" style="text-align:center;margin-top:10px;"></div>
+
+      <p style="text-align:center; margin-top:var(--space-4); color:var(--green_light);">
+        Already have an account? <a href="login.html">Log in</a>
+      </p>
     </div>
   </main>
-  <<script src="register.js"></script>
+
+  <script src="supabase-config.js"></script>
+  <script src="register.js"></script>
 </body>
 </html>

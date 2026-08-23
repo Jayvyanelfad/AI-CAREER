@@ -1,22 +1,77 @@
-<div id="chatbot">
-  <button class="chatbot-button" onclick="window.chatbotInstance?.toggleChat?.()">
-    <i class="fas fa-robot"></i> AI Assistant
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI Career Mentor - CareerPath AI</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body>
+
+  <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">
+    <i class="fas fa-moon moon-icon"></i>
+    <i class="fas fa-sun sun-icon"></i>
   </button>
 
-  <div class="chatbox" id="chatbot-window" style="display: none;">
-    <div class="chat-header">
-      <h3><i class="fas fa-robot"></i> Career Assistant</h3>
-      <button onclick="window.chatbotInstance?.toggleChat?.()">
-        <i class="fas fa-times"></i>
-      </button>
-    </div>
+  <header>
+    <div class="logo"><i class="fas fa-robot"></i> AI Career Platform</div>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="courses.html">Career Courses</a>
+      <a href="career-test.html">Career Test</a>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="profile.html">Profile</a>
+      <button class="cta-button" onclick="location.href='register.html'">Get Started</button>
+    </nav>
+  </header>
 
-    <div class="chat-body" id="chatbot-body"></div>
-    <div id="quick-replies" class="quick-replies"></div>
+  <main class="dashboard-container" style="max-width: 500px; margin: 0 auto; padding: var(--space-4); min-height: calc(100vh - 120px);">
+    <section class="dashboard-card">
+      <div class="dashboard-header" style="margin-bottom: var(--space-6);">
+        <h2><i class="fas fa-robot"></i> AI Career Mentor</h2>
+        <p style="color: var(--text-muted);">Chat with our Gemini-powered AI assistant for career guidance, course recommendations, and learning tips.</p>
+      </div>
 
-    <div class="chat-input-container">
-      <input type="text" id="chat-input" placeholder="Ask about careers, courses, resume..." />
-      <button id="send-message"><i class="fas fa-paper-plane"></i></button>
-    </div>
-  </div>
-</div>
+      <!-- Chatbot Interface -->
+      <div id="chatbot-container">
+        <div id="chatbot-window" class="chatbox">
+          <div class="chat-header">
+            <h3><i class="fas fa-robot"></i> Career Assistant</h3>
+            <button id="chatbot-close-btn" class="btn-outline">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+
+          <div class="chat-body" id="chatbot-body">
+            <!-- Messages will appear here -->
+          </div>
+
+          <div id="quick-replies" class="quick-replies"></div>
+
+          <div class="chat-input-container">
+            <input type="text" id="chat-input" placeholder="Ask about careers, courses, resume..." />
+            <button id="send-message" class="btn-primary">
+              <i class="fas fa-paper-plane"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Floating Chatbot Button -->
+        <div class="floating-chatbot" id="floating-chatbot" title="Chat with CareerPath AI">
+          <i class="fas fa-robot"></i>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2025 AI Career Development Platform. All Rights Reserved.</p>
+  </footer>
+
+  <script src="supabase-config.js"></script>
+  <script src="theme.js"></script>
+  <script src="chatbot.js"></script>
+</body>
+</html>

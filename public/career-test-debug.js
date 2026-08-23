@@ -17,7 +17,7 @@
 
   // Current state
   let currentQuestion = 0;
-  let answers = {};
+  const answers = {};
 
   // Questions database - 15 questions across 4 categories
   const questions = [
@@ -473,12 +473,14 @@
   }
 
   // Update question display
-  function updateQuestionDisplay() {
+  console.log("updateQuestionDisplay called");
     const question = questions[currentQuestion];
+    console.log("Setting question text:", question.text);
     console.log('Current question:', question, 'index:', currentQuestion);
     questionTitle.textContent = question.text;
 
     // Clear options
+    console.log("Options container:", optionsContainer);
     optionsContainer.innerHTML = '';
 
     // Create options
@@ -788,12 +790,7 @@
   submitBtn.addEventListener('click', submitTest);
 
   // Initialize quiz on load
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initQuiz);
-  } else {
-    // DOM already ready
-    initQuiz();
-  }
+  document.addEventListener('DOMContentLoaded', initQuiz);
 
   // Check auth
   let token = null;

@@ -4,28 +4,23 @@
   "description": "AI Career Guidance Platform with Gemini",
   "main": "server.js",
   "type": "commonjs",
-
   "scripts": {
     "start": "node server.js"
   },
-
   "engines": {
     "node": "20.x"
   },
-
   "keywords": [
     "career",
     "ai",
     "gemini",
     "education"
   ],
-
   "author": "Jayvyanelfad",
-
   "license": "MIT",
-
   "dependencies": {
     "@google/genai": "^2.13.0",
+    "@supabase/supabase-js": "^2.112.3",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.5",
     "dotenv": "^17.4.2",
@@ -33,5 +28,8 @@
     "google-auth-library": "^10.4.1",
     "jsonwebtoken": "^9.0.2",
     "sqlite3": "^5.1.7"
+  },
+  "devDependencies": {
+    "playwright": "^1.62.1"
   }
 }

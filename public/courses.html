@@ -1,126 +1,486 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Career Courses - AI Career Platform</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Career Courses - CareerPath AI</title>
+    <meta name="description" content="Explore our free career courses in AI, Data Science, Web Development, and more.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,600;1,400;1,500&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <style>
+        /* Minimal inline fallback — your styles.css handles all main styling */
+        .about-image-replaced {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 12px;
+        }
+        /* keep the exact same shape as original .about-image */
+    </style>
 </head>
 <body>
 
-  <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">
-    <i class="fas fa-moon moon-icon"></i>
-    <i class="fas fa-sun sun-icon"></i>
-  </button>
-
-  <header>
-    <div class="logo"><i class="fas fa-robot"></i> AI Career Platform</div>
-    <nav>
-      <a href="index.html">Home</a>
-      <a href="courses.html">Career Courses</a>
-      <a href="career-test.html">Career Test</a>
-      <a href="dashboard.html">Dashboard</a>
-      <a href="contactus.html">Contact</a>
-      <button class="cta-button" onclick="location.href='register.html'">Get Started</button>
-    </nav>
-  </header>
-
-  <main class="courses-page">
-    <h1 style="text-align:center; margin-top: var(--space-8);">Explore Career Courses</h1>
-    <p class="subtitle">Master AI, Data Science, and tech skills with expert-led courses.</p>
-
-    <div class="course-list" id="course-list">
-      <!-- Free Courses -->
-      <div class="course-card">
-        <div class="course-image">
-          <img src="" alt="Intro to AI">
+    <!-- ===== NAVIGATION ===== -->
+    <div class="nav-wrapper-absolute">
+        <div class="navbar">
+            <div class="container">
+                <div class="nav-wrapper">
+                    <a href="index.html" aria-current="page" class="w--current">
+                        <span class="text-h6" style="font-size: 1.5rem; color: var(--bege_light);">
+                            <em>CareerPath</em> AI
+                        </span>
+                    </a>
+                    <div class="div-block-2" style="display: flex; gap: 4px; align-items: center;">
+                        <a href="index.html" class="text-menu color-bege_light nav-item w--current">Home</a>
+                        <a href="career-test.html" class="text-menu color-bege_light nav-item">Career Test</a>
+                        <a href="courses.html" class="text-menu color-bege_light nav-item">Courses</a>
+                        <a href="dashboard.html" class="text-menu color-bege_light nav-item">Dashboard</a>
+                        <a href="about.html" class="text-menu color-bege_light nav-item">About</a>
+                    </div>
+                    <div class="menu-button w-nav-button">
+                        <i class="fas fa-bars" style="color: var(--bege_light); font-size: 1.25rem;"></i>
+                    </div>
+                    <a href="login.html" class="header-book-link-buttom">
+                        <div class="text-button">Login</div>
+                        <i class="fas fa-arrow-right" style="font-size: 0.8rem;"></i>
+                    </a>
+                </div>
+            </div>
         </div>
-        <h2>Introduction to AI & ML</h2>
-        <p>Learn the fundamentals of Artificial Intelligence and Machine Learning.</p>
-        <div class="course-meta">
-          <span><i class="fas fa-clock"></i> 8 weeks</span>
-          <span><i class="fas fa-signal"></i> Beginner</span>
-        </div>
-        <a href="enroll-free.html?course=intro_to_ai" class="course-btn">Enroll Free</a>
-      </div>
-
-      <div class="course-card">
-        <div class="course-image">
-          <img src="" alt="Python">
-        </div>
-        <h2>Python for Career Development</h2>
-        <p>Master Python programming for data science and automation.</p>
-        <div class="course-meta">
-          <span><i class="fas fa-clock"></i> 6 weeks</span>
-          <span><i class="fas fa-signal"></i> Beginner</span>
-        </div>
-        <a href="enroll-free.html?course=python_for_careers" class="course-btn">Enroll Free</a>
-      </div>
-
-      <div class="course-card">
-        <div class="course-image">
-          <img src="" alt="Data Analytics">
-        </div>
-        <h2>Data Analytics Basics</h2>
-        <p>Learn to analyze data and create insightful visualizations.</p>
-        <div class="course-meta">
-          <span><i class="fas fa-clock"></i> 5 weeks</span>
-          <span><i class="fas fa-signal"></i> Beginner</span>
-        </div>
-        <a href="enroll-free.html?course=data_analytics_basics" class="course-btn">Enroll Free</a>
-      </div>
-
-      <!-- Premium Courses -->
-      <div class="course-card">
-        <div class="premium-banner"><i class="fas fa-crown"></i> Premium</div>
-        <div class="course-image">
-          <img src="" alt="Advanced AI">
-        </div>
-        <h2>Advanced Machine Learning</h2>
-        <p>Deep dive into neural networks, NLP, and computer vision.</p>
-        <div class="course-meta">
-          <span><i class="fas fa-clock"></i> 12 weeks</span>
-          <span><i class="fas fa-signal"></i> Advanced</span>
-        </div>
-        <a href="choose-plan.html" class="course-btn">Get Premium</a>
-      </div>
-
-      <div class="course-card">
-        <div class="premium-banner"><i class="fas fa-crown"></i> Premium</div>
-        <div class="course-image">
-          <img src="" alt="Cloud Computing">
-        </div>
-        <h2>Cloud Computing with AWS</h2>
-        <p>Deploy and scale applications on Amazon Web Services.</p>
-        <div class="course-meta">
-          <span><i class="fas fa-clock"></i> 10 weeks</span>
-          <span><i class="fas fa-signal"></i> Intermediate</span>
-        </div>
-        <a href="choose-plan.html" class="course-btn">Get Premium</a>
-      </div>
-
-      <div class="course-card">
-        <div class="premium-banner"><i class="fas fa-crown"></i> Premium</div>
-        <div class="course-image">
-          <img src="" alt="Cybersecurity">
-        </div>
-        <h2>Cybersecurity Fundamentals</h2>
-        <p>Protect systems and networks from cyber threats.</p>
-        <div class="course-meta">
-          <span><i class="fas fa-clock"></i> 8 weeks</span>
-          <span><i class="fas fa-signal"></i> Intermediate</span>
-        </div>
-        <a href="choose-plan.html" class="course-btn">Get Premium</a>
-      </div>
     </div>
-  </main>
 
-  <footer>
-    <p>© 2025 AI Career Development Platform. All Rights Reserved.</p>
-  </footer>
+    <!-- Mobile Nav -->
+    <nav role="navigation" class="nav-mobile" id="nav-mobile">
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 20px;">
+            <span class="text-h6" style="font-size: 1.25rem; color: var(--bege_light);"><em>CareerPath</em> AI</span>
+            <button onclick="document.getElementById('nav-mobile').classList.remove('active')" style="color: var(--bege_light); background: none; border: none; font-size: 1.5rem;">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div style="display: flex; flex-direction: column; padding: 20px; gap: 8px;">
+            <a href="index.html" class="text-menu color-bege_light nav-item" style="font-size: 1rem; padding: 12px 0;">Home</a>
+            <a href="career-test.html" class="text-menu color-bege_light nav-item" style="font-size: 1rem; padding: 12px 0;">Career Test</a>
+            <a href="courses.html" class="text-menu color-bege_light nav-item" style="font-size: 1rem; padding: 12px 0;">Courses</a>
+            <a href="dashboard.html" class="text-menu color-bege_light nav-item" style="font-size: 1rem; padding: 12px 0;">Dashboard</a>
+            <a href="about.html" class="text-menu color-bege_light nav-item" style="font-size: 1rem; padding: 12px 0;">About</a>
+            <a href="login.html" class="header-book-link-buttom" style="margin-top: 20px; justify-content: center;">
+                <div class="text-button">Login</div>
+                <i class="fas fa-arrow-right" style="font-size: 0.8rem;"></i>
+            </a>
+        </div>
+    </nav>
 
-  <script src="theme.js"></script>
+    <!-- ===== HERO ===== -->
+    <section class="section-hero">
+        <div class="background-video">
+            <img src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=1920&q=80"
+            alt="Career background"
+            style="width: 100%; height: 100%; object-fit: cover;" />
+        </div>
+        <div class="hero-video-shadow"></div>
+        <div class="hero-content-wrapper">
+            <div class="container">
+                <h1 class="text-h1 color-bege_light">Master Your<br/><em>Tech</em><br/>Skills</h1>
+                <div style="margin-top: 40px; display: flex; gap: 20px; flex-wrap: wrap;">
+                    <a href="#free-courses" class="component-button">Explore Free Courses</a>
+                    <a href="register.html" class="component-button" style="background: transparent; border: 1px solid var(--bege_light); color: var(--bege_light);">Create Account</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== COURSES OVERVIEW ===== -->
+    <section class="section" id="course-overview">
+        <div class="container">
+            <h2 class="text-title_small color-green_light">Our Course Offerings</h2>
+            <div class="text-h4 color-bege_light" style="text-align: center; margin-bottom: var(--space-16);">
+                Learn in-demand tech skills with our comprehensive, free courses
+            </div>
+
+            <div class="course-filters">
+                <div style="display: flex; gap: var(--space-4); flex-wrap: wrap; justify-content: center; margin-bottom: var(--space-8);">
+                    <button class="filter-btn active" data-filter="all">All Courses</button>
+                    <button class="filter-btn" data-filter="beginner">Beginner</button>
+                    <button class="filter-btn" data-filter="intermediate">Intermediate</button>
+                    <button class="filter-btn" data-filter="advanced">Advanced</button>
+                </div>
+            </div>
+
+            <!-- Free Courses Grid -->
+            <div class="text-h3 color-bege_light" style="text-align: center; margin-bottom: var(--space-12);">
+                100% Free Career Courses
+            </div>
+            <div class="courses-grid" id="course-list">
+                <!-- Course cards will be populated here -->
+            </div>
+
+            <div style="text-align: center; margin-top: var(--space-8);">
+                <a href="#" style="display: inline-block;">
+                    <img src="https://cdn.prod.website-files.com/686baa6dcb68b80c7dc411ba/686d4d139453466410bc869e_arrow-long-right_white.svg" style="width: 40px; opacity: 0.7; transition: opacity 0.3s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.7" alt="View all" />
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== PREMIUM COURSES ===== -->
+    <section class="section-dark" id="premium-courses">
+        <div class="container">
+            <h2 class="text-h3 color-bege_light" style="text-align: center; margin-bottom: var(--space-12);">
+                Premium Career Tracks
+            </div>
+            <div style="text-align: center; color: var(--green_light); max-width: 600px; margin: 0 auto var(--space-8);">
+                Access specialized learning paths with mentorship, projects, and career support
+            </div>
+            <div class="courses-grid">
+                <!-- Premium course cards will be populated here -->
+            </div>
+            <div style="text-align: center; margin-top: var(--space-8);">
+                <a href="choose-plan.html" class="component-button">See All Premium Plans</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== HOW IT WORKS ===== -->
+    <section class="steps-section" id="how-it-works">
+        <div class="container">
+            <h2>How Our Courses Work</h2>
+            <div class="steps-grid">
+                <div class="step-card animate-on-scroll">
+                    <div class="step-number">1</div>
+                    <h3>Choose Your Path</h3>
+                    <p>Select from our free courses or premium tracks based on your career goals.</p>
+                </div>
+                <div class="step-card animate-on-scroll">
+                    <div class="step-number">2</div>
+                    <h3>Learn & Practice</h3>
+                    <p>Complete hands-on projects, quizzes, and exercises to build real skills.</p>
+                </div>
+                <div class="step-card animate-on-scroll">
+                    <div class="step-number">3</div>
+                    <h3>Earn & Advance</h3>
+                    <p>Earn certificates, build your portfolio, and prepare for tech interviews.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== AI CHAT CTA ===== -->
+    <section class="ai-chat-cta">
+        <h2><i class="fas fa-robot" style="margin-right: 12px;"></i>Have Questions?</h2>
+        <p>Our Gemini-powered AI Career Mentor is available 24/7 to help with course recommendations, learning tips, and career advice.</p>
+        <button class="component-button" onclick="window.bot?.toggleChat?.()">
+            <i class="fas fa-comments" style="margin-right: 8px;"></i> Chat with AI Mentor
+        </button>
+    </section>
+
+    <!-- ===== TESTIMONIALS ===== -->
+    <section class="section-about" id="testimonials">
+        <div class="container">
+            <h2 class="text-h3 color-bege_light" style="text-align: center; margin-bottom: var(--space-12);">What Learners Say</h2>
+            <div class="testimonial-carousel">
+                <div class="testimonial-card animate-on-scroll">
+                    <div class="stars">
+                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                    </div>
+                    <p>"The Python course gave me the skills to land my first data analyst job. The hands-on projects were invaluable."</p>
+                    <div class="testimonial-author">
+                        <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80" alt="Student">
+                        <div>
+                            <strong>Priya Sharma</strong>
+                            <span>Data Analyst</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-card animate-on-scroll">
+                    <div class="stars">
+                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
+                    </div>
+                    <p>"I transitioned from marketing to web development using the free courses here. The structured approach made it possible."</p>
+                    <div class="testimonial-author">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80" alt="Student">
+                        <div>
+                            <strong>Marcus Chen</strong>
+                            <span>Frontend Developer</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== FINAL CTA ===== -->
+    <section class="cta-section">
+        <h2>Ready to Start Learning?</h2>
+        <p>Join thousands of learners who are building their tech careers with our free courses.</p>
+        <div style="display: flex; gap: var(--space-4); justify-content: center; flex-wrap: wrap;">
+            <a href="#free-courses" class="component-button" style="display: inline-flex; align-items: center; gap: 8px;">
+                <i class="fas fa-book-open"></i> Start Learning Free
+            </a>
+            <a href="register.html" class="component-button" style="background: transparent; border: 1px solid var(--bege); color: var(--bege); display: inline-flex; align-items: center; gap: 8px;">
+                <i class="fas fa-user-plus"></i> Create Free Account
+            </a>
+        </div>
+    </section>
+
+    <!-- ===== FOOTER ===== -->
+    <div class="container footer-wrapper" style="padding-top: var(--space-16);">
+        <div style="text-align: center; margin-bottom: var(--space-8);">
+            <span class="text-h2" style="font-size: clamp(3rem, 8vw, 6rem); opacity: 0.15; color: var(--bege_light); letter-spacing: 0.2em;">CAREERPATH</span>
+        </div>
+        <footer class="footer-content">
+            <div class="footer-block">
+                <span class="text-footer color-bege_light" style="display: block; opacity: 0.6;">B.Tech Final Year Project</span>
+            </div>
+            <div class="footer-block" style="text-align: center;">
+                <div class="text-footer color-bege_light" style="opacity: 0.7;">© 2025 CareerPath AI | Powered by Gemini AI</div>
+            </div>
+            <div class="footer-block" style="text-align: right;">
+                <span class="text-footer color-bege_light" style="opacity: 0.6;">Symbiosis Institute of Technology, Pune</span>
+            </div>
+        </footer>
+        <div class="footer-bottom">
+            <p>© 2025 CareerPath AI. B.Tech Final Year Project. Built with <i class="fas fa-heart" style="color: var(--bege); margin: 0 4px;"></i> for academic purposes.</p>
+        </div>
+    </div>
+
+    <!-- ===== COOKIE BANNER ===== -->
+    <div class="cookies-wrapper container" id="cookie-banner">
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 24px; flex-wrap: wrap;">
+            <div class="text-body_small">This website uses cookies to improve your experience.</div>
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <button class="button text-button" id="accept-cookies" style="background: var(--bege_light); color: var(--green); padding: 10px 24px; border-radius: 60px; font-family: var(--font-display); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; border: none; cursor: pointer;">Continue</button>
+                <i class="fas fa-arrow-right" style="color: var(--bege); font-size: 0.8rem;"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== SCRIPTS ===== -->
+    <script src="theme.js"></script>
+    <script>
+        document.querySelector('.menu-button').addEventListener('click', function() {
+            document.getElementById('nav-mobile').classList.add('active');
+        });
+
+        const observerOptions = { threshold: 0.1, rootMargin: '0px 0px -50px 0px' };
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) entry.target.classList.add('visible');
+            });
+        }, observerOptions);
+        document.querySelectorAll('.animate-on-scroll').forEach(el => observer.observe(el));
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const cookieBanner = document.getElementById("cookie-banner");
+            const acceptBtn = document.getElementById("accept-cookies");
+            if (!localStorage.getItem("cookiesAccepted")) {
+                cookieBanner.style.display = "block";
+            }
+            acceptBtn.addEventListener("click", function() {
+                localStorage.setItem("cookiesAccepted", "true");
+                cookieBanner.style.display = "none";
+            });
+
+            // Initialize course filtering
+            initCourseFilters();
+
+            // Populate courses
+            populateCourses();
+        });
+
+        function initCourseFilters() {
+            const filterBtns = document.querySelectorAll('.filter-btn');
+            filterBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    // Remove active class from all buttons
+                    filterBtns.forEach(b => b.classList.remove('active'));
+                    // Add active class to clicked button
+                    btn.classList.add('active');
+
+                    // Filter courses
+                    const filter = btn.dataset.filter;
+                    filterCourses(filter);
+                });
+            });
+        }
+
+        function filterCourses(filter) {
+            const courses = document.querySelectorAll('.course-card');
+            courses.forEach(course => {
+                if (filter === 'all') {
+                    course.style.display = 'block';
+                } else {
+                    const level = course.dataset.level;
+                    if (level === filter) {
+                        course.style.display = 'block';
+                    } else {
+                        course.style.display = 'none';
+                    }
+                }
+            });
+        }
+
+        function populateCourses() {
+            const freeCoursesGrid = document.getElementById('course-list');
+            const premiumCoursesGrid = document.querySelector('.section-dark .courses-grid');
+
+            // Free courses data
+            const freeCourses = [
+                {
+                    id: "intro_to_ai",
+                    title: "Introduction to AI & ML",
+                    description: "Learn the fundamentals of Artificial Intelligence and Machine Learning.",
+                    image: "https://images.unsplash.com/photo-1526379095098-d400fd0bf935?w=600&q=80",
+                    badge: "Beginner",
+                    weeks: 8,
+                    level: "beginner"
+                },
+                {
+                    id: "python_for_careers",
+                    title: "Python for Career Development",
+                    description: "Master Python programming for data science and automation.",
+                    image: "https://images.unsplash.com/photo-1516116216624-53e697fedbea?w=600&q=80",
+                    badge: "Beginner",
+                    weeks: 6,
+                    level: "beginner"
+                },
+                {
+                    id: "data_analytics_basics",
+                    title: "Data Analytics Basics",
+                    description: "Learn to analyze data and create insightful visualizations.",
+                    image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&q=80",
+                    badge: "Beginner",
+                    weeks: 5,
+                    level: "beginner"
+                },
+                {
+                    id: "web_dev",
+                    title: "Web Development Fundamentals",
+                    description: "HTML, CSS, JavaScript, and responsive design. Build your first portfolio website.",
+                    image: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=600&q=80",
+                    badge: "Beginner",
+                    weeks: 5,
+                    level: "beginner"
+                },
+                {
+                    id: "dsa",
+                    title: "Data Structures & Algorithms",
+                    description: "Arrays, linked lists, trees, graphs, sorting, and searching. Foundation for technical interviews.",
+                    image: "https://images.unsplash.com/photo-1516116216624-53e697fedbea?w=600&q=80",
+                    badge: "Intermediate",
+                    weeks: 6,
+                    level: "intermediate"
+                },
+                {
+                    id: "devops",
+                    title: "DevOps & Cloud Basics",
+                    description: "Learn Docker, Kubernetes, AWS basics, and CI/CD pipelines.",
+                    image: "https://images.unsplash.com/photo-1534796636912-4b0d45872b50?w=600&q=80",
+                    badge: "Intermediate",
+                    weeks: 6,
+                    level: "intermediate"
+                },
+                {
+                    id: "cybersecurity",
+                    title: "Cybersecurity Fundamentals",
+                    description: "Learn network security, ethical hacking, and threat prevention.",
+                    image: "https://images.unsplash.com/photo-1554254487-84bc309b4d0-bd2a1dcfee8?w=600&q=80",
+                    badge: "Beginner",
+                    weeks: 8,
+                    level: "beginner"
+                },
+                {
+                    id: "ui_ux",
+                    title: "UI/UX Design Principles",
+                    description: "User research, wireframing, prototyping, and user testing methodologies.",
+                    image: "https://images.unsplash.com/photo-1561070683-8deb3b36cfb5?w=600&q=80",
+                    badge: "Beginner",
+                    weeks: 6,
+                    level: "beginner"
+                }
+            ];
+
+            // Premium courses data
+            const premiumCourses = [
+                {
+                    id: "advanced_ml",
+                    title: "Advanced Machine Learning",
+                    description: "Deep dive into neural networks, NLP, and computer vision.",
+                    image: "https://images.unsplash.com/photo-1550751826-890d87068e02?w=600&q=80",
+                    badge: "Advanced",
+                    weeks: 12,
+                    level: "advanced",
+                    premium: true
+                },
+                {
+                    id: "aws_architect",
+                    title: "AWS Solutions Architect",
+                    description: "Design and deploy scalable applications on Amazon Web Services.",
+                    image: "https://images.unsplash.com/photo-1526600246430-eaa1ee276708?w=600&q=80",
+                    badge: "Intermediate",
+                    weeks: 10,
+                    level: "intermediate",
+                    premium: true
+                },
+                {
+                    id: "data_science",
+                    title: "Data Science Professional",
+                    description: "Complete data science pipeline from cleaning to deployment.",
+                    image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&q=80",
+                    badge: "Advanced",
+                    weeks: 14,
+                    level: "advanced",
+                    premium: true
+                },
+                {
+                    id: "full_stack",
+                    title: "Full Stack Web Development",
+                    description: "MERN stack development with advanced frontend and backend concepts.",
+                    image: "https://images.unsplash.com/photo-1526379095098-d400fd0bf935?w=600&q=80",
+                    badge: "Intermediate",
+                    weeks: 12,
+                    level: "intermediate",
+                    premium: true
+                }
+            ];
+
+            // Populate free courses
+            freeCoursesGrid.innerHTML = freeCourses.map(course => `
+                <div class="course-card animate-on-scroll" data-level="${course.level}">
+                    <div class="course-image">
+                        <img src="${course.image}" alt="${course.title}">
+                        <div class="course-overlay">${course.badge}</div>
+                    </div>
+                    <h3>${course.title}</h3>
+                    <p>${course.description}</p>
+                    <div class="course-meta">
+                        <span><i class="fas fa-clock"></i> ${course.weeks} weeks</span>
+                        <span><i class="fas fa-signal"></i> ${course.badge}</span>
+                    </div>
+                    <a href="enroll-free.html?course=${course.id}" class="course-btn">Enroll Free</a>
+                </div>
+            `).join('');
+
+            // Populate premium courses
+            premiumCoursesGrid.innerHTML = premiumCourses.map(course => `
+                <div class="course-card animate-on-scroll" data-level="${course.level}">
+                    ${course.premium ? '<div class="premium-banner"><i class="fas fa-crown"></i> Premium</div>' : ''}
+                    <div class="course-image">
+                        <img src="${course.image}" alt="${course.title}">
+                        <div class="course-overlay">${course.badge}</div>
+                    </div>
+                    <h3>${course.title}</h3>
+                    <p>${course.description}</p>
+                    <div class="course-meta">
+                        <span><i class="fas fa-clock"></i> ${course.weeks} weeks</span>
+                        <span><i class="fas fa-signal"></i> ${course.badge}</span>
+                    </div>
+                    <a href="choose-plan.html" class="course-btn">Get Premium</a>
+                </div>
+            `).join('');
+        }
+    </script>
 </body>
 </html>

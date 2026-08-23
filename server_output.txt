@@ -1,0 +1,3 @@
+◇ injected env (8) from .env // tip: ◈ secrets for agents [www.dotenvx.com]
+Server running on port 5000
+Connected to SQLite database

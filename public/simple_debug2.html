@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Simple Debug 2</title>
+</head>
+<body>
+  <pre id="output"></pre>
+  <script>
+    // Simple logger that outputs to the page
+    function log(message) {
+      const output = document.getElementById('output');
+      output.textContent += new Date().toLocaleTimeString() + ' - ' + message + '\n';
+      console.log(message);
+    }
+
+    // Log immediately
+    log('Starting debug...');
+
+    // Override console methods
+    const originalLog = console.log;
+    console.log = function(...args) {
+      log(args.join(' '));
+      originalLog.apply(console, args);
+    };
+
+    const originalError = console.error;
+    console.error = function(...args) {
+      log('ERROR: ' + args.join(' '));
+      originalError.apply(console, args);
+    };
+
+    // Set token in localStorage to simulate logged-in user
+    log('Setting token in localStorage...');
+    localStorage.setItem('token', 'REDACTED_TOKEN');
+    log('Token set');
+
+    // Check the token
+    const token = localStorage.getItem('token');
+    log('Retrieved token: ' + (token ? 'present' : 'missing'));
+
+    // Load and execute career-test.js
+    log('Loading career-test.js...');
+    const script = document.createElement('script');
+    script.src = 'career-test.js';
+
+    script.onload = () => {
+      log('career-test.js loaded successfully');
+      // Check if our elements exist
+      log('Checking DOM elements...');
+      log('quiz-container: ' + !!document.getElementById('quiz-container'));
+      log('question-title: ' + !!document.getElementById('question-title'));
+      log('options-container: ' + !!document.getElementById('options-container'));
+      log('progress-text: ' + !!document.getElementById('progress-text'));
+      log('prev-btn: ' + !!document.getElementById('prev-btn'));
+      log('next-btn: ' + !!document.getElementById('next-btn'));
+      log('submit-btn: ' + !!document.getElementById('submit-btn'));
+      log('quiz-container display: ' + (document.getElementById('quiz-container') ? document.getElementById('quiz-container').style.display : 'null'));
+    };
+
+    script.onerror = () => {
+      log('Failed to load career-test.js');
+    };
+
+    script.onabort = () => {
+      log('Loading career-test.js aborted');
+    };
+
+    document.head.appendChild(script);
+
+    log('Script tag added to head');
+  </script>
+</body>
+</html>

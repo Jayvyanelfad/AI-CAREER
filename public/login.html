@@ -4,14 +4,32 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Log In - CareerPath AI</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
-  <main class="login-container">
-    <div class="login-box">
+  <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">
+    <i class="fas fa-moon moon-icon"></i>
+    <i class="fas fa-sun sun-icon"></i>
+  </button>
+
+  <header>
+    <div class="logo"><i class="fas fa-robot"></i> AI Career Platform</div>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="courses.html">Career Courses</a>
+      <a href="career-test.html">Career Test</a>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="contactus.html">Contact</a>
+      <button class="cta-button" onclick="location.href='register.html'">Get Started</button>
+    </nav>
+  </header>
+
+  <main class="dashboard-container" style="max-width: 440px; margin: 0 auto; padding: var(--space-4); min-height: calc(100vh - 120px);">
+    <div class="auth-box">
       <h1>Welcome Back</h1>
       <div id="error-message" class="error-message" style="display:none;"></div>
 
@@ -35,14 +53,16 @@
 
       <div class="divider">or</div>
 
-      <div id="google-signin-container" style="display: flex; justify-content: center; margin: var(--space-6) 0;"></div>
+      <button type="button" id="google-signin-btn" class="btn-primary" style="background:#fff; color:#333; border:1px solid #ddd; display:flex; align-items:center; justify-content:center; gap:10px;">
+        <i class="fab fa-google"></i> Continue with Google
+      </button>
       <div id="google-signin-message" style="text-align: center; color: var(--text-muted); font-size: 0.9rem; margin-top: var(--space-2);"></div>
 
       <p>Don't have an account? <a href="register.html">Sign up</a></p>
     </div>
   </main>
 
-  <!-- FIXED: Removed type="module" -->
+  <script src="supabase-config.js"></script>
   <script src="login.js"></script>
 </body>
 </html>

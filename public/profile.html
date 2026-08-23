@@ -4,9 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>My Profile - CareerPath AI</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-<base target="_blank">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
@@ -16,101 +17,347 @@
   </button>
 
   <header>
-    <div class="logo"><i class="fas fa-compass"></i> CareerPath AI</div>
+    <div class="logo"><i class="fas fa-robot"></i> AI Career Platform</div>
     <nav>
       <a href="index.html">Home</a>
+      <a href="courses.html">Career Courses</a>
       <a href="career-test.html">Career Test</a>
       <a href="dashboard.html">Dashboard</a>
       <a href="profile.html">Profile</a>
-      <a href="contactus.html">Contact</a>
       <button class="cta-button" onclick="logout()">Logout</button>
     </nav>
   </header>
 
-  <main class="dashboard-container" style="max-width: 600px;">
-    <h1><i class="fas fa-user-circle" style="color: var(--primary);"></i> My Profile</h1>
+  <main class="dashboard-container" style="max-width: 800px; margin: 0 auto; padding: var(--space-4);">
+    <section class="dashboard-card">
+      <h1><i class="fas fa-user-circle"></i> My Profile</h1>
 
-    <div class="dashboard-card" style="margin-bottom: var(--space-6);">
-      <h3><i class="fas fa-id-card"></i> Personal Information</h3>
-      <div id="profile-info" style="padding: var(--space-4);">
-        <p style="color: var(--text-muted);">Loading profile...</p>
-      </div>
-    </div>
+      <div id="profile-message" style="display:none; margin-bottom: var(--space-4);"></div>
 
-    <div class="dashboard-card">
-      <h3><i class="fas fa-shield-alt"></i> Account Security</h3>
-      <div style="padding: var(--space-4);">
-        <p style="color: var(--text-secondary); margin-bottom: var(--space-4);">
-          <i class="fas fa-check-circle" style="color: var(--success);"></i> 
-          Password protected with bcrypt hashing
-        </p>
-        <p style="color: var(--text-secondary); margin-bottom: var(--space-4);">
-          <i class="fas fa-check-circle" style="color: var(--success);"></i> 
-          JWT token authentication active
-        </p>
-        <button class="explore-btn secondary" onclick="logout()" style="margin-top: var(--space-4);">
-          <i class="fas fa-sign-out-alt"></i> Log Out
-        </button>
+      <!-- Profile Overview -->
+      <section class="profile-overview">
+        <div id="profile-content" class="dashboard-card">
+          <div class="profile-header">
+            <div class="profile-avatar">
+              <i class="fas fa-user-circle fa-4x"></i>
+            </div>
+            <div class="profile-info">
+              <h2 id="profile-name-display">Loading...</h2>
+              <p id="profile-email-display" class="text-muted">Loading...</p>
+              <p id="profile-career-display" class="text-primary">Career Goal: Loading...</p>
+            </div>
+          </div>
+
+          <div class="profile-stats">
+            <div class="stat-item">
+              <h3 id="profile-level">Level 1</h3>
+              <p>Career Progress</p>
+            </div>
+            <div class="stat-item">
+              <h3 id="profile-badges">0</h3>
+              <p>Achievements</p>
+            </div>
+            <div class="stat-item">
+              <h3 id="profile-streak">0 days</h3>
+              <p>Learning Streak</p>
+            </div>
+          </div>
+
+          <div class="progress-section">
+            <h3><i class="fas fa-chart-line"></i> Career Progress</h3>
+            <div class="progress-container">
+              <div class="progress-bar">
+                <div id="progress-fill" class="progress-fill" style="width: 0%;"></div>
+              </div>
+              <p id="progress-text">0% Complete</p>
+            </div>
+          </div>
+
+          <form id="profile-edit-form" class="dashboard-card" style="margin-top: var(--space-4); display:none;">
+            <div class="form-group">
+              <label for="profile-email">Email</label>
+              <input type="email" id="profile-email" disabled style="opacity:0.6;" />
+              <small style="color: var(--text-muted);">Email can't be changed here.</small>
+            </div>
+
+            <div class="form-group">
+              <label for="profile-name">Full Name</label>
+              <input type="text" id="profile-name" required />
+            </div>
+
+            <div class="form-group">
+              <label for="profile-careerGoal">Career Goal</label>
+              <select id="profile-careerGoal">
+                <option value="undecided">Still exploring</option>
+                <option value="AI/ML Engineer">AI/ML Engineer</option>
+                <option value="Data Scientist">Data Scientist</option>
+                <option value="Software Developer">Software Developer</option>
+                <option value="Full Stack Developer">Full Stack Developer</option>
+                <option value="UI/UX Designer">UI/UX Designer</option>
+                <option value="Data Analyst">Data Analyst</option>
+                <option value="Cloud Architect">Cloud Architect</option>
+                <option value="Product Manager">Product Manager</option>
+                <option value="Bioinformatics Specialist">Bioinformatics Specialist</option>
+                <option value="Frontend Developer">Frontend Developer</option>
+              </select>
+              <small style="color: var(--text-muted);">This updates automatically when you take the Career Test, but you can adjust it here too.</small>
+            </div>
+
+            <button type="submit" class="btn-primary" id="save-btn">
+              <span class="btn-text">Save Changes</span>
+              <span class="spinner hidden"><i class="fas fa-spinner fa-spin"></i></span>
+            </button>
+            <button type="button" class="btn-secondary" id="cancel-edit-btn">Cancel</button>
+          </form>
+
+          <div id="profile-actions" style="text-align: center; margin-top: var(--space-4);">
+            <button id="edit-profile-btn" class="btn-outline">Edit Profile</button>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <!-- Progress & Evolution Tracking -->
+    <section class="dashboard-card">
+      <h2><i class="fas fa-trophy"></i> My Evolution</h2>
+
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="timeline">Career Timeline</button>
+        <button class="tab-btn" data-tab="skills">Skills Assessment</button>
+        <button class="tab-btn" data-tab="achievements">Achievements</button>
+        <button class="tab-btn" data-tab="settings">Settings</button>
       </div>
-    </div>
+
+      <div id="tab-content">
+        <!-- Timeline Tab -->
+        <div class="tab-pane active" id="timeline-tab">
+          <div class="timeline">
+            <div class="timeline-item">
+              <div class="timeline-icon">
+                <i class="fas fa-rocket"></i>
+              </div>
+              <div class="timeline-content">
+                <h3>Started Journey</h3>
+                <p class="timeline-date">Just begun</p>
+                <p>Welcome to CareerPath AI! You've taken your first step toward discovering your ideal tech career.</p>
+              </div>
+            </div>
+
+            <div class="timeline-item">
+              <div class="timeline-icon">
+                <i class="fas fa-clipboard-list"></i>
+              </div>
+              <div class="timeline-content">
+                <h3>Career Assessment Completed</h3>
+                <p class="timeline-date">In progress</p>
+                <p>You've discovered your potential career path through our AI-powered assessment.</p>
+              </div>
+            </div>
+
+            <div class="timeline-item">
+              <div class="timeline-icon">
+                <i class="fas fa-school"></i>
+              </div>
+              <div class="timeline-content">
+                <h3>First Course Enrolled</h3>
+                <p class="timeline-date">Coming soon</p>
+                <p>Begin your learning journey with your first recommended course.</p>
+              </div>
+            </div>
+
+            <div class="timeline-item">
+              <div class="timeline-icon">
+                <i class="fas fa-code"></i>
+              </div>
+              <div class="timeline-content">
+                <h3>Skill Milestone</h3>
+                <p class="timeline-date">Coming soon</p>
+                <p>Complete your first skill assessment and earn a badge.</p>
+              </div>
+            </div>
+
+            <div class="timeline-item">
+              <div class="timeline-icon">
+                <i class="fas fa-graduation-cap"></i>
+              </div>
+              <div class="timeline-content">
+                <h3>Career Ready</h3>
+                <p class="timeline-date">Goal</p>
+                <p>Achieve your career goal and be ready for your first tech role.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Skills Tab -->
+        <div class="tab-pane" id="skills-tab">
+          <div class="skills-grid">
+            <div class="skill-card">
+              <h4>Problem Solving</h4>
+              <div class="skill-level">
+                <div class="skill-bar">
+                  <div class="skill-fill" style="width: 60%;"></div>
+                </div>
+                <p>Intermediate</p>
+              </div>
+              <small>Analytical thinking & logical reasoning</small>
+            </div>
+
+            <div class="skill-card">
+              <h4>Technical Knowledge</h4>
+              <div class="skill-level">
+                <div class="skill-bar">
+                  <div class="skill-fill" style="width: 40%;"></div>
+                </div>
+                <p>Beginner</p>
+              </div>
+              <small>Programming fundamentals & tech concepts</small>
+            </div>
+
+            <div class="skill-card">
+              <h4>Communication</h4>
+              <div class="skill-level">
+                <div class="skill-bar">
+                  <div class="skill-fill" style="width: 50%;"></div>
+                </div>
+                <p>Developing</p>
+              </div>
+              <small>Explaining ideas & collaborating effectively</small>
+            </div>
+
+            <div class="skill-card">
+              <h4>Creativity</h4>
+              <div class="skill-level">
+                <div class="skill-bar">
+                  <div class="skill-fill" style="width: 30%;"></div>
+                </div>
+                <p>Emerging</p>
+              </div>
+              <small>Innovative thinking & design sensibility</small>
+            </div>
+
+            <div class="skill-card">
+              <h4>Leadership</h4>
+              <div class="skill-level">
+                <div class="skill-bar">
+                  <div class="skill-fill" style="width: 20%;"></div>
+                </div>
+                <p>Novice</p>
+              </div>
+              <small>Guiding others & taking initiative</small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Achievements Tab -->
+        <div class="tab-pane" id="achievements-tab">
+          <div class="achievements-grid">
+            <div class="achievement-card locked">
+              <i class="fas fa-lock"></i>
+              <h4>First Steps</h4>
+              <p>Complete your career assessment</p>
+            </div>
+
+            <div class="achievement-card locked">
+              <i class="fas fa-lock"></i>
+              <h4>Course Starter</h4>
+              <p>Enroll in your first course</p>
+            </div>
+
+            <div class="achievement-card locked">
+              <i class="fas fa-lock"></i>
+              <h4>Skill Builder</h4>
+              <p>Complete 3 skill assessments</p>
+            </div>
+
+            <div class="achievement-card locked">
+              <i class="fas fa-lock"></i>
+              <h4>Career Explorer</h4>
+              <p>Research 5 different tech careers</p>
+            </div>
+
+            <div class="achievement-card locked">
+              <i class="fas fa-lock"></i>
+              <h4>Knowledge Seeker</h4>
+              <p>Earn 100 points in quizzes</p>
+            </div>
+
+            <div class="achievement-card locked">
+              <i class="fas fa-lock"></i>
+              <h4>Project Builder</h4>
+              <p>Complete your first project</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Settings Tab -->
+        <div class="tab-pane" id="settings-tab">
+          <div class="settings-section">
+            <div class="settings-group">
+              <h3><i class="fas fa-cog"></i> Account Settings</h3>
+              <div class="setting-item">
+                <label for="email-notifications">Email Notifications</label>
+                <input type="checkbox" id="email-notifications" checked />
+                <p>Receive updates about your progress and new opportunities</p>
+              </div>
+
+              <div class="setting-item">
+                <label for="career-updates">Career Insights</label>
+                <input type="checkbox" id="career-updates" checked />
+                <p>Get personalized career advice and market trends</p>
+              </div>
+
+              <div class="setting-item">
+                <label for="privacy-mode">Privacy Mode</label>
+                <input type="checkbox" id="privacy-mode" />
+                <p>Hide profile from public leaderboards (if applicable)</p>
+              </div>
+            </div>
+
+            <div class="settings-group">
+              <h3><i class="fas fa-language"></i> Preferences</h3>
+              <div class="setting-item">
+                <label for="theme-select">Theme</label>
+                <select id="theme-select">
+                  <option value="dark">Dark (Default)</option>
+                  <option value="light">Light</option>
+                  <option value="auto">Auto (System)</option>
+                </select>
+              </div>
+
+              <div class="setting-item">
+                <label for="language-select">Language</label>
+                <select id="language-select">
+                  <option value="en">English</option>
+                  <option value="es">Spanish</option>
+                  <option value="fr">French</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="settings-group">
+              <h3><i class="fas fa-trash"></i> Data Management</h3>
+              <div class="setting-item">
+                <button id="export-data-btn" class="btn-outline">Export My Data</button>
+                <p>Download a copy of your profile and progress</p>
+              </div>
+
+              <div class="setting-item">
+                <button id="delete-account-btn" class="btn-danger">Delete Account</button>
+                <p>Permanently remove your account and all data</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
   </main>
 
   <footer>
-    <p>© 2025 CareerPath AI. B.Tech Final Year Project. Built for academic purposes.</p>
+    <p>© 2025 AI Career Development Platform. All Rights Reserved.</p>
   </footer>
 
-  <script src="theme.js"></script>
-  <script>
-    // Load profile from backend
-    (async function() {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        window.location.href = 'login.html';
-        return;
-      }
-
-      try {
-        const res = await fetch('http://localhost:5000/api/auth/me', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-
-        if (!res.ok) throw new Error('Failed to load profile');
-
-        const user = await res.json();
-
-        document.getElementById('profile-info').innerHTML = `
-          <div style="display: flex; flex-direction: column; gap: var(--space-4);">
-            <div style="display: flex; align-items: center; gap: var(--space-4);">
-              <div style="width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--accent)); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; font-weight: 700;">
-                ${user.name.charAt(0).toUpperCase()}
-              </div>
-              <div>
-                <strong style="font-size: 1.25rem; color: var(--text);">${user.name}</strong>
-                <p style="color: var(--text-muted); font-size: 0.9rem;">${user.email}</p>
-              </div>
-            </div>
-            <div style="padding: var(--space-4); background: var(--bg); border-radius: var(--radius-md); margin-top: var(--space-2);">
-              <p style="color: var(--text-secondary); font-size: 0.9rem;">
-                <strong>Career Goal:</strong> ${user.careerGoal || 'Not set yet'}
-              </p>
-              <p style="color: var(--text-secondary); font-size: 0.9rem; margin-top: var(--space-2);">
-                <strong>Member ID:</strong> #${user.id.toString().padStart(4, '0')}
-              </p>
-            </div>
-          </div>
-        `;
-      } catch (err) {
-        document.getElementById('profile-info').innerHTML = `
-          <p style="color: var(--danger);">Error loading profile. Please try again.</p>
-        `;
-      }
-    })();
-
-    function logout() {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = 'index.html';
-    }
-  </script>
+  <script src="supabase-config.js"></script>
+  <script src="profile.js"></script>
 </body>
 </html>

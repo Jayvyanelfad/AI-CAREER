@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Test DOM Access</title>
+</head>
+<body>
+  <div id="quiz-container">
+    <h2 class="question-title" id="question-title"></h2>
+    <div class="options-container" id="options-container"></div>
+    <div class="progress-section">
+      <div class="progress-text" id="progress-text">Question 1 of 15</div>
+      <div class="progress-bar">
+        <div class="progress-bar-fill" id="progress-fill"></div>
+      </div>
+    </div>
+    <div class="navigation-container" style="display: flex; justify-content: space-between; margin-top: var(--space-4); flex-wrap: wrap; gap: var(--space-2);">
+      <button class="btn-outline" id="prev-btn" disabled>Previous</button>
+      <div style="flex-grow: 1; text-align: center;">
+        <span id="question-counter">1 / 15</span>
+      </div>
+      <button class="btn-primary" id="next-btn">Next</button>
+      <button class="btn-primary" id="submit-btn" style="display:none;">Submit Test</button>
+    </div>
+    <div id="loading-spinner" style="display:none; text-align:center; padding: var(--space-8);">
+      <div class="spinner"></div>
+      <p>Calculating your career path...</p>
+    </div>
+  </div>
+
+  <div id="results-container" style="display:none;">
+    <div class="dashboard-header" style="margin-bottom: var(--space-6);">
+      <h2><i class="fas fa-bullseye"></i> Your Career Assessment Results</h2>
+      <p style="color: var(--text-muted);">Based on your answers, here are your top career matches:</p>
+    </div>
+    <div id="results-content"></div>
+    <div class="strengths-section" id="strengths-section" style="display:none;">
+      <h3><i class="fas fa-star"></i> Your Key Strengths</h3>
+      <div id="strengths-list"></div>
+    </div>
+    <div class="action-buttons" style="display: flex; gap: var(--space-4); flex-wrap: wrap; justify-content: center; margin-top: var(--space-6);">
+      <a href="courses.html" class="btn-primary">Explore Recommended Courses</a>
+      <a href="dashboard.html" class="btn-secondary">Go to Dashboard</a>
+      <button class="btn-outline" id="retake-btn">Retake Test</button>
+    </div>
+  </div>
+
+  <script>
+    // Test if we can access the elements
+    console.log('Testing DOM access...');
+
+    const elements = [
+      'quiz-container',
+      'results-container',
+      'question-title',
+      'options-container',
+      'prev-btn',
+      'next-btn',
+      'submit-btn',
+      'progress-fill',
+      'progress-text',
+      'loading-spinner',
+      'results-content',
+      'strengths-section',
+      'strengths-list',
+      'retake-btn'
+    ];
+
+    elements.forEach(id => {
+      const element = document.getElementById(id);
+      console.log(`${id}:`, element ? 'FOUND' : 'NOT FOUND', element || 'null');
+    });
+
+    // Test if we can set content
+    const questionTitle = document.getElementById('question-title');
+    if (questionTitle) {
+      console.log('Setting question title...');
+      questionTitle.textContent = 'TEST: This is a test question';
+      console.log('Question title set:', questionTitle.textContent);
+    } else {
+      console.log('ERROR: question-title element not found');
+    }
+  </script>
+</body>
+</html>

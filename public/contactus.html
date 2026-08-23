@@ -1,9 +1,9 @@
-!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Contact Us - AI Career Platform</title>
+  <title>Contact Us - CareerPath AI</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
@@ -27,66 +27,68 @@
     </nav>
   </header>
 
-  <main class="contact-main">
-    <h1>Get in Touch</h1>
-    <p style="text-align: center; color: var(--text-secondary); margin-bottom: var(--space-8);">
-      Have questions? We'd love to hear from you. Reach out through any of these channels.
-    </p>
+  <main class="dashboard-container" style="max-width: 800px; margin: 0 auto; padding: var(--space-4);">
+    <section class="dashboard-card">
+      <h1>Get in Touch</h1>
+      <p style="text-align: center; color: var(--text-secondary); margin-bottom: var(--space-8);">
+        Have questions? We'd love to hear from you. Reach out through any of these channels.
+      </p>
 
-    <div class="contact-methods">
-      <a href="mailto:support@aicareer.com" class="contact-card">
-        <i class="fas fa-envelope"></i>
-        <strong>Email Us</strong>
-        <small>support@aicareer.com</small>
-      </a>
+      <div class="contact-methods">
+        <a href="mailto:support@aicareer.com" class="contact-card">
+          <i class="fas fa-envelope"></i>
+          <strong>Email Us</strong>
+          <small>support@aicareer.com</small>
+        </a>
 
-      <a href="https://wa.me/1234567890" target="_blank" class="contact-card whatsapp">
-        <i class="fab fa-whatsapp"></i>
-        <strong>WhatsApp</strong>
-        <small>+1 (234) 567-890</small>
-      </a>
+        <a href="https://wa.me/1234567890" target="_blank" class="contact-card whatsapp">
+          <i class="fab fa-whatsapp"></i>
+          <strong>WhatsApp</strong>
+          <small>+1 (234) 567-890</small>
+        </a>
 
-      <a href="tel:+1234567890" class="contact-card">
-        <i class="fas fa-phone"></i>
-        <strong>Call Us</strong>
-        <small>+1 (234) 567-890</small>
-      </a>
+        <a href="tel:+1234567890" class="contact-card">
+          <i class="fas fa-phone"></i>
+          <strong>Call Us</strong>
+          <small>+1 (234) 567-890</small>
+        </a>
 
-      <a href="https://linkedin.com/company/aicareer" target="_blank" class="contact-card">
-        <i class="fab fa-linkedin"></i>
-        <strong>LinkedIn</strong>
-        <small>@aicareerplatform</small>
-      </a>
-    </div>
-
-    <!-- Contact Form -->
-    <div style="margin-top: var(--space-10); padding: var(--space-8); background: var(--bg); border-radius: var(--radius-lg);">
-      <h2 style="text-align: center; margin-bottom: var(--space-6); font-family: var(--font-display);">Send a Message</h2>
-      <form id="contact-form" style="display: flex; flex-direction: column; gap: var(--space-5);">
-        <div class="form-group">
-          <label for="contact-name">Your Name</label>
-          <input type="text" id="contact-name" placeholder="John Doe" required />
-        </div>
-        <div class="form-group">
-          <label for="contact-email">Email Address</label>
-          <input type="email" id="contact-email" placeholder="you@example.com" required />
-        </div>
-        <div class="form-group">
-          <label for="contact-subject">Subject</label>
-          <input type="text" id="contact-subject" placeholder="How can we help?" required />
-        </div>
-        <div class="form-group">
-          <label for="contact-message">Message</label>
-          <textarea id="contact-message" placeholder="Tell us more..." rows="5" required></textarea>
-        </div>
-        <button type="submit" class="btn-primary" id="contact-submit">
-          <span class="btn-text">Send Message</span>
-        </button>
-      </form>
-      <div id="contact-success" style="display: none; margin-top: var(--space-4); padding: var(--space-4); background: var(--success-bg); color: var(--success); border-radius: var(--radius-md); text-align: center;">
-        <i class="fas fa-check-circle"></i> Message sent successfully! We'll get back to you soon.
+        <a href="https://linkedin.com/company/aicareer" target="_blank" class="contact-card">
+          <i class="fab fa-linkedin"></i>
+          <strong>LinkedIn</strong>
+          <small>@aicareerplatform</small>
+        </a>
       </div>
-    </div>
+
+      <!-- Contact Form -->
+      <div style="margin-top: var(--space-10); padding: var(--space-8); background: var(--surface); border-radius: var(--radius-lg);">
+        <h2 style="text-align: center; margin-bottom: var(--space-6); font-family: var(--font-display);">Send a Message</h2>
+        <form id="contact-form" style="display: flex; flex-direction: column; gap: var(--space-5);">
+          <div class="form-group">
+            <label for="contact-name">Your Name</label>
+            <input type="text" id="contact-name" placeholder="John Doe" required />
+          </div>
+          <div class="form-group">
+            <label for="contact-email">Email Address</label>
+            <input type="email" id="contact-email" placeholder="you@example.com" required />
+          </div>
+          <div class="form-group">
+            <label for="contact-subject">Subject</label>
+            <input type="text" id="contact-subject" placeholder="How can we help?" required />
+          </div>
+          <div class="form-group">
+            <label for="contact-message">Message</label>
+            <textarea id="contact-message" placeholder="Tell us more..." rows="5" required></textarea>
+          </div>
+          <button type="submit" class="btn-primary" id="contact-submit">
+            <span class="btn-text">Send Message</span>
+          </button>
+        </form>
+        <div id="contact-success" style="display: none; margin-top: var(--space-4); padding: var(--space-4); background: rgba(139, 191, 159, 0.12); color: var(--success); border-radius: var(--radius-sm); text-align: center; border-left: 2px solid var(--success);">
+          <i class="fas fa-check-circle"></i> Message sent successfully! We'll get back to you soon.
+        </div>
+      </div>
+    </section>
   </main>
 
   <footer>

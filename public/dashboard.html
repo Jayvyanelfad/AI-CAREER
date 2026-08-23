@@ -3,10 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Dashboard - AI Career Platform</title>
+  <title>Dashboard - CareerPath AI</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
@@ -22,79 +23,77 @@
       <a href="courses.html">Career Courses</a>
       <a href="career-test.html">Career Test</a>
       <a href="dashboard.html">Dashboard</a>
-      <a href="contactus.html">Contact</a>
+      <a href="profile.html">Profile</a>
       <button class="cta-button" onclick="logout()">Logout</button>
     </nav>
   </header>
 
-  <main class="dashboard-container">
-    <h1>Welcome back, <span id="user-name">Learner</span>! <i class="fas fa-hand-wave" style="color: var(--warning);"></i></h1>
-
-    <div class="dashboard-grid">
-      <!-- Career Path Card -->
-      <div class="dashboard-card">
-        <h3><i class="fas fa-bullseye"></i> Career Path</h3>
-        <div id="career-path">
-          <p style="color: var(--text-muted);">Take the <a href="career-test.html">Career Test</a> to get personalized recommendations.</p>
-        </div>
+  <main class="dashboard-container" style="max-width: 1200px; margin: 0 auto; padding: var(--space-4);">
+    <div class="dashboard-header">
+      <div class="dashboard-title">
+        <h1><i class="fas fa-tachometer-alt"></i> Dashboard</h1>
       </div>
-
-      <!-- My Courses Card -->
-      <div class="dashboard-card">
-        <h3><i class="fas fa-book-open"></i> My Courses</h3>
-        <div id="my-courses">
-          <p style="color: var(--text-muted);">No courses enrolled yet. <a href="courses.html">Browse courses</a></p>
-        </div>
-      </div>
-
-      <!-- Progress Card -->
-      <div class="dashboard-card">
-        <h3><i class="fas fa-chart-line"></i> Progress</h3>
-        <div id="my-progress">
-          <div style="text-align: center; padding: var(--space-6);">
-            <div style="font-size: 3rem; color: var(--primary); font-weight: 700;">0%</div>
-            <p style="color: var(--text-muted);">Overall Progress</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Certificates Card -->
-      <div class="dashboard-card">
-        <h3><i class="fas fa-certificate"></i> Certificates</h3>
-        <div id="my-certificates">
-          <p style="color: var(--text-muted);">Complete courses to earn certificates!</p>
-        </div>
-      </div>
-
-      <!-- AI Tools Quick Access -->
-      <div class="dashboard-card" style="grid-column: 1 / -1;">
-        <h3><i class="fas fa-robot"></i> AI Tools</h3>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--space-4); margin-top: var(--space-4);">
-          <a href="resume-builder.html" class="tool-card" style="padding: var(--space-5);">
-            <i class="fas fa-file-alt"></i>
-            <h3>Resume Builder</h3>
-          </a>
-          <a href="mock-interview.html" class="tool-card" style="padding: var(--space-5);">
-            <i class="fas fa-comments"></i>
-            <h3>Mock Interview</h3>
-          </a>
-          <a href="ai-chat.html" class="tool-card" style="padding: var(--space-5);">
-            <i class="fas fa-robot"></i>
-            <h3>AI Career Chat</h3>
-          </a>
-          <a href="study-planner.html" class="tool-card" style="padding: var(--space-5);">
-            <i class="fas fa-calendar-check"></i>
-            <h3>Study Planner</h3>
-          </a>
-        </div>
+      <div class="quick-actions">
+        <button class="quick-action-btn" id="take-career-test-btn">Take Career Test</button>
+        <button class="quick-action-btn" id="explore-courses-btn">Explore Courses</button>
+        <button class="quick-action-btn" id="view-profile-btn">View Profile</button>
       </div>
     </div>
+
+    <!-- Greeting Section -->
+    <section class="greeting-section">
+      <h2>Welcome back, <span id="user-name">Learner</span>! <span id="career-goal"></span></h2>
+      <p id="dashboard-message" style="color: var(--text-muted); margin-bottom: var(--space-4);"></p>
+    </section>
+
+    <!-- Stats Cards -->
+    <div class="stats-grid" id="stats-grid">
+      <!-- Stats will be populated here -->
+    </div>
+
+    <!-- Career Test Summary -->
+    <section class="career-section" id="career-section">
+      <h3><i class="fas fa-star"></i> Career Insights</h3>
+      <div id="career-summary">
+        <!-- Career summary will be populated here -->
+      </div>
+    </section>
+
+    <!-- Enrolled Courses -->
+    <section class="courses-section" id="courses-section">
+      <h3><i class="fas fa-book"></i> My Courses</h3>
+      <div id="courses-grid">
+        <!-- Courses will be populated here -->
+      </div>
+    </section>
+
+    <!-- Timeline Milestone -->
+    <section class="timeline-section" id="timeline-section">
+      <h3><i class="fas fa-road"></i> Your Journey</h3>
+      <div class="timeline" id="timeline-container">
+        <!-- Timeline items will be populated here -->
+      </div>
+    </section>
+
+    <!-- Recent Activity Feed -->
+    <section class="activity-section" id="activity-section">
+      <h3><i class="fas fa-clock"></i> Recent Activity</h3>
+      <div class="activity-feed" id="activity-feed">
+        <!-- Activity items will be populated here -->
+      </div>
+    </section>
   </main>
+
+  <!-- Floating Chatbot Button -->
+  <div class="floating-chatbot" id="floating-chatbot" title="Chat with CareerPath AI">
+    <i class="fas fa-robot"></i>
+  </div>
 
   <footer>
     <p>© 2025 AI Career Development Platform. All Rights Reserved.</p>
   </footer>
 
+  <script src="supabase-config.js"></script>
   <script src="theme.js"></script>
   <script src="dashboard.js"></script>
 </body>

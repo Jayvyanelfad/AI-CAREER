@@ -1,69 +1,59 @@
 // Get base API URL
 const API_BASE = `${window.location.protocol}//${window.location.hostname}:5000`;
 
-// ✅ Global JS error trap
+// � ✅ Global JS error trap
 window.addEventListener("error", (e) => {
-    console.error("🔥 Global JS Error:", e.message, "at", e.filename, ":", e.lineno);
+    console.error("���🔥 Global JS Error:", e.message, "at", e.filename, ":", e.lineno);
 });
 
-// Google Sign-In Handler
-function handleGoogleSignIn(response) {
-    const { credential } = response;
-    if (!credential) return;
+// Google Sign-In Handler using Supabase
+async function handleGoogleSignIn() {
+    const message = document.getElementById('google-signin-message');
+    message.textContent = 'Signing in with Google...';
+    message.style.color = 'var(--primary)';
 
     try {
-        const base64Url = credential.split('.')[1];
-        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-        const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
-        const decoded = JSON.parse(jsonPayload);
-        const { email, name, picture } = decoded;
-
-        const message = document.getElementById('google-signin-message');
-        message.textContent = '✓ Signing in...';
-        message.style.color = 'var(--primary)';
-
-        fetch(`${API_BASE}/api/auth/google`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                tokenId: credential
-            })
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success || data.token) {
-                localStorage.setItem('token', data.token);
-                localStorage.setItem('user', JSON.stringify(data.user));
-                if (data.user.careerGoal && data.user.careerGoal !== 'undecided') {
-                    window.location.href = 'dashboard.html';
-                } else {
-                    window.location.href = 'career-test.html';
-                }
-            } else {
-                throw new Error(data.error || 'Failed');
-            }
-        })
-        .catch(err => {
-            message.textContent = `Error: ${err.message}`;
-            message.style.color = 'var(--danger)';
+        const { data, error } = await supabase.auth.signInWithOAuth({
+            provider: 'google'
         });
+
+        if (error) throw error;
+
+        // Supabase handles redirect and session automatically
+        // But we can also handle it manually if needed:
+        const { data: { session } } = data;
+        if (session) {
+            localStorage.setItem('token', session.access_token);
+
+            // Get user data from our backend
+            const res = await fetch(`${API_BASE}/auth/me`, {
+                headers: { Authorization: `Bearer ${session.access_token}` }
+            });
+            const user = await res.json();
+            localStorage.setItem('user', JSON.stringify(user));
+
+            if (user.careerGoal && user.careerGoal !== 'undecided') {
+                window.location.href = 'dashboard.html';
+            } else {
+                window.location.href = 'career-test.html';
+            }
+        }
     } catch (err) {
-        console.error('Error:', err);
-        const message = document.getElementById('google-signin-message');
-        message.textContent = 'Failed to process sign-in';
+        console.error('Google Sign-In Error:', err);
+        message.textContent = `Sign-in failed: ${err.message}`;
         message.style.color = 'var(--danger)';
     }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-    console.log("🔥 login.js loaded");
+    console.log("���🔥 login.js loaded");
 
     const loginForm = document.getElementById("login-form");
     const submitBtn = document.getElementById("submit-btn");
     const errorElement = document.getElementById("error-message");
 
     if (!loginForm) {
-        console.error("❌ login-form not found");
+        console.error("��❌ login-form not found");
         return;
     }
 
@@ -79,7 +69,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const password = document.getElementById("password").value;
 
         if (!email || !password) {
-            return showError("⚠️ Please fill in all fields.");
+            return showError("��⚠��️ Please fill in all fields.");
         }
 
         try {
@@ -95,7 +85,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             localStorage.setItem("token", data.token);
             localStorage.setItem("user", JSON.stringify(data.user));
-            
+
             // Redirect based on user state
             if (data.user.careerGoal && data.user.careerGoal !== 'undecided') {
                 window.location.href = "dashboard.html";
@@ -103,7 +93,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 window.location.href = "career-test.html"; // First-time users take career test
             }
         } catch (error) {
-            console.error("❌ Login error:", error);
+            console.error("��❌ Login error:", error);
             showError(error.message || "Something went wrong. Try again.");
         } finally {
             submitBtn.disabled = false;
@@ -112,7 +102,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // 👁️ Toggle password visibility
+    // �� 👁��️ Toggle password visibility
     const passwordInput = document.getElementById("password");
     const toggleIcon = document.querySelector(".password-toggle i");
 
@@ -135,14 +125,9 @@ document.addEventListener("DOMContentLoaded", () => {
         window.scrollTo(0, 0);
     }
 
-    // Initialize Google Sign-In
-    google.accounts.id.initialize({
-        client_id: '84029214791-p6lpcphardq45ph5h2u9opvo40b7r0vl.apps.googleusercontent.com',
-        callback: handleGoogleSignIn
-    });
-
-    google.accounts.id.renderButton(
-        document.getElementById('google-signin-container'),
-        { theme: 'outline', size: 'large', width: '100%' }
-    );
+    // Google Sign-In button handler
+    const googleButton = document.getElementById('google-signin-btn');
+    if (googleButton) {
+        googleButton.addEventListener('click', handleGoogleSignIn);
+    }
 });
