@@ -1,5 +1,6 @@
 // Dashboard Logic - Backend Version (Supabase-powered)
 (async function() {
+  const API_BASE = `${window.location.protocol}//${window.location.hostname}:5000`;
   const userName = document.getElementById('user-name');
   const careerGoal = document.getElementById('career-goal');
   const dashboardMessage = document.getElementById('dashboard-message');
@@ -23,7 +24,7 @@
     }
 
   try {
-    const response = await fetch(`${API_BASE}/dashboard`, {
+    const response = await fetch(`${API_BASE}/api/dashboard`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
 

@@ -7,7 +7,7 @@
 //   - anon / public key    -> SUPABASE_ANON_KEY
 // The anon key is safe to put in frontend code (unlike the service_role key).
 // ============================================================
-const SUPABASE_URL = "https://bfjkjiizmlsbfszyhxfe.supabase.co";
+const SUPABASE_URL = "https://bfjkjizmlsbfszyhxfe.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJmamtqaWl6bWxzYmZzenloeGZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY0NTY4OTgsImV4cCI6MjEwMjAzMjg5OH0.fIaE9Voe5bsXV-z-2UV0-DL4xwdpvOWVwRk_-KDprew";
 
 // Create Supabase client and attach to window for global access

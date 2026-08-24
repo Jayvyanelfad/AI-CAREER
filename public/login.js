@@ -26,7 +26,7 @@ async function handleGoogleSignIn() {
             localStorage.setItem('token', session.access_token);
 
             // Get user data from our backend
-            const res = await fetch(`${API_BASE}/auth/me`, {
+            const res = await fetch(`${API_BASE}/api/auth/me`, {
                 headers: { Authorization: `Bearer ${session.access_token}` }
             });
             const user = await res.json();

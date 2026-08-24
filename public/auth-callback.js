@@ -3,6 +3,7 @@
 // the URL. supabase-js automatically picks it up — we just need to read it.
 
 (async function () {
+  const API_BASE = `${window.location.protocol}//${window.location.hostname}:5000`;
     const statusEl = document.getElementById("status-message");
 
     const { data, error } = await supabase.auth.getSession();
@@ -17,7 +18,7 @@
     localStorage.setItem("token", token);
 
     try {
-        const res = await fetch(`${API_BASE}/auth/me`, {
+        const res = await fetch(`${API_BASE}/api/auth/me`, {
             headers: { Authorization: `Bearer ${token}` }
         });
         const user = await res.json();

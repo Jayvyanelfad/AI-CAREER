@@ -1,6 +1,7 @@
 // profile.js
 
 (async function () {
+  const API_BASE = `${window.location.protocol}//${window.location.hostname}:5000`;
   const token = localStorage.getItem("token");
   if (!token) {
     window.location.href = "login.html";
@@ -53,7 +54,7 @@
   // Load current profile
   async function loadProfile() {
     try {
-      const res = await fetch(`${API_BASE}/auth/me`, {
+      const res = await fetch(`${API_BASE}/api/auth/me`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (!res.ok) throw new Error("Could not load profile");

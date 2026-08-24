@@ -1,12 +1,9 @@
-﻿// CUSTOM IDENTIFIER TO VERIFY WHICH FILE IS LOADING - CAREER TEST FIX ATTEMPT
-console.log('SERVER STARTING - LOADED SERVER.JS');
+// CUSTOM IDENTIFIER TO VERIFY WHICH FILE IS LOADING - SUPABASE ONLY IMPLEMENTATION
+console.log('SERVER STARTING - LOADED SERVER.JS (SUPABASE ONLY)');
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const sqlite3 = require('sqlite3').verbose();
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcryptjs');
-const { GoogleAuth, OAuth2Client } = require('google-auth-library');
+const { createClient } = require('@supabase/supabase-js');
 const { GoogleGenAI } = require('@google/genai');
 
 // Load environment variables
@@ -20,143 +17,83 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static("public"));
 
-// Database setup
-const db = new sqlite3.Database('./career_platform.db', (err) => {
-  if (err) {
-    console.error('Database connection error:', err);
-  } else {
-    console.log('Connected to SQLite database');
-  }
-});
-
-// JWT secret
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret';
-
-// Google OAuth client
-const oAuth2Client = new OAuth2Client(
-  process.env.GOOGLE_CLIENT_ID,
-  process.env.GOOGLE_CLIENT_SECRET,
-  'postmessage' // For frontend communication
-);
+// Supabase setup (using service role key for backend operations)
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 // Gemini AI setup
 const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
-// Authentication middleware
-function authenticateToken(req, res, next) {
+// Authentication middleware - verify Supabase JWT and fetch user metadata
+async function authenticateToken(req, res, next) {
   console.log('AUTH MIDDLEWARE: Checking token');
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
 
-  console.log('AUTH MIDDLEWARE: authHeader=', authHeader);
-  console.log('AUTH MIDDLEWARE: token=', token ? 'present' : 'missing');
+  console.log('AUTH MIDDLEWARE: Checking authorization header');
 
   if (!token) {
     console.log('AUTH MIDDLEWARE: No token, returning 401');
     return res.status(401).json({ error: 'Access token required' });
   }
 
-  jwt.verify(token, JWT_SECRET, (err, user) => {
-    console.log('AUTH MIDDLEWARE: JWT verify callback, err=', err);
-    if (err) {
-      console.log('AUTH MIDDLEWARE: Invalid token, returning 403');
-      return res.status(403).json({ error: 'Invalid or expired token' });
+  try {
+    // Verify the token with Supabase
+    const { data: { user }, error } = await supabase.auth.getUser(token);
+    if (error) {
+      console.log('AUTH MIDDLEWARE: Invalid token, returning 401');
+      return res.status(401).json({ error: 'Invalid or expired token' });
     }
+
+    if (!user) {
+      console.log('AUTH MIDDLEWARE: No user found, returning 401');
+      return res.status(401).json({ error: 'Invalid or expired token' });
+    }
+
+    // Fetch user metadata from our public.users table
+    const { data: userMetadata, error: metadataError } = await supabase
+      .from('users')
+      .select('full_name, career_goal')
+      .eq('id', user.id)
+      .single();
+
+    if (metadataError) {
+      console.error('AUTH MIDDLEWARE: Error fetching user metadata');
+      // Fallback to auth user data if metadata fetch fails
+      req.user = {
+        id: user.id,
+        email: user.email,
+        name: user.user_metadata?.full_name || user.email.split('@')[0],
+        careerGoal: user.user_metadata?.career_goal || 'undecided'
+      };
+    } else {
+      // Format user object to match existing expectations
+      req.user = {
+        id: user.id,
+        email: user.email,
+        name: userMetadata.full_name || user.email.split('@')[0],
+        careerGoal: userMetadata.career_goal || 'undecided'
+      };
+    }
+
     console.log('AUTH MIDDLEWARE: Token valid, setting req.user and calling next');
-    req.user = user;
     next();
-  });
+  } catch (error) {
+    console.error('AUTH MIDDLEWARE: Error verifying token');
+    return res.status(401).json({ error: 'Invalid or expired token' });
+  }
 }
 
-// Initialize database tables
+// Initialize database tables (Supabase handles this, but we'll keep the function for compatibility)
 function initializeDatabase() {
-  db.serialize(() => {
-    // Users table
-    db.run(`
-      CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        email TEXT UNIQUE NOT NULL,
-        password TEXT,
-        name TEXT,
-        careerGoal TEXT DEFAULT 'undecided',
-        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-
-    // Career test results table
-    db.run(`
-      CREATE TABLE IF NOT EXISTS career_test (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        userId INTEGER,
-        answers TEXT,
-        topCareers TEXT,
-        strengths TEXT,
-        completed BOOLEAN DEFAULT 0,
-        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (userId) REFERENCES users(id)
-      )
-    `);
-
-    // Enrollments table
-    db.run(`
-      CREATE TABLE IF NOT EXISTS enrollments (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        userId INTEGER,
-        courseId TEXT,
-        courseName TEXT,
-        progress INTEGER DEFAULT 0,
-        completedHours INTEGER DEFAULT 0,
-        totalHours INTEGER DEFAULT 0,
-        nextLessonTitle TEXT,
-        enrolledAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (userId) REFERENCES users(id)
-      )
-    `);
-
-    // Certificates table
-    db.run(`
-      CREATE TABLE IF NOT EXISTS certificates (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        userId INTEGER,
-        courseId TEXT,
-        courseName TEXT,
-        earnedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (userId) REFERENCES users(id)
-      )
-    `);
-
-    // Chat history table
-    db.run(`
-      CREATE TABLE IF NOT EXISTS chat_history (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        userId INTEGER,
-        message TEXT,
-        response TEXT,
-        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (userId) REFERENCES users(id)
-      )
-    `);
-
-    // OAuth accounts table
-    db.run(`
-      CREATE TABLE IF NOT EXISTS oauth_accounts (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        userId INTEGER,
-        provider TEXT NOT NULL,
-        providerId TEXT NOT NULL,
-        accessToken TEXT,
-        refreshToken TEXT,
-        expiresAt DATETIME,
-        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (userId) REFERENCES users(id),
-        UNIQUE(provider, providerId)
-      )
-    `);
-  });
+  console.log('Supabase connected - tables should exist via dashboard');
+  // In a real migration, you might run SQL migrations here
+  // But for now, we assume tables are set up in Supabase dashboard
 }
 
 // Health check endpoint
-app.get('/api/health', (req, res) => {
+app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', message: 'Server is running' });
 });
 
@@ -172,41 +109,71 @@ app.post('/api/auth/register', async (req, res) => {
     // Use provided careerGoal or default to 'undecided'
     const goal = careerGoal || 'undecided';
 
-    // Check if user already exists
-    db.get('SELECT id FROM users WHERE email = ?', [email], async (err, row) => {
-      if (err) {
-        return res.status(500).json({ error: 'Database error' });
+    // Register user with Supabase Auth
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          // We'll store minimal data in auth.user_metadata, but our main data is in public.users
+          // This is just for basic auth user info
+          full_name: name
+        }
       }
+    });
 
-      if (row) {
+    if (error) {
+      if (error.message.includes('User already registered')) {
         return res.status(400).json({ error: 'User already exists' });
       }
+      return res.status(400).json({ error: error.message });
+    }
 
-      // Hash password
-      const hashedPassword = await bcrypt.hash(password, 10);
+    const { user } = data;
 
-      // Insert user
-      db.run(
-        'INSERT INTO users (email, password, name, careerGoal) VALUES (?, ?, ?, ?)',
-        [email, hashedPassword, name, goal],
-        function(err) {
-          if (err) {
-            return res.status(500).json({ error: 'Failed to create user' });
-          }
+    // Insert user metadata into our public.users table
+    const { error: metadataError } = await supabase
+      .from('users')
+      .insert({
+        id: user.id,
+        full_name: name,
+        career_goal: goal
+      });
 
-          // Generate JWT token
-          const token = jwt.sign({ id: this.lastID, email, name }, JWT_SECRET, {
-            expiresIn: '7d'
-          });
+    if (metadataError) {
+      console.error('Error inserting user metadata:', metadataError);
+      // We don't fail the registration if metadata insert fails, but we should log it
+      // In a production system, we might want to rollback the auth user creation
+    }
 
-          res.status(201).json({
-            token,
-            user: { id: this.lastID, email, name, careerGoal: goal }
-          });
-        }
-      );
+    // Try to create a session immediately (if email confirmation is not required)
+    const { data: sessionData, error: sessionError } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    });
+
+    if (sessionError) {
+      // If we can't create session immediately (e.g., email confirmation required),
+      // still return success but without token - frontend should handle this
+      return res.status(201).json({
+        message: 'User created successfully. Please check your email to confirm your account.',
+        user: { id: user.id, email: user.email, name, careerGoal: goal }
+      });
+    }
+
+    const { session } = sessionData;
+
+    res.status(201).json({
+      token: session.access_token,
+      user: {
+        id: user.id,
+        email: user.email,
+        name,
+        careerGoal: goal
+      }
     });
   } catch (error) {
+    console.error('Registration error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -219,122 +186,73 @@ app.post('/api/auth/login', async (req, res) => {
       return res.status(400).json({ error: 'Email and password are required' });
     }
 
-    // Find user
-    db.get('SELECT id, email, password, name FROM users WHERE email = ?', [email], async (err, user) => {
-      if (err) {
-        return res.status(500).json({ error: 'Database error' });
-      }
-
-      if (!user) {
-        return res.status(400).json({ error: 'Invalid credentials' });
-      }
-
-      // Check password
-      const validPassword = await bcrypt.compare(password, user.password);
-      if (!validPassword) {
-        return res.status(400).json({ error: 'Invalid credentials' });
-      }
-
-      // Generate JWT token
-      const token = jwt.sign({ id: user.id, email: user.email, name: user.name }, JWT_SECRET, {
-        expiresIn: '7d'
-      });
-
-      res.json({
-        token,
-        user: { id: user.id, email: user.email, name: user.name, careerGoal: user.careerGoal }
-      });
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password
     });
+
+    if (error) {
+      return res.status(400).json({ error: 'Invalid credentials' });
+    }
+
+    const { user, session } = data;
+
+    // Fetch user metadata from our public.users table
+    const { data: userMetadata, error: metadataError } = await supabase
+      .from('users')
+      .select('full_name, career_goal')
+      .eq('id', user.id)
+      .single();
+
+    if (metadataError) {
+      console.error('Error fetching user metadata:', metadataError);
+      // Fallback to auth user data
+      res.json({
+        token: session.access_token,
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.user_metadata?.full_name || user.email.split('@')[0],
+          careerGoal: user.user_metadata?.career_goal || 'undecided'
+        }
+      });
+    } else {
+      res.json({
+        token: session.access_token,
+        user: {
+          id: user.id,
+          email: user.email,
+          name: userMetadata.full_name || user.email.split('@')[0],
+          careerGoal: userMetadata.career_goal || 'undecided'
+        }
+      });
+    }
   } catch (error) {
+    console.error('Login error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
 
 app.get('/api/auth/me', authenticateToken, (req, res) => {
-  // Get user data without password
-  db.get(
-    'SELECT id, email, name, careerGoal FROM users WHERE id = ?',
-    [req.user.id],
-    (err, user) => {
-      if (err) {
-        return res.status(500).json({ error: 'Database error' });
-      }
-
-      if (!user) {
-        return res.status(404).json({ error: 'User not found' });
-      }
-
-      res.json({ user });
-    }
-  );
+  // Return user data in expected format
+  res.json({ user: req.user });
 });
 
 // Google OAuth endpoint
-app.post('/api/auth/google', async (req, res) => {
+// Note: With Supabase, Google OAuth is typically handled client-side
+// This endpoint is kept for compatibility but will guide to client-side approach
+app.post('/api/auth/google', async (_req, res) => {
   try {
-    const { credential } = req.body;
-
-    if (!credential) {
-      return res.status(400).json({ error: 'Google credential required' });
-    }
-
-    // Verify Google token
-    const ticket = await oAuth2Client.verifyIdToken({
-      idToken: credential,
-      audience: process.env.GOOGLE_CLIENT_ID
-    });
-
-    const payload = ticket.getPayload();
-    const { email, name, picture } = payload;
-
-    // Check if user exists
-    db.get('SELECT id, email, name FROM users WHERE email = ?', [email], async (err, user) => {
-      if (err) {
-        return res.status(500).json({ error: 'Database error' });
-      }
-
-      if (user) {
-        // User exists, generate token
-        const token = jwt.sign({ id: user.id, email: user.email, name: user.name }, JWT_SECRET, {
-          expiresIn: '7d'
-        });
-
-        res.json({
-          token,
-          user: { id: user.id, email: user.email, name: user.name, careerGoal: user.careerGoal }
-        });
-      } else {
-        // Create new user
-        const randomPassword = Math.random().toString(36).slice(-8);
-        const hashedPassword = await bcrypt.hash(randomPassword, 10);
-
-        db.run(
-          'INSERT INTO users (email, password, name) VALUES (?, ?, ?)',
-          [email, hashedPassword, name],
-          function(err) {
-            if (err) {
-              return res.status(500).json({ error: 'Failed to create user' });
-            }
-
-            const token = jwt.sign({ id: this.lastID, email, name }, JWT_SECRET, {
-              expiresIn: '7d'
-            });
-
-            res.json({
-              token,
-              user: { id: this.lastID, email, name, careerGoal: 'undecided' }
-            });
-          }
-        );
-      }
+    res.status(400).json({
+      error: 'Google OAuth should be handled client-side using supabase.auth.signInWithOAuth({ provider: "google" })'
     });
   } catch (error) {
     console.error('Google OAuth error:', error);
-    res.status(401).json({ error: 'Invalid Google token' });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-// Career test endpoints
+// Career test endpoints (keep same logic but use Supabase for DB)
 app.post('/api/career-test', authenticateToken, async (req, res) => {
   try {
     console.log('CAREER TEST ENDPOINT CALLED - VERIFYING SERVER IS USING UPDATED FILE');
@@ -349,7 +267,7 @@ app.post('/api/career-test', authenticateToken, async (req, res) => {
 
     console.log('TEST LOG: About to process answers - this should appear in logs');
 
-    // Career database with scoring weights (copied from frontend career-test.js)
+    // Career database with scoring weights (same as before)
     const careers = {
       "Software Developer": {
         weights: {
@@ -681,173 +599,163 @@ app.post('/api/career-test', authenticateToken, async (req, res) => {
     // Return top 4 strengths
     const topStrengths = strengths.slice(0, 4);
 
-    // Save or update career test results
-    db.run(
-      `INSERT OR REPLACE INTO career_test
-       (userId, answers, topCareers, strengths, completed)
-       VALUES (?, ?, ?, ?, ?)`,
-      [
-        userId,
-        JSON.stringify(answers),
-        JSON.stringify(topCareers),
-        JSON.stringify(topStrengths),
-        1
-      ],
-      function(err) {
-        if (err) {
-          return res.status(500).json({ error: 'Failed to save career test' });
-        }
+    // Save or update career test results using Supabase
+    const { error: upsertError } = await supabase
+      .from('career_test')
+      .upsert({
+        userId: userId,
+        answers: JSON.stringify(answers),
+        topCareers: JSON.stringify(topCareers),
+        strengths: JSON.stringify(topStrengths),
+        completed: true
+      }, { onConflict: ['userId'] });
 
-        // Update user's career goal with the top recommendation
-        db.run(
-          'UPDATE users SET careerGoal = ? WHERE id = ?',
-          [topCareers[0].career, userId],
-          (err) => {
-            if (err) {
-              console.warn('Failed to update career goal:', err);
-            }
-          }
-        );
+    if (upsertError) {
+      console.error('Error saving career test:', upsertError);
+      return res.status(500).json({ error: 'Failed to save career test' });
+    }
 
-        res.json({
-          topCareers: topCareers,
-          strengths: topStrengths
-        });
-      }
-    );
+    // Update user's career goal with the top recommendation in public.users table
+    const { error: updateError } = await supabase
+      .from('users')
+      .update({ career_goal: topCareers[0].career })
+      .eq('id', userId);
+
+    if (updateError) {
+      console.warn('Failed to update career goal:', updateError);
+      // Don't fail the request for this
+    }
+
+    res.json({
+      topCareers: topCareers,
+      strengths: topStrengths
+    });
   } catch (error) {
     console.error('Career test error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-app.get('/api/career-test', authenticateToken, (req, res) => {
-  db.get(
-    'SELECT * FROM career_test WHERE userId = ? ORDER BY createdAt DESC LIMIT 1',
-    [req.user.id],
-    (err, test) => {
-      if (err) {
-        return res.status(500).json({ error: 'Database error' });
-      }
+// GET career test - get from Supabase
+app.get('/api/career-test', authenticateToken, async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('career_test')
+      .select('*')
+      .eq('userId', req.user.id)
+      .order('created_at', { ascending: false })
+      .limit(1);
 
-      if (!test) {
-        return res.status(404).json({ error: 'No career test found' });
-      }
-
-      res.json({
-        topCareers: JSON.parse(test.topCareers),
-        strengths: JSON.parse(test.strengths),
-        completed: Boolean(test.completed)
-      });
+    if (error) {
+      return res.status(500).json({ error: 'Database error' });
     }
-  );
+
+    if (!data || data.length === 0) {
+      return res.status(404).json({ error: 'No career test found' });
+    }
+
+    const test = data[0];
+    res.json({
+      topCareers: JSON.parse(test.topCareers).map(item => item.career),
+      strengths: JSON.parse(test.strengths),
+      completed: Boolean(test.completed)
+    });
+  } catch (error) {
+    console.error('Career test error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 // Dashboard endpoint
-app.get('/api/dashboard', authenticateToken, (req, res) => {
-  const userId = req.user.id;
+app.get('/api/dashboard', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
 
-  // Get user data
-  db.get(
-    'SELECT id, email, name, careerGoal FROM users WHERE id = ?',
-    [userId],
-    (err, user) => {
-      if (err) {
-        return res.status(500).json({ error: 'Database error' });
-      }
+    // Get user data
+    const { data: userData, error: userError } = await supabase
+      .from('users')
+      .select('id, email, full_name, career_goal')
+      .eq('id', userId)
+      .single();
 
-      if (!user) {
-        return res.status(404).json({ error: 'User not found' });
-      }
-
-      // Get stats
-      db.all(
-        'SELECT COUNT(*) as coursesEnrolled FROM enrollments WHERE userId = ?',
-        [userId],
-        (err, enrollResult) => {
-          if (err) {
-            return res.status(500).json({ error: 'Database error' });
-          }
-
-          db.all(
-            'SELECT AVG(progress) as overallProgress FROM enrollments WHERE userId = ?',
-            [userId],
-            (err, progressResult) => {
-              if (err) {
-                return res.status(500).json({ error: 'Database error' });
-              }
-
-              db.all(
-                'SELECT COUNT(*) as certificatesEarned FROM certificates WHERE userId = ?',
-                [userId],
-                (err, certResult) => {
-                  if (err) {
-                    return res.status(500).json({ error: 'Database error' });
-                  }
-
-                  // Get latest career test
-                  db.get(
-                    'SELECT * FROM career_test WHERE userId = ? ORDER BY createdAt DESC LIMIT 1',
-                    [userId],
-                    (err, careerTest) => {
-                      if (err) {
-                        return res.status(500).json({ error: 'Database error' });
-                      }
-
-                      // Get enrollments
-                      db.all(
-                        'SELECT * FROM enrollments WHERE userId = ? ORDER BY enrolledAt DESC',
-                        [userId],
-                        (err, enrollments) => {
-                          if (err) {
-                            return res.status(500).json({ error: 'Database error' });
-                          }
-
-                          res.json({
-                            user: {
-                              id: user.id,
-                              email: user.email,
-                              name: user.name,
-                              careerGoal: user.careerGoal || 'undecided'
-                            },
-                            stats: {
-                              coursesEnrolled: enrollResult[0].coursesEnrolled || 0,
-                              overallProgress: Math.round(progressResult[0].overallProgress || 0),
-                              streak: 0, // Would need more complex logic
-                              certificatesEarned: certResult[0].certificatesEarned || 0
-                            },
-                            careerTest: careerTest ? {
-                              completed: Boolean(careerTest.completed),
-                              topCareers: JSON.parse(careerTest.topCareers).map(item => item.career),
-                              strengths: JSON.parse(careerTest.strengths),
-                              learningPath: 'Complete recommended courses to build your skills'
-                            } : null,
-                            enrollments: enrollments.map(enrollment => ({
-                              courseId: enrollment.courseId,
-                              courseName: enrollment.courseName,
-                              progress: enrollment.progress,
-                              completedHours: enrollment.completedHours,
-                              totalHours: enrollment.totalHours,
-                              nextLessonTitle: enrollment.nextLessonTitle || 'Next lesson'
-                            })),
-                            recentActivity: [] // Simplified
-                          });
-                        }
-                      );
-                    }
-                  );
-                }
-              );
-            }
-          );
-        }
-      );
+    if (userError) {
+      console.error('Error fetching user:', userError);
+      return res.status(500).json({ error: 'Database error' });
     }
-  );
+
+    // Get stats
+    const { data: enrollData, error: enrollError } = await supabase
+      .from('enrollments')
+      .select('*')
+      .eq('userId', userId);
+
+    if (enrollError) {
+      console.error('Error fetching enrollments:', enrollError);
+      return res.status(500).json({ error: 'Database error' });
+    }
+
+    const { data: certData, error: certError } = await supabase
+      .from('certificates')
+      .select('*')
+      .eq('userId', userId);
+
+    if (certError) {
+      console.error('Error fetching certificates:', certError);
+      return res.status(500).json({ error: 'Database error' });
+    }
+
+    // Get latest career test
+    const { data: careerTestData, error: careerTestError } = await supabase
+      .from('career_test')
+      .select('*')
+      .eq('userId', userId)
+      .order('created_at', { ascending: false })
+      .limit(1);
+
+    if (careerTestError) {
+      console.error('Error fetching career test:', careerTestError);
+      return res.status(500).json({ error: 'Database error' });
+    }
+
+    // Format response to match existing expectations
+    res.json({
+      user: {
+        id: userData.id,
+        email: userData.email,
+        name: userData.full_name || userData.email.split('@')[0],
+        careerGoal: userData.career_goal || 'undecided'
+      },
+      stats: {
+        coursesEnrolled: enrollData.length || 0,
+        overallProgress: enrollData.length > 0 ?
+          Math.round(enrollData.reduce((sum, e) => sum + (e.progress || 0), 0) / enrollData.length) : 0,
+        streak: 0, // Simplified - would need more complex logic for real streak
+        certificatesEarned: certData.length || 0
+      },
+      careerTest: careerTestData && careerTestData.length > 0 ? {
+        completed: Boolean(careerTestData[0].completed),
+        topCareers: JSON.parse(careerTestData[0].topCareers).map(item => item.career),
+        strengths: JSON.parse(careerTestData[0].strengths),
+        learningPath: 'Complete recommended courses to build your skills'
+      } : null,
+      enrollments: enrollData.map(enrollment => ({
+        courseId: enrollment.course_id,
+        courseName: enrollment.course_name,
+        progress: enrollment.progress,
+        completedHours: enrollment.completed_hours,
+        totalHours: enrollment.total_hours,
+        nextLessonTitle: enrollment.next_lesson_title || 'Next lesson'
+      })),
+      recentActivity: [] // Simplified for now
+    });
+  } catch (error) {
+    console.error('Dashboard error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 // Course endpoints
-app.post('/api/enroll', authenticateToken, (req, res) => {
+app.post('/api/enroll', authenticateToken, async (req, res) => {
   try {
     const { courseId, courseName, totalHours } = req.body;
     const userId = req.user.id;
@@ -857,41 +765,46 @@ app.post('/api/enroll', authenticateToken, (req, res) => {
     }
 
     // Check if already enrolled
-    db.get(
-      'SELECT id FROM enrollments WHERE userId = ? AND courseId = ?',
-      [userId, courseId],
-      (err, row) => {
-        if (err) {
-          return res.status(500).json({ error: 'Database error' });
-        }
+    const { data: existingEnrollment, error: checkError } = await supabase
+      .from('enrollments')
+      .select('id')
+      .eq('userId', userId)
+      .eq('courseId', courseId);
 
-        if (row) {
-          return res.status(400).json({ error: 'Already enrolled in this course' });
-        }
+    if (checkError) {
+      console.error('Error checking enrollment:', checkError);
+      return res.status(500).json({ error: 'Database error' });
+    }
 
-        // Insert enrollment
-        db.run(
-          'INSERT INTO enrollments (userId, courseId, courseName, totalHours) VALUES (?, ?, ?, ?)',
-          [userId, courseId, courseName, totalHours || 0],
-          function(err) {
-            if (err) {
-              return res.status(500).json({ error: 'Failed to enroll in course' });
-            }
+    if (existingEnrollment && existingEnrollment.length > 0) {
+      return res.status(400).json({ error: 'Already enrolled in this course' });
+    }
 
-            res.status(201).json({
-              message: 'Successfully enrolled in course',
-              enrollmentId: this.lastID
-            });
-          }
-        );
-      }
-    );
+    // Insert enrollment
+    const { error: insertError } = await supabase
+      .from('enrollments')
+      .insert({
+        userId: userId,
+        courseId: courseId,
+        courseName: courseName,
+        totalHours: totalHours || 0
+      });
+
+    if (insertError) {
+      console.error('Error inserting enrollment:', insertError);
+      return res.status(500).json({ error: 'Failed to enroll in course' });
+    }
+
+    res.status(201).json({
+      message: 'Successfully enrolled in course'
+    });
   } catch (error) {
+    console.error('Enroll error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-app.post('/api/progress', authenticateToken, (req, res) => {
+app.post('/api/progress', authenticateToken, async (req, res) => {
   try {
     const { enrollmentId, progress, completedHours } = req.body;
 
@@ -900,51 +813,68 @@ app.post('/api/progress', authenticateToken, (req, res) => {
     }
 
     // Update progress
-    db.run(
-      'UPDATE enrollments SET progress = ?, completedHours = ? WHERE id = ? AND userId = ?',
-      [progress, completedHours || 0, enrollmentId, req.user.id],
-      function(err) {
-        if (err) {
-          return res.status(500).json({ error: 'Failed to update progress' });
-        }
+    const { error: updateError } = await supabase
+      .from('enrollments')
+      .update({
+        progress: progress,
+        completedHours: completedHours || 0
+      })
+      .eq('id', enrollmentId)
+      .eq('userId', req.user.id);
 
-        if (this.changes === 0) {
-          return res.status(404).json({ error: 'Enrollment not found' });
-        }
+    if (updateError) {
+      console.error('Error updating progress:', updateError);
+      return res.status(500).json({ error: 'Failed to update progress' });
+    }
 
-        res.json({ message: 'Progress updated successfully' });
-      }
-    );
+    // Check if any rows were updated
+    const { count } = await supabase
+      .from('enrollments')
+      .select('id', { count: 'exact' })
+      .eq('id', enrollmentId)
+      .eq('userId', req.user.id);
+
+    if (count === 0) {
+      return res.status(404).json({ error: 'Enrollment not found' });
+    }
+
+    res.json({ message: 'Progress updated successfully' });
   } catch (error) {
+    console.error('Progress error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-app.get('/api/enrollments', authenticateToken, (req, res) => {
-  db.all(
-    'SELECT * FROM enrollments WHERE userId = ? ORDER BY enrolledAt DESC',
-    [req.user.id],
-    (err, enrollments) => {
-      if (err) {
-        return res.status(500).json({ error: 'Database error' });
-      }
+app.get('/api/enrollments', authenticateToken, async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('enrollments')
+      .select('*')
+      .eq('userId', req.user.id)
+      .order('enrolledAt', { ascending: false });
 
-      res.json({
-        enrollments: enrollments.map(enrollment => ({
-          courseId: enrollment.courseId,
-          courseName: enrollment.courseName,
-          progress: enrollment.progress,
-          completedHours: enrollment.completedHours,
-          totalHours: enrollment.totalHours,
-          nextLessonTitle: enrollment.nextLessonTitle || 'Next lesson',
-          enrolledAt: enrollment.enrolledAt
-        }))
-      });
+    if (error) {
+      return res.status(500).json({ error: 'Database error' });
     }
-  );
+
+    res.json({
+      enrollments: data.map(enrollment => ({
+        courseId: enrollment.courseId,
+        courseName: enrollment.courseName,
+        progress: enrollment.progress,
+        completedHours: enrollment.completedHours,
+        totalHours: enrollment.totalHours,
+        nextLessonTitle: enrollment.nextLessonTitle || 'Next lesson',
+        enrolledAt: enrollment.enrolledAt
+      }))
+    });
+  } catch (error) {
+    console.error('Enrollments error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
-// AI Chatbot endpoints
+// AI Chatbot endpoints (keep same logic)
 app.post('/api/ai/chat', authenticateToken, async (req, res) => {
   console.log('AI chat endpoint hit');
   try {
@@ -969,16 +899,18 @@ app.post('/api/ai/chat', authenticateToken, async (req, res) => {
     });
     const text = result.text();
 
-    // Save chat history
-    db.run(
-      'INSERT INTO chat_history (userId, message, response) VALUES (?, ?, ?)',
-      [userId, message, text],
-      function(err) {
-        if (err) {
-          console.warn('Failed to save chat history:', err);
-        }
-      }
-    );
+    // Save chat history using Supabase
+    const { error: chatError } = await supabase
+      .from('chat_history')
+      .insert({
+        userId: userId,
+        message: message,
+        response: text
+      });
+
+    if (chatError) {
+      console.warn('Failed to save chat history:', chatError);
+    }
 
     res.json({ reply: text });
   } catch (error) {
@@ -990,38 +922,48 @@ app.post('/api/ai/chat', authenticateToken, async (req, res) => {
   }
 });
 
-app.get('/api/chat/history', authenticateToken, (req, res) => {
-  db.all(
-    'SELECT * FROM chat_history WHERE userId = ? ORDER BY createdAt DESC LIMIT 50',
-    [req.user.id],
-    (err, chats) => {
-      if (err) {
-        return res.status(500).json({ error: 'Database error' });
-      }
+app.get('/api/chat/history', authenticateToken, async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('chat_history')
+      .select('*')
+      .eq('userId', req.user.id)
+      .order('created_at', { ascending: false })
+      .limit(50);
 
-      res.json({
-        history: chats.map(chat => ({
-          message: chat.message,
-          response: chat.response,
-          timestamp: chat.createdAt
-        }))
-      });
+    if (error) {
+      return res.status(500).json({ error: 'Database error' });
     }
-  );
+
+    res.json({
+      history: data.map(chat => ({
+        message: chat.message,
+        response: chat.response,
+        timestamp: chat.createdAt
+      }))
+    });
+  } catch (error) {
+    console.error('Chat history error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
-app.delete('/api/chat/clear', authenticateToken, (req, res) => {
-  db.run(
-    'DELETE FROM chat_history WHERE userId = ?',
-    [req.user.id],
-    function(err) {
-      if (err) {
-        return res.status(500).json({ error: 'Failed to clear chat history' });
-      }
+app.delete('/api/chat/clear', authenticateToken, async (req, res) => {
+  try {
+    const { error } = await supabase
+      .from('chat_history')
+      .delete()
+      .eq('userId', req.user.id);
 
-      res.json({ message: 'Chat history cleared' });
+    if (error) {
+      return res.status(500).json({ error: 'Failed to clear chat history' });
     }
-  );
+
+    res.json({ message: 'Chat history cleared' });
+  } catch (error) {
+    console.error('Clear chat error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 // Start server
@@ -1033,4 +975,3 @@ app.listen(PORT, () => {
 });
 
 module.exports = app;
-
