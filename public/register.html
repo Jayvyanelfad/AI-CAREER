@@ -3,8 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Sign Up - CareerPath AI</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+
+  <script src="theme.js"></script>
+  <script src="i18n.js"></script>
+<title>Sign Up - CareerPath AI</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,600;1,400;1,500&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -17,7 +20,7 @@
   </button>
 
   <header>
-    <div class="logo"><i class="fas fa-robot"></i> AI Career Platform</div>
+    <div class="logo"><a href="index.html">CareerPath <em>AI</em></a></div>
     <nav>
       <a href="index.html">Home</a>
       <a href="courses.html">Career Courses</a>
@@ -28,7 +31,9 @@
     </nav>
   </header>
 
-  <main class="dashboard-container" style="max-width: 440px; margin: 0 auto; padding: var(--space-4); min-height: calc(100vh - 120px);">
+  <main class="dashboard-container auth-page-shell">
+    <aside class="auth-editorial-panel auth-editorial-panel--register" aria-hidden="true"></aside>
+    <div class="auth-editorial-copy"><p class="editorial-eyebrow">START WITH CURIOSITY</p><h2>Your next chapter starts here.</h2><p>Explore new paths and turn your interest in technology into practical momentum.</p></div>
     <div class="auth-box">
       <h1>Start Your AI Career Journey</h1>
       <div id="error-message" class="error-message" style="display:none;"></div>
@@ -44,34 +49,16 @@
           <input id="email" name="email" type="email" placeholder="you@example.com" required autocomplete="email" />
         </div>
 
-        <div class="form-group">
-          <label for="careerGoal">Career Goal</label>
-          <select id="careerGoal" name="careerGoal" required>
-            <option value="">Select your goal...</option>
-            <option value="ai_engineer">AI/ML Engineer</option>
-            <option value="data_scientist">Data Scientist</option>
-            <option value="web_developer">Web Developer</option>
-            <option value="product_manager">Product Manager</option>
-            <option value="cloud_engineer">Cloud Engineer</option>
-            <option value="cybersecurity">Cybersecurity</option>
-            <option value="undecided">Still exploring</option>
-          </select>
-        </div>
-
         <div class="form-group password-group">
           <label for="password">Password</label>
           <input id="password" name="password" type="password" placeholder="Create a strong password" required autocomplete="new-password" />
-          <button type="button" class="password-toggle" aria-label="Toggle password visibility">
-            <i class="fas fa-eye"></i>
-          </button>
+          <button type="button" class="password-toggle" aria-label="Show password" aria-pressed="false">Show</button>
         </div>
 
         <div class="form-group password-group">
           <label for="confirmPassword">Confirm Password</label>
           <input id="confirmPassword" name="confirmPassword" type="password" placeholder="Re-enter your password" required />
-          <button type="button" class="password-toggle" aria-label="Toggle confirm password visibility">
-            <i class="fas fa-eye"></i>
-          </button>
+          <button type="button" class="password-toggle" aria-label="Show confirm password" aria-pressed="false">Show</button>
         </div>
 
         <button type="submit" class="btn-primary" id="submit-btn">
@@ -82,7 +69,7 @@
 
       <div class="divider">or</div>
 
-      <button type="button" id="google-signin-btn" class="btn-primary" style="background:#fff; color:#333; border:1px solid #ddd; display:flex; align-items:center; justify-content:center; gap:10px;">
+      <button type="button" id="google-signin-btn" class="auth-google-button">
         <i class="fab fa-google"></i> Continue with Google
       </button>
       <div id="google-signin-message" style="text-align:center;margin-top:10px;"></div>
@@ -95,5 +82,6 @@
 
   <script src="supabase-config.js"></script>
   <script src="register.js"></script>
+  <script src="auth-navigation.js"></script>
 </body>
 </html>

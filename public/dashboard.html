@@ -3,47 +3,50 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Dashboard - CareerPath AI</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+
+  <script src="theme.js"></script>
+  <script src="i18n.js"></script>
+<title>Dashboard - CareerPath AI</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,600;1,400;1,500&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
-  <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">
+  <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode" style="width: 40px; height: 40px; border-radius: 50%; background-color: var(--bege_light); color: var(--green); display: flex; align-items: center; justify-content: center; font-size: 1.25rem; transition: var(--transition); margin-left: auto;">
     <i class="fas fa-moon moon-icon"></i>
     <i class="fas fa-sun sun-icon"></i>
   </button>
 
   <header>
-    <div class="logo"><i class="fas fa-robot"></i> AI Career Platform</div>
+    <div class="logo">
+      <a href="index.html" class="text-h6" style="font-size: 1.5rem; color: var(--bege_light);">
+        <em>CareerPath</em> AI
+      </a>
+    </div>
     <nav>
-      <a href="index.html">Home</a>
-      <a href="courses.html">Career Courses</a>
-      <a href="career-test.html">Career Test</a>
-      <a href="dashboard.html">Dashboard</a>
-      <a href="profile.html">Profile</a>
-      <button class="cta-button" onclick="logout()">Logout</button>
+      <a href="index.html" class="text-menu color-bege_light nav-item">Home</a>
+      <a href="courses.html" class="text-menu color-bege_light nav-item">Career Courses</a>
+      <a href="career-test.html" class="text-menu color-bege_light nav-item">Career Test</a>
+      <a href="dashboard.html" class="text-menu color-bege_light nav-item w--current">Dashboard</a>
+      <a href="profile.html" class="text-menu color-bege_light nav-item">Profile</a>
     </nav>
   </header>
 
-  <main class="dashboard-container" style="max-width: 1200px; margin: 0 auto; padding: var(--space-4);">
-    <div class="dashboard-header">
-      <div class="dashboard-title">
-        <h1><i class="fas fa-tachometer-alt"></i> Dashboard</h1>
-      </div>
-      <div class="quick-actions">
-        <button class="quick-action-btn" id="take-career-test-btn">Take Career Test</button>
-        <button class="quick-action-btn" id="explore-courses-btn">Explore Courses</button>
-        <button class="quick-action-btn" id="view-profile-btn">View Profile</button>
-      </div>
-    </div>
-
+  <main class="dashboard-section">
+    <div class="container">
     <!-- Greeting Section -->
     <section class="greeting-section">
-      <h2>Welcome back, <span id="user-name">Learner</span>! <span id="career-goal"></span></h2>
+      <p class="editorial-eyebrow">YOUR CAREER + LEARNING JOURNEY</p>
+      <h1>Welcome back, <span id="user-name">Learner</span>!</h1>
+      <p id="career-goal" class="dashboard-career-goal"></p>
       <p id="dashboard-message" style="color: var(--text-muted); margin-bottom: var(--space-4);"></p>
+      <div class="quick-actions" style="display: flex; gap: var(--space-4); margin-top: var(--space-6); flex-wrap: wrap;">
+        <button class="quick-action-btn component-button" id="take-career-test-btn">Take Career Test</button>
+        <button class="quick-action-btn component-button" id="explore-courses-btn">Explore Courses</button>
+        <button class="quick-action-btn component-button" id="view-profile-btn">View Profile</button>
+      </div>
     </section>
 
     <!-- Stats Cards -->
@@ -67,6 +70,13 @@
       </div>
     </section>
 
+    <section class="courses-section" id="certificates-section">
+      <h3><i class="fas fa-award"></i> My Certificates</h3>
+      <div id="certificates-grid" class="certificates-grid" aria-live="polite">
+        <p class="text-muted">Loading certificates...</p>
+      </div>
+    </section>
+
     <!-- Timeline Milestone -->
     <section class="timeline-section" id="timeline-section">
       <h3><i class="fas fa-road"></i> Your Journey</h3>
@@ -82,6 +92,7 @@
         <!-- Activity items will be populated here -->
       </div>
     </section>
+  </div>
   </main>
 
   <!-- Floating Chatbot Button -->
@@ -90,11 +101,11 @@
   </div>
 
   <footer>
-    <p>© 2025 AI Career Development Platform. All Rights Reserved.</p>
+    <p>© CareerPath AI · B.Tech Final Year Project</p>
   </footer>
 
   <script src="supabase-config.js"></script>
-  <script src="theme.js"></script>
   <script src="dashboard.js"></script>
+  <script src="auth-navigation.js"></script>
 </body>
 </html>

@@ -1,15 +1,40 @@
-# Environment variables
+# Local environment files (keep the empty template in Git)
 .env
+.env.*
+!.env.example
 
-# Node modules
-node_modules
-
-# Logs
+# Dependencies and generated package logs
+node_modules/
+npm-debug.log*
 *.log
 
-# Backup files
+# Local databases and backups
+*.db
+*.sqlite
+*.sqlite3
 *.backup
 
-# OS generated files
+# Local credentials and session artifacts
+token.txt
+auth_token.txt
+
+# Local review output and operating system files
+visual-review-output/
 .DS_Store
 Thumbs.db
+
+# Local cookies, private keys, authenticated responses, and visual review artifacts
+cookies.txt
+*.pem
+*.key
+frontend_login.json
+frontend_reg.json
+login_response.json
+reg_response.json
+register_response.json
+.visual-review.cjs
+.visual-review-focused.cjs
+final-mobile-*.png
+mobile-review-*.png
+review-*.png
+mock-*.png

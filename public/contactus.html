@@ -3,7 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Contact Us - CareerPath AI</title>
+
+  <script src="theme.js"></script>
+  <script src="i18n.js"></script>
+<title>Contact Us - CareerPath AI</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
@@ -92,10 +95,12 @@
   </main>
 
   <footer>
-    <p>© 2025 AI Career Development Platform. All Rights Reserved.</p>
+    <p>© CareerPath AI · B.Tech Final Year Project</p>
   </footer>
 
-  <script src="theme.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script src="auth-navigation.js"></script>
   <script>
     document.getElementById('contact-form').addEventListener('submit', function(e) {
       e.preventDefault();

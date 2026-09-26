@@ -1,0 +1,9 @@
+{
+  "nav": { "home": "Nyumbani", "careerTest": "Tathmini ya Kazi", "courses": "Kozi", "dashboard": "Dashibodi", "profile": "Wasifu", "login": "Ingia" },
+  "common": { "logout": "Ondoka", "back": "Rudi", "save": "Hifadhi mabadiliko", "cancel": "Ghairi", "edit": "Hariri wasifu", "continue": "Endelea", "next": "Inayofuata", "previous": "Iliyotangulia", "submit": "Tuma", "loading": "Inapakia…", "retry": "Jaribu tena" },
+  "settings": { "title": "Mipangilio", "theme": "Mandhari", "language": "Lugha", "system": "Mfumo", "dark": "Giza", "light": "Nuru" },
+  "auth": { "loginTitle": "Karibu tena", "registerTitle": "Fungua akaunti yako", "email": "Anwani ya barua pepe", "password": "Nenosiri", "confirmPassword": "Thibitisha nenosiri", "forgotPassword": "Umesahau nenosiri?", "signIn": "Ingia", "signUp": "Fungua akaunti", "google": "Endelea kwa Google", "checkEmail": "Angalia barua pepe yako ili uthibitishe akaunti kabla ya kuendelea.", "resetTitle": "Chagua nenosiri jipya", "resetSubmit": "Sasisha nenosiri" },
+  "profile": { "personal": "Taarifa binafsi", "careerProfile": "Wasifu wa kazi", "careerAlignment": "Ulinganifu wa kazi", "topDirections": "Mielekeo mikuu ya kazi", "learning": "Mafunzo yangu", "certificates": "Vyeti vya CareerPath", "uploadedCertificates": "Vyeti vilivyopakiwa", "account": "Akaunti", "retake": "Fanya tathmini tena", "noCertificates": "Kamilisha kozi ili kupata cheti chako cha kwanza cha CareerPath.", "noUploads": "Pakia hapa vyeti ulivyopata kwingine." },
+  "course": { "free": "Bure", "pro": "Pro", "progress": "Maendeleo ya kozi", "continueLearning": "Endelea kujifunza", "viewCourse": "Tazama kozi", "exploreAll": "Tazama kozi zote" },
+  "certificate": { "title": "Cheti cha Kukamilisha", "verify": "Uthibitishaji wa cheti", "verified": "Imethibitishwa", "notFound": "Cheti hakikupatikana.", "invalid": "Cheti hiki si halali.", "download": "Pakua cheti", "upload": "Pakia cheti cha nje", "uploaded": "Cheti kilichopakiwa" }
+}

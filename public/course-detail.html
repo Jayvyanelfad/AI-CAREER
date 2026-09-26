@@ -1,393 +1,174 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Course Details - CareerPath AI</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <script src="theme.js"></script>
+  <script src="i18n.js"></script>
+<title>Course Detail - CareerPath AI</title>
+    <meta name="description" content="Detailed view of a course with modules and lessons.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,600;1,400;1,500&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <style>
+        /* Inline fallback for any overrides */
+        .course-detail-container { max-width: 1200px; margin: 0 auto; padding: var(--space-6); }
+        .course-detail-header { text-align: left; margin-bottom: var(--space-6); }
+        .course-detail-image { width: 100%; height: 300px; object-fit: cover; border-radius: var(--radius-md); margin-bottom: var(--space-8); }
+        .course-detail-title { font-family: var(--font-display); font-size: clamp(2.5rem, 6vw, 3.5rem); font-weight: 100; color: var(--bege_light); margin-bottom: var(--space-4); }
+        .course-detail-description { color: var(--green_light); font-size: 1.125rem; line-height: 1.6; margin-bottom: var(--space-8); }
+        .course-detail-meta { display: flex; gap: var(--space-6); flex-wrap: wrap; justify-content: center; margin-bottom: var(--space-8); }
+        .course-detail-meta span { display: flex; align-items: center; gap: var(--space-2); font-size: 0.9rem; color: var(--text-muted); }
+        .course-detail-progress { margin: var(--space-4) 0; }
+        .progress-label { display: flex; justify-content: space-between; margin-bottom: var(--space-2); font-size: 0.9rem; color: var(--bege_light); }
+        .progress-bar { height: 8px; background: var(--border-light); border-radius: var(--radius-full); overflow: hidden; }
+        .progress-bar > div { height: 100%; background: linear-gradient(90deg, var(--green_light), var(--bege)); border-radius: var(--radius-full); transition: width 0.3s ease; }
+        .course-detail-modules { margin-top: var(--space-6); }
+        .module-title { font-family: var(--font-display); font-size: clamp(1.75rem, 4vw, 2.25rem); font-weight: 100; color: var(--bege_light); margin-bottom: var(--space-4); padding-top: var(--space-8); border-top: 1px solid var(--border-light); }
+        .lesson-item { display: flex; align-items: center; padding: var(--space-4); background: rgba(13, 43, 33, 0.4); border-radius: var(--radius-sm); margin-bottom: var(--space-2); cursor: pointer; transition: var(--transition); }
+        .lesson-item:hover { background: rgba(13, 43, 33, 0.6); }
+        .lesson-item.completed { opacity: 0.7; }
+        .lesson-item.completed .lesson-text { text-decoration: line-through; }
+        .lesson-number { flex: 0 0 40px; font-size: 0.9rem; color: var(--green_light); }
+        .lesson-text { flex: 1; font-size: 1rem; color: var(--bege_light); }
+        .lesson-status { flex: 0 0 30px; text-align: right; font-size: 0.8rem; }
+        .lesson-status.completed { color: var(--success); }
+        .lesson-status.incomplete { color: var(--danger); }
+        .lesson-content-area { margin-top: var(--space-8); padding: var(--space-6); background: rgba(13, 43, 33, 0.3); border-radius: var(--radius-md); border: 1px solid var(--border-light); }
+        .lesson-content-title { font-family: var(--font-display); font-size: clamp(1.5rem, 4vw, 2rem); font-weight: 100; color: var(--bege_light); margin-bottom: var(--space-4); }
+        .lesson-content-module { color: var(--green_light); font-size: 0.9rem; margin-bottom: var(--space-2); }
+        .lesson-content-text { line-height: 1.7; color: var(--bege_light); }
+        .lesson-actions { display: flex; gap: var(--space-4); margin-top: var(--space-6); flex-wrap: wrap; }
+        .btn-lesson { flex: 1; min-width: 120px; }
+        .btn-lesson:disabled { opacity: 0.5; cursor: not-allowed; }
+        .empty-state { text-align: center; padding: var(--space-24); color: var(--text-muted); }
+        .empty-state-icon { font-size: 4rem; margin-bottom: var(--space-8); opacity: 0.5; }
+        @media (max-width: 768px) {
+            .course-detail-image { height: 200px; }
+            .course-detail-title { font-size: clamp(2rem, 5vw, 2.5rem); }
+        }
+    </style>
 </head>
 <body>
-
-  <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">
-    <i class="fas fa-moon moon-icon"></i>
-    <i class="fas fa-sun sun-icon"></i>
-  </button>
-
-  <header>
-    <div class="logo"><i class="fas fa-robot"></i> AI Career Platform</div>
-    <nav>
-      <a href="index.html">Home</a>
-      <a href="courses.html">Career Courses</a>
-      <a href="career-test.html">Career Test</a>
-      <a href="dashboard.html">Dashboard</a>
-      <a href="profile.html">Profile</a>
-      <button class="cta-button" onclick="logout()">Logout</button>
-    </nav>
-  </header>
-
-  <main class="dashboard-container" style="max-width: 1000px; margin: 0 auto; padding: var(--space-4);">
-    <section class="dashboard-card">
-      <div class="dashboard-header" style="margin-bottom: var(--space-6);">
-        <h1><i class="fas fa-book"></i> Course Details</h1>
-        <p id="course-title" class="text-h2 color-bege_light">Loading course...</p>
-      </div>
-
-      <!-- Course Content -->
-      <div id="course-content">
-        <div class="course-info-grid">
-          <div class="course-image-container">
-            <img id="course-image" src="" alt="Course image" class="course-image">
-            <div id="course-badge" class="course-overlay">Beginner</div>
-          </div>
-
-          <div classourse-details">
-            <h3 id="course-title-detail"></h3>
-            <div class="course-meta" id="course-meta">
-              <!-- Duration and level will be populated here -->
+    <!-- ===== NAVIGATION ===== -->
+    <div class="nav-wrapper-absolute">
+        <div class="navbar">
+            <div class="container">
+                <div class="nav-wrapper">
+                    <a href="index.html" aria-current="page" class="w--current">
+                        <span class="text-h6" style="font-size: 1.5rem; color: var(--bege_light);">
+                            <em>CareerPath</em> AI
+                        </span>
+                    </a>
+                    <div class="div-block-2" style="display: flex; gap: 4px; align-items: center;">
+                        <a href="index.html" class="text-menu color-bege_light nav-item w--current">Home</a>
+                        <a href="career-test.html" class="text-menu color-bege_light nav-item">Career Test</a>
+                        <a href="courses.html" class="text-menu color-bege_light nav-item">Courses</a>
+                        <a href="dashboard.html" class="text-menu color-bege_light nav-item">Dashboard</a>
+                        <a href="index.html#about" class="text-menu color-bege_light nav-item">About</a>
+                    </div>
+                    <div class="menu-button w-nav-button">
+                        <i class="fas fa-bars" style="color: var(--bege_light); font-size: 1.25rem;"></i>
+                    </div>
+                    <a href="login.html" class="header-book-link-buttom">
+                        <div class="text-button">Login</div>
+                        <i class="fas fa-arrow-right" style="font-size: 0.8rem;"></i>
+                    </a>
+                </div>
             </div>
-            <p id="course-description" class="text-body_small color-white"></p>
-          </div>
         </div>
+    </div>
+    <!-- ===== COURSE DETAIL CONTENT ===== -->
+    <section class="section">
+        <div class="course-detail-container container">
+            <!-- Back to Courses -->
+            <div style="margin-bottom: var(--space-4);">
+                <a href="courses.html" class="text-button" style="color: var(--bege_light);">&laquo; Back to Courses</a>
+            </div>
 
-        <!-- Course Outline -->
-        <div class="course-outline">
-          <h3><i class="fas fa-list"></i> Course Outline</h3>
-          <div id="course-outline-content">
-            <!-- Modules and lessons will be populated here -->
-          </div>
-        </div>
+            <!-- Course Header -->
+            <div class="course-detail-header" id="course-header">
+                <!-- Loading placeholder -->
+                <div class="empty-state">
+                    <div class="empty-state-icon"><i class="fas fa-spinner fa-spin"></i></div>
+                    <p>Loading course...</p>
+                </div>
+            </div>
 
-        <!-- Enrollment Controls -->
-        <div id="course-actions" style="margin-top: var(--space-6); text-align: center;">
-          <button id="enroll-btn" class="component-button">Enroll in Course</button>
-          <button id="start-learning-btn" class="component-button" style="display: none;">Start Learning</button>
-          <button id="continue-learning-btn" class="component-button" style="display: none;">Continue Learning</button>
+            <!-- Progress -->
+            <div class="course-detail-progress" id="course-progress">
+                <div class="progress-label">
+                    <span>Progress</span>
+                    <span id="progress-percent">0%</span>
+                </div>
+                <div class="progress-bar"><div id="progress-fill" style="width: 0%"></div></div>
+            </div>
+
+            <!-- Exam Button (if applicable) -->
+            <div id="exam-button-container"></div>
+
+            <!-- Modules List -->
+            <div class="course-detail-modules" id="course-modules">
+                <!-- Modules will be inserted here -->
+            </div>
+
+            <button type="button" class="component-button hidden" id="btn-back-to-curriculum" aria-label="Back to course curriculum">
+                &larr; Back to Curriculum
+            </button>
+
+            <!-- Lesson Content Area -->
+            <div class="lesson-content-area hidden" id="lesson-content">
+                <div class="empty-state">
+                    <div class="empty-state-icon"><i class="fas fa-book-open"></i></div>
+                    <p>Select a lesson to view its content.</p>
+                </div>
+            </div>
+
+            <!-- Lesson Navigation & Actions -->
+            <div class="lesson-actions hidden" id="lesson-actions">
+                <button id="btn-prev-lesson" class="btn-lesson component-button">Previous Lesson</button>
+                <button id="btn-mark-complete" class="btn-lesson component-button">Mark as Complete</button>
+                <button id="btn-next-lesson" class="btn-lesson component-button">Next Lesson</button>
+            </div>
         </div>
-      </div>
     </section>
-  </main>
 
-  <!-- Floating Chatbot Button -->
-  <div class="floating-chatbot" id="floating-chatbot" title="Chat with CareerPath AI">
-    <i class="fas fa-robot"></i>
-  </div>
-
-  <footer>
-    <p>© 2025 AI Career Development Platform. All Rights Reserved.</p>
-  </footer>
-
-  <script src="supabase-config.js"></script>
-  <script src="theme.js"></script>
-  <script>
-    // Get course ID from URL parameters
-    const urlParams = new URLSearchParams(window.location.search);
-    const courseId = urlParams.get('id');
-    const token = localStorage.getItem('token');
-
-    // Course data mapping (matches the data in courses.js)
-    const coursesData = {
-      "python_for_careers": {
-        title: "Python for Tech Careers",
-        description: "Master Python fundamentals — variables, loops, functions, OOP, and libraries like NumPy & Pandas. The perfect starting point for any tech career path.",
-        image: "https://images.unsplash.com/photo-1526379095098-d400fd0bf935?w=600&q=80",
-        badge: "Beginner",
-        weeks: 4,
-        level: "Beginner",
-        outline: [
-          { title: "Introduction to Python", lessons: ["What is Python?", "Setting up Environment", "First Python Program"] },
-          { title: "Variables and Data Types", lessons: ["Numbers and Strings", "Boolean and None", "Type Conversion"] },
-          { title: "Control Flow", lessons: ["Conditional Statements", "Loops", "Loop Control Statements"] },
-          { title: "Functions", lessons: ["Function Definition", "Parameters and Arguments", "Return Values", "Scope"] },
-          { title: "Data Structures", lessons: ["Lists", "Tuples", "Dictionaries", "Sets"] },
-          { title: "Object-Oriented Programming", lessons: ["Classes and Objects", "Inheritance", "Polymorphism", "Encapsulation"] },
-          { title: "Working with Libraries", lessons: ["NumPy Basics", "Pandas Introduction", "Matplotlib Basics"] },
-          { title: "File Handling and Error Management", lessons: ["Reading/Writing Files", "Exception Handling", "Best Practices"] }
-        ]
-      },
-      "data_structures_algorithms": {
-        title: "Data Structures & Algorithms",
-        description: "Arrays, linked lists, trees, graphs, sorting, and searching. The foundation for cracking technical interviews at top companies.",
-        image: "https://images.unsplash.com/photo-1516116216624-53e697fedbea?w=600&q=80",
-        badge: "Essential",
-        weeks: 6,
-        level: "Intermediate",
-        outline: [
-          { title: "Introduction to Algorithms", lessons: ["What is an Algorithm?", "Complexity Analysis", "Big O Notation"] },
-          { title: "Arrays and Strings", lessons: ["Array Operations", "String Manipulation", "Two Pointers Technique"] },
-          { title: "Linked Lists", lessons: ["Singly Linked List", "Doubly Linked List", "Circular Linked List"] },
-          { title: "Stacks and Queues", lessons: ["Stack Implementation", "Queue Implementation", "Applications"] },
-          { title: "Trees", lessons: ["Binary Trees", "Binary Search Trees", "Tree Traversal"] },
-          { title: "Graphs", lessons: ["Graph Representation", "Breadth-First Search", "Depth-First Search"] },
-          { title: "Sorting Algorithms", lessons: ["Bubble Sort", "Selection Sort", "Insertion Sort", "Merge Sort", "Quick Sort"] },
-          { title: "Searching Algorithms", lessons: ["Linear Search", "Binary Search", "Hash Tables"] }
-        ]
-      },
-      "data_analytics_basics": {
-        title: "Data Analytics Basics",
-        description: "Learn SQL, data cleaning, visualization with Python, and statistical analysis.",
-        image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&q=80",
-        badge: "Trending",
-        weeks: 3,
-        level: "Beginner",
-        outline: [
-          { title: "Introduction to Data Analytics", lessons: ["What is Data Analytics?", "Data Types", "Data Lifecycle"] },
-          { title: "SQL Fundamentals", lessons: ["SELECT Statements", "WHERE Clause", "JOINs", "Aggregation"] },
-          { title: "Data Cleaning and Preparation", lessons: ["Handling Missing Values", "Data Transformation", "Data Integration"] },
-          { title: "Data Visualization", lessons: ["Charts and Graphs", "Matplotlib", "Seaborn", "Plotly"] },
-          { title: "Statistical Analysis", lessons: ["Descriptive Statistics", "Inferential Statistics", "Hypothesis Testing"] },
-          { title: "Capstone Project", lessons: ["Project Planning", "Data Collection", "Analysis and Reporting"] }
-        ]
-      },
-      "web_dev": {
-        title: "Web Development Fundamentals",
-        description: "HTML, CSS, JavaScript, and responsive design. Build your first portfolio website.",
-        image: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=600&q=80",
-        badge: "Popular",
-        weeks: 5,
-        level: "Beginner",
-        outline: [
-          { title: "HTML5 Basics", lessons: ["HTML Structure", "Text Formatting", "Links and Images", "Lists and Tables"] },
-          { title: "CSS3 Styling", lessons: ["CSS Selectors", "Box Model", "Layout Techniques", "Responsive Design"] },
-          { title: "JavaScript Essentials", lessons: ["Variables and Data Types", "Control Flow", "Functions", "DOM Manipulation"] },
-          { title: "Frontend Frameworks", lessons: ["Introduction to Frameworks", "Component-Based Architecture", "State Management"] },
-          { title: "Backend Development", lessons: ["Introduction to Backend", "REST APIs", "Database Integration"] },
-          { title: "Full Stack Project", lessons: ["Project Planning", "Development", "Testing and Deployment"] }
-        ]
-      }
-    };
-
-    // Initialize page when DOM is loaded
-    document.addEventListener("DOMContentLoaded", function() {
-      loadCourseDetails();
-      setupEventListeners();
-    });
-
-    function loadCourseDetails() {
-      if (!courseId) {
-        window.location.href = 'courses.html';
-        return;
-      }
-
-      const course = coursesData[courseId];
-      if (!course) {
-        window.location.href = 'courses.html';
-        return;
-      }
-
-      // Set course information
-      document.getElementById('course-title').textContent = course.title;
-      document.getElementById('course-title-detail').textContent = course.title;
-      document.getElementById('course-image').src = course.image;
-      document.getElementById('course-badge').textContent = course.badge;
-      document.getElementById('course-description').textContent = course.description;
-      document.getElementById('course-meta').innerHTML = `
-        <span><i class="fas fa-clock"></i> ${course.weeks} weeks</span>
-        <span><i class="fas fa-signal"></i> ${course.level}</span>
-      `;
-
-      // Populate course outline
-      const outlineContainer = document.getElementById('course-outline-content');
-      outlineContainer.innerHTML = course.outline.map((module, index) => `
-        <div class="course-module">
-          <h4>${module.title}</h4>
-          <ul class="course-lessons">
-            ${module.lessons.map(lesson => `<li>${lesson}</li>`).join('')}
-          </ul>
+    <!-- ===== FOOTER ===== -->
+    <div class="container footer-wrapper" style="padding-top: var(--space-16);">
+        <div style="text-align: center; margin-bottom: var(--space-8);">
+            <span class="text-h2" style="font-size: clamp(3rem, 8vw, 6rem); opacity: 0.15; color: var(--bege_light); letter-spacing: 0.2em;">CAREERPATH</span>
         </div>
-      `).join('');
+        <footer class="footer-content">
+            <div class="footer-block">
+                <span class="text-footer color-bege_light" style="display: block; opacity: 0.6;">B.Tech Final Year Project</span>
+            </div>
+            <div class="footer-block" style="text-align: center;">
+                <div class="text-footer color-bege_light" style="opacity: 0.7;">© CareerPath AI</div>
+            </div>
+            <div class="footer-block" style="text-align: right;">
+                <span class="text-footer color-bege_light" style="opacity: 0.6;">Symbiosis Institute of Technology, Pune</span>
+            </div>
+        </footer>
+    </div>
 
-      // Check enrollment status if user is logged in
-      if (token) {
-        checkEnrollmentStatus(courseId);
-      }
-    }
+    <!-- ===== SCRIPTS ===== -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="auth-navigation.js"></script>
+    <script src="courses.js"></script>
+    <script src="course-detail.js"></script>
+    <script>
 
-    function checkEnrollmentStatus(courseId) {
-      fetch(`/api/enrollments`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
-      .then(response => response.json())
-      .then(enrollments => {
-        const enrollment = enrollments.find(e => e.courseName === coursesData[courseId].title);
-        const enrollBtn = document.getElementById('enroll-btn');
-        const startLearningBtn = document.getElementById('start-learning-btn');
-        const continueLearningBtn = document.getElementById('continue-learning-btn');
-
-        if (enrollment) {
-          // User is enrolled
-          enrollBtn.style.display = 'none';
-          if (enrollment.progress < 100) {
-            continueLearningBtn.style.display = 'inline-block';
-            continueLearningBtn.onclick = () => {
-              window.location.href = `course-player.html?courseId=${courseId}&enrollmentId=${enrollment.id}`;
-            };
-          } else {
-            // Course completed
-            startLearningBtn.textContent = 'Retake Course';
-            startLearningBtn.style.display = 'inline-block';
-            startLearningBtn.onclick = () => {
-              if (confirm('Retaking this course will reset your progress. Continue?')) {
-                resetCourseProgress(enrollment.id);
-              }
-            };
-          }
-        } else {
-          // User is not enrolled
-          enrollBtn.style.display = 'inline-block';
-          startLearningBtn.style.display = 'none';
-          continueLearningBtn.style.display = 'none';
-          enrollBtn.onclick = () => enrollInCourse(courseId);
-        }
-      })
-      .catch(error => {
-        console.error('Error checking enrollment status:', error);
-        // Show enroll button by default on error
-        document.getElementById('enroll-btn').style.display = 'inline-block';
-      });
-    }
-
-    function enrollInCourse(courseId) {
-      if (!token) {
-        window.location.href = 'login.html';
-        return;
-      }
-
-      const course = coursesData[courseId];
-
-      fetch('/api/enroll', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ course: course.title })
-      })
-      .then(response => response.json())
-      .then(data => {
-        if (data.success) {
-          // Redirect to course player or show success message
-          window.location.href = `course-player.html?courseId=${courseId}&enrollmentId=${data.enrollmentId}`;
-        } else {
-          alert('Enrollment failed: ' + (data.error || 'Unknown error'));
-        }
-      })
-      .catch(error => {
-        console.error('Error enrolling in course:', error);
-        alert('Enrollment failed. Please try again.');
-      });
-    }
-
-    function resetCourseProgress(enrollmentId) {
-      if (!token) return;
-
-      fetch('/api/progress', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ course: coursesData[courseId].title, progress: 0 })
-      })
-      .then(response => response.json())
-      .then(data => {
-        if (data.success) {
-          window.location.reload();
-        } else {
-          alert('Failed to reset progress: ' + (data.error || 'Unknown error'));
-        }
-      })
-      .catch(error => {
-        console.error('Error resetting progress:', error);
-        alert('Failed to reset progress. Please try again.');
-      });
-    }
-
-    function setupEventListeners() {
-      // Quick action button event listeners from dashboard.js pattern
-      const takeCareerTestBtn = document.getElementById('take-career-test-btn');
-      if (takeCareerTestBtn) {
-        takeCareerTestBtn.addEventListener('click', () => {
-          window.location.href = 'career-test.html';
-        });
-      }
-
-      const exploreCoursesBtn = document.getElementById('explore-courses-btn');
-      if (exploreCoursesBtn) {
-        exploreCoursesBtn.addEventListener('click', () => {
-          window.location.href = 'courses.html';
-        });
-      }
-
-      const viewProfileBtn = document.getElementById('view-profile-btn');
-      if (viewProfileBtn) {
-        viewProfileBtn.addEventListener('click', () => {
-          window.location.href = 'profile.html';
-        });
-      }
-
-      // Floating chatbot button
-      const floatingChatbot = document.getElementById('floating-chatbot');
-      if (floatingChatbot) {
-        floatingChatbot.addEventListener('click', () => {
-          window.location.href = 'ai-chat.html';
-        });
-      }
-
-      // Logout function
-      window.logout = async function() {
-        try {
-          const supabase = window.supabase || {};
-          if (supabase.auth && typeof supabase.auth.signOut === 'function') {
-            await supabase.auth.signOut();
-          }
-        } catch (e) {
-          console.error(e);
-        }
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        window.location.href = 'index.html';
-      };
-    }
-
-    // Theme toggle functionality (copied from theme.js pattern)
-    const themeToggle = document.getElementById('theme-toggle');
-    if (themeToggle) {
-      themeToggle.addEventListener('click', () => {
-        document.documentElement.classList.toggle('dark');
-        const isDark = document.documentElement.classList.contains('dark');
-        localStorage.setItem('theme', isDark ? 'dark' : 'light');
-        updateThemeIcons(isDark);
-      });
-    }
-
-    // Initialize theme on load
-    function initTheme() {
-      const savedTheme = localStorage.getItem('theme') || 'light';
-      if (savedTheme === 'dark') {
-        document.documentElement.classList.add('dark');
-      }
-      updateThemeIcons(savedTheme === 'dark');
-    }
-
-    function updateThemeIcons(isDark) {
-      const moonIcon = document.querySelector('.moon-icon');
-      const sunIcon = document.querySelector('.sun-icon');
-      if (moonIcon && sunIcon) {
-        if (isDark) {
-          moonIcon.style.display = 'none';
-          sunIcon.style.display = 'block';
-        } else {
-          moonIcon.style.display = 'block';
-          sunIcon.style.display = 'none';
-        }
-      }
-    }
-
-    // Initialize theme when DOM loads
-    document.addEventListener('DOMContentLoaded', initTheme);
-  </script>
+        const observerOptions = { threshold: 0.1, rootMargin: '0px 0px -50px 0px' };
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) entry.target.classList.add('visible');
+            });
+        }, observerOptions);
+        document.querySelectorAll('.animate-on-scroll').forEach(el => observer.observe(el));
+    </script>
 </body>
 </html>

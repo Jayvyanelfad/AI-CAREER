@@ -1,5 +1,5 @@
-// Get base API URL
-const API_BASE = `${window.location.protocol}//${window.location.hostname}:5000`;
+// Use shared API base from supabase-config.js
+const API_BASE = window.API_BASE || '/api';
 
 window.addEventListener("error", (e) => {
     console.error("���������🔥 Global JS Error:", e.message, "at", e.filename, ":", e.lineno);
@@ -12,30 +12,19 @@ async function handleGoogleSignIn() {
     message.style.color = 'var(--primary)';
 
     try {
-        const { data, error } = await supabase.auth.signInWithOAuth({
-            provider: 'google'
+        const { error } = await supabase.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+                redirectTo: `${window.location.origin}/auth-callback.html`
+            }
         });
 
         if (error) throw error;
-
-        // Supabase handles redirect and session automatically
-        // But we can also handle it manually if needed:
-        const { data: { session } } = data;
-        if (session) {
-            localStorage.setItem('token', session.access_token);
-
-            // Get user data from our backend
-            const res = await fetch(`${API_BASE}/api/auth/me`, {
-                headers: { Authorization: `Bearer ${session.access_token}` }
-            });
-            const user = await res.json();
-            localStorage.setItem('user', JSON.stringify(user));
-
-            setTimeout(() => window.location.href = 'career-test.html', 800);
-        }
+        // The method will redirect to Google and then back to auth-callback.html
+        // No need to handle session here.
     } catch (err) {
         console.error('Google Sign-In Error:', err);
-        message.textContent = `Sign-in failed: ${err.message}`;
+        message.textContent = 'Google sign-in could not be started. Please try again.';
         message.style.color = 'var(--danger)';
     }
 }
@@ -57,16 +46,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const name = document.getElementById("name").value.trim();
         const email = document.getElementById("email").value.trim();
-        const careerGoal = document.getElementById("careerGoal").value;
+        const emailInput = document.getElementById("email");
         const password = document.getElementById("password").value;
         const confirmPassword = document.getElementById("confirmPassword").value;
 
-        if (!name || !email || !password || !careerGoal) {
-            return showError("������⚠������️ Please fill in all fields.");
+        if (!name || !email || !password || !confirmPassword) {
+            return showError("Please fill in all fields.");
+        }
+
+        if (!emailInput.checkValidity()) {
+            return showError("Enter a valid email address.");
         }
 
         if (password !== confirmPassword) {
-            return showError("������⚠������️ Passwords do not match.");
+            return showError("Passwords do not match.");
         }
 
         if (password.length < 6) {
@@ -74,18 +67,47 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         try {
-            const res = await fetch(`${API_BASE}/api/auth/register`, {
+            const res = await fetch(`${API_BASE}/auth/register`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ name, email, password, careerGoal }),
+                body: JSON.stringify({ name, email, password }),
             });
 
-            const data = await res.json();
+            const text = await res.text();
+            let data;
+            try {
+                data = text ? JSON.parse(text) : {};
+            } catch (e) {
+                data = {};
+            }
 
-            if (!res.ok) throw new Error(data.error || "Registration failed");
+            if (!res.ok) {
+                const detail = `${data.error || ''} ${text || ''}`.toLowerCase();
+                if (res.status === 409 || /already registered|already exists|duplicate/.test(detail)) {
+                    throw new Error('An account may already exist for this email. Try signing in instead.');
+                }
+                if (/password/.test(detail)) throw new Error('Choose a stronger password and try again.');
+                if (/email/.test(detail)) throw new Error('Check the email address and try again.');
+                throw new Error('We could not create your account. Please try again.');
+            }
 
-            localStorage.setItem("token", data.token);
-            localStorage.setItem("user", JSON.stringify(data.user));
+            if (!data.token || !data.refresh_token) {
+                localStorage.removeItem("token");
+                localStorage.removeItem("user");
+                errorElement.textContent = "Check your email to confirm your account before continuing.";
+                errorElement.style.color = 'var(--primary)';
+                errorElement.style.display = 'block';
+                return;
+            }
+
+            const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
+                access_token: data.token,
+                refresh_token: data.refresh_token
+            });
+            if (sessionError) throw sessionError;
+            if (!sessionData || !sessionData.session) throw new Error("Could not establish the new account session.");
+            localStorage.setItem("token", sessionData.session.access_token);
+            localStorage.setItem("user", JSON.stringify(data.user || sessionData.session.user));
 
             // Redirect to career test for personalized roadmap
             window.location.href = "career-test.html";
@@ -103,16 +125,18 @@ document.addEventListener("DOMContentLoaded", () => {
         toggle.addEventListener("click", (e) => {
             e.preventDefault();
             const input = toggle.previousElementSibling;
-            const icon = toggle.querySelector("i");
             const isVisible = input.type === "text";
+            const fieldName = input.id === "confirmPassword" ? "confirm password" : "password";
             input.type = isVisible ? "password" : "text";
-            icon.classList.toggle("fa-eye");
-            icon.classList.toggle("fa-eye-slash");
+            toggle.textContent = isVisible ? "Show" : "Hide";
+            toggle.setAttribute("aria-pressed", String(!isVisible));
+            toggle.setAttribute("aria-label", `${isVisible ? "Show" : "Hide"} ${fieldName}`);
         });
     });
 
     function showError(message) {
         errorElement.textContent = message;
+        errorElement.style.color = 'var(--danger)';
         errorElement.style.display = "block";
         submitBtn.disabled = false;
         document.querySelector(".btn-text").classList.remove("hidden");

@@ -1,0 +1,9 @@
+{
+  "nav": { "home": "Home", "careerTest": "Career Test", "courses": "Courses", "dashboard": "Dashboard", "profile": "Profile", "login": "Login" },
+  "common": { "logout": "Logout", "back": "Back", "save": "Save Changes", "cancel": "Cancel", "edit": "Edit Profile", "continue": "Continue", "next": "Next", "previous": "Previous", "submit": "Submit", "loading": "Loading…", "retry": "Try again" },
+  "settings": { "title": "Settings", "theme": "Theme", "language": "Language", "system": "System", "dark": "Dark", "light": "Light" },
+  "auth": { "loginTitle": "Welcome Back", "registerTitle": "Create your account", "email": "Email Address", "password": "Password", "confirmPassword": "Confirm Password", "forgotPassword": "Forgot password?", "signIn": "Log In", "signUp": "Create Account", "google": "Continue with Google", "checkEmail": "Check your email to confirm your account before continuing.", "resetTitle": "Choose a new password", "resetSubmit": "Update password" },
+  "profile": { "personal": "Personal", "careerProfile": "Career Profile", "careerAlignment": "Career Alignment", "topDirections": "Top Career Directions", "learning": "My Learning", "certificates": "CareerPath Certificates", "uploadedCertificates": "Uploaded Certificates", "account": "Account", "retake": "Retake Assessment", "noCertificates": "Complete a course to earn your first CareerPath certificate.", "noUploads": "Upload certificates you've earned elsewhere to keep them in one place." },
+  "course": { "free": "Free", "pro": "Pro", "progress": "Course Progress", "continueLearning": "Continue Learning", "viewCourse": "View course", "exploreAll": "Explore all courses" },
+  "certificate": { "title": "Certificate of Completion", "verify": "Certificate Verification", "verified": "Verified", "notFound": "Certificate not found.", "invalid": "Certificate is not valid.", "download": "Download Certificate", "upload": "Upload External Certificate", "uploaded": "Uploaded Certificate" }
+}

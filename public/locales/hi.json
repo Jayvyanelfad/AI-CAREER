@@ -1,0 +1,9 @@
+{
+  "nav": { "home": "होम", "careerTest": "करियर टेस्ट", "courses": "कोर्स", "dashboard": "डैशबोर्ड", "profile": "प्रोफ़ाइल", "login": "लॉग इन" },
+  "common": { "logout": "लॉग आउट", "back": "वापस", "save": "बदलाव सहेजें", "cancel": "रद्द करें", "edit": "प्रोफ़ाइल संपादित करें", "continue": "जारी रखें", "next": "अगला", "previous": "पिछला", "submit": "जमा करें", "loading": "लोड हो रहा है…", "retry": "फिर कोशिश करें" },
+  "settings": { "title": "सेटिंग्स", "theme": "थीम", "language": "भाषा", "system": "सिस्टम", "dark": "डार्क", "light": "लाइट" },
+  "auth": { "loginTitle": "वापसी पर स्वागत है", "registerTitle": "अपना खाता बनाएँ", "email": "ईमेल पता", "password": "पासवर्ड", "confirmPassword": "पासवर्ड की पुष्टि करें", "forgotPassword": "पासवर्ड भूल गए?", "signIn": "लॉग इन", "signUp": "खाता बनाएँ", "google": "Google से जारी रखें", "checkEmail": "आगे बढ़ने से पहले अपना खाता पुष्टि करने के लिए ईमेल देखें।", "resetTitle": "नया पासवर्ड चुनें", "resetSubmit": "पासवर्ड अपडेट करें" },
+  "profile": { "personal": "व्यक्तिगत जानकारी", "careerProfile": "करियर प्रोफ़ाइल", "careerAlignment": "करियर मेल", "topDirections": "शीर्ष करियर दिशाएँ", "learning": "मेरी पढ़ाई", "certificates": "CareerPath प्रमाणपत्र", "uploadedCertificates": "अपलोड किए प्रमाणपत्र", "account": "खाता", "retake": "आकलन फिर से दें", "noCertificates": "अपना पहला CareerPath प्रमाणपत्र पाने के लिए कोई कोर्स पूरा करें।", "noUploads": "दूसरी जगह से मिले प्रमाणपत्र यहाँ अपलोड करें।" },
+  "course": { "free": "मुफ़्त", "pro": "प्रो", "progress": "कोर्स प्रगति", "continueLearning": "सीखना जारी रखें", "viewCourse": "कोर्स देखें", "exploreAll": "सभी कोर्स देखें" },
+  "certificate": { "title": "पूरा करने का प्रमाणपत्र", "verify": "प्रमाणपत्र सत्यापन", "verified": "सत्यापित", "notFound": "प्रमाणपत्र नहीं मिला।", "invalid": "प्रमाणपत्र मान्य नहीं है।", "download": "प्रमाणपत्र डाउनलोड करें", "upload": "बाहरी प्रमाणपत्र अपलोड करें", "uploaded": "अपलोड किया गया प्रमाणपत्र" }
+}

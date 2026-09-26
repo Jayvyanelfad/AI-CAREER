@@ -3,8 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Log In - CareerPath AI</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+
+  <script src="theme.js"></script>
+  <script src="i18n.js"></script>
+<title>Log In - CareerPath AI</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,600;1,400;1,500&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -17,18 +20,22 @@
   </button>
 
   <header>
-    <div class="logo"><i class="fas fa-robot"></i> AI Career Platform</div>
+    <div class="logo"><a href="index.html">CareerPath <em>AI</em></a></div>
     <nav>
       <a href="index.html">Home</a>
       <a href="courses.html">Career Courses</a>
       <a href="career-test.html">Career Test</a>
       <a href="dashboard.html">Dashboard</a>
       <a href="contactus.html">Contact</a>
+
+
       <button class="cta-button" onclick="location.href='register.html'">Get Started</button>
     </nav>
   </header>
 
-  <main class="dashboard-container" style="max-width: 440px; margin: 0 auto; padding: var(--space-4); min-height: calc(100vh - 120px);">
+  <main class="dashboard-container auth-page-shell">
+    <aside class="auth-editorial-panel" aria-hidden="true"></aside>
+    <div class="auth-editorial-copy"><p class="editorial-eyebrow">A NEW CHAPTER</p><h2>Make room for what comes next.</h2><p>Build the skills, confidence, and direction to shape your future in technology.</p></div>
     <div class="auth-box">
       <h1>Welcome Back</h1>
       <div id="error-message" class="error-message" style="display:none;"></div>
@@ -36,13 +43,13 @@
       <form id="login-form" novalidate>
         <div class="form-group">
           <label for="email">Email Address</label>
-          <input type="email" id="email" placeholder="you@example.com" required />
+          <input type="email" id="email" placeholder="you@example.com" required autocomplete="email" />
         </div>
 
         <div class="form-group password-group">
           <label for="password">Password</label>
-          <input type="password" id="password" placeholder="Enter your password" required />
-          <span class="password-toggle"><i class="fas fa-eye"></i></span>
+          <input type="password" id="password" placeholder="Enter your password" required autocomplete="current-password" />
+          <button type="button" class="password-toggle" aria-label="Show password" aria-pressed="false">Show</button>
         </div>
 
         <button type="submit" class="btn-primary" id="submit-btn">
@@ -51,9 +58,14 @@
         </button>
       </form>
 
+      <div class="auth-reset-row">
+        <button type="button" id="forgot-password-btn" class="text-link-button">Forgot password?</button>
+        <p id="auth-reset-message" role="status" aria-live="polite" hidden></p>
+      </div>
+
       <div class="divider">or</div>
 
-      <button type="button" id="google-signin-btn" class="btn-primary" style="background:#fff; color:#333; border:1px solid #ddd; display:flex; align-items:center; justify-content:center; gap:10px;">
+      <button type="button" id="google-signin-btn" class="auth-google-button">
         <i class="fab fa-google"></i> Continue with Google
       </button>
       <div id="google-signin-message" style="text-align: center; color: var(--text-muted); font-size: 0.9rem; margin-top: var(--space-2);"></div>
@@ -64,5 +76,6 @@
 
   <script src="supabase-config.js"></script>
   <script src="login.js"></script>
+  <script src="auth-navigation.js"></script>
 </body>
 </html>

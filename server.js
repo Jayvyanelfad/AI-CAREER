@@ -5,12 +5,15 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const { createClient } = require('@supabase/supabase-js');
 const { GoogleGenAI } = require('@google/genai');
+const { randomInt } = require('crypto');
+const courseCatalogConfig = require('./course-catalog-config.json');
 
 // Load environment variables
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+const HOST = '0.0.0.0';
 
 // Middleware
 app.use(cors());
@@ -21,9 +24,230 @@ app.use(express.static("public"));
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
+const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
+
+// Keep Auth API state separate from the service-role database client. Supabase
+// auth methods maintain a current session in their client; that must never
+// replace the service-role Authorization used for database reads and writes.
+function createAuthClient() {
+  return createClient(supabaseUrl, supabaseAnonKey, {
+    auth: { persistSession: false, autoRefreshToken: false }
+  });
+}
 
 // Gemini AI setup
 const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+
+// ---- Shared helpers -------------------------------------------------------
+// The database is authoritative and uses snake_case columns. The frontend
+// expects camelCase in several places, so mapping happens here, not in the DB.
+
+// modules.id and lessons.id are uuid columns. Passing a malformed id straight
+// through to Postgres makes it fail with 22P02, which surfaced as a 500 for
+// what is really a bad client request. Guard the shape first and answer 400.
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+function isUuid(value) {
+  return typeof value === 'string' && UUID_RE.test(value);
+}
+
+// jsonb columns normally arrive already parsed, but some legacy rows in
+// career_test stored JSON as a string. Accept both.
+function parseJsonField(value, fallback = null) {
+  if (value === null || value === undefined) return fallback;
+  if (typeof value === 'string') {
+    try {
+      return JSON.parse(value);
+    } catch (e) {
+      return fallback;
+    }
+  }
+  return value;
+}
+
+// career_test.top_careers exists in two shapes: [{ career, score }] and ["career"].
+function normalizeTopCareers(value) {
+  const parsed = parseJsonField(value, []);
+  if (!Array.isArray(parsed)) return [];
+  return parsed
+    .map(item => {
+      if (item && typeof item === 'object') {
+        return { career: item.career, score: item.score === undefined ? null : item.score };
+      }
+      return { career: item, score: null };
+    })
+    .filter(item => item.career);
+}
+
+const CAREER_ASSESSMENT_DIMENSIONS = [
+  'Software Engineering',
+  'Data & Analytical Thinking',
+  'AI & Computational Intelligence',
+  'Systems & Infrastructure',
+  'Security & Reliability',
+  'Product & User Orientation',
+  'Design & Human Experience',
+  'Leadership & Delivery'
+];
+
+const CAREER_PROFILE_V1 = {
+  'Software Developer': [0.95, 0.70, 0.65, 0.60, 0.55, 0.45, 0.40, 0.45],
+  'Data Scientist': [0.55, 0.95, 0.90, 0.35, 0.40, 0.55, 0.35, 0.45],
+  'Full Stack Developer': [0.95, 0.60, 0.55, 0.55, 0.50, 0.65, 0.65, 0.45],
+  'Frontend Developer': [0.85, 0.45, 0.40, 0.30, 0.40, 0.80, 0.90, 0.50],
+  'Backend Developer': [0.95, 0.65, 0.55, 0.65, 0.60, 0.45, 0.30, 0.45],
+  'AI/ML Engineer': [0.80, 0.85, 1.00, 0.65, 0.50, 0.45, 0.30, 0.45],
+  'Data Analyst': [0.45, 0.95, 0.55, 0.30, 0.40, 0.70, 0.40, 0.50],
+  'Cloud Architect': [0.60, 0.60, 0.40, 1.00, 0.75, 0.50, 0.35, 0.75],
+  'DevOps Engineer': [0.70, 0.55, 0.35, 0.95, 0.85, 0.40, 0.30, 0.60],
+  'UI/UX Designer': [0.30, 0.35, 0.25, 0.20, 0.30, 0.90, 1.00, 0.55],
+  'Product Manager': [0.35, 0.55, 0.35, 0.35, 0.40, 1.00, 0.65, 1.00]
+};
+
+function calculateCareerAssessmentV1(questionRows, submittedAnswers) {
+  const dimensionValues = Object.fromEntries(CAREER_ASSESSMENT_DIMENSIONS.map(name => [name, []]));
+  questionRows.forEach(question => {
+    const value = Number(submittedAnswers[question.id]);
+    dimensionValues[question.category].push((value - 1) / 4);
+  });
+
+  const dimensionScores = Object.fromEntries(CAREER_ASSESSMENT_DIMENSIONS.map(name => {
+    const values = dimensionValues[name];
+    return [name, values.reduce((sum, value) => sum + value, 0) / values.length];
+  }));
+
+  const topCareers = Object.entries(CAREER_PROFILE_V1)
+    .map(([career, profile]) => {
+      const difference = profile.reduce((sum, reference, index) => {
+        return sum + Math.abs(dimensionScores[CAREER_ASSESSMENT_DIMENSIONS[index]] - reference);
+      }, 0) / CAREER_ASSESSMENT_DIMENSIONS.length;
+      const similarity = 1 - difference;
+      return { career, score: Number((similarity * 100).toFixed(2)), similarity };
+    })
+    .sort((a, b) => b.similarity - a.similarity)
+    .slice(0, 3)
+    .map(({ career, score }) => ({ career, score }));
+
+  const strengths = CAREER_ASSESSMENT_DIMENSIONS
+    .map((dimension, index) => ({ dimension, index, score: dimensionScores[dimension] }))
+    .sort((a, b) => b.score - a.score || a.index - b.index)
+    .slice(0, 3)
+    .map(({ dimension }) => `Strong ${dimension} orientation`);
+
+  return { dimensionScores, topCareers, strengths };
+}
+
+// Map an enrollments row (snake_case) to the camelCase shape the frontend uses.
+function formatEnrollment(enrollment) {
+  const progressAvailable = typeof enrollment.progress === 'number' && Number.isFinite(enrollment.progress);
+  return {
+    id: enrollment.id,
+    courseId: enrollment.course_id,
+    courseName: enrollment.course_name,
+    progress: enrollment.progress || 0,
+    progressAvailable,
+    completedHours: enrollment.completed_hours || 0,
+    totalHours: enrollment.total_hours || 0,
+    nextLessonTitle: enrollment.next_lesson_title || 'Next lesson',
+    enrolledAt: enrollment.enrolled_at
+  };
+}
+
+// All lesson ids belonging to a course, via modules -> lessons.
+async function getCourseLessonIds(courseId) {
+  const { data: modules, error: moduleError } = await supabase
+    .from('modules')
+    .select('id')
+    .eq('course_id', courseId);
+
+  if (moduleError || !modules || modules.length === 0) return [];
+
+  const { data: lessons, error: lessonError } = await supabase
+    .from('lessons')
+    .select('id, title, lesson_order, duration_minutes')
+    .in('module_id', modules.map(m => m.id))
+    .order('lesson_order', { ascending: true });
+
+  if (lessonError || !lessons) return [];
+  return lessons;
+}
+
+// Recalculate enrollment progress from lesson_progress (server-authoritative).
+async function recomputeEnrollmentProgress(userId, courseId) {
+  const lessons = await getCourseLessonIds(courseId);
+  const totalLessons = lessons.length;
+
+  if (totalLessons === 0) {
+    return { totalLessons: 0, completedLessons: 0, progress: 0, completedHours: 0, nextLessonTitle: null };
+  }
+
+  const { data: progressRows, error: progressError } = await supabase
+    .from('lesson_progress')
+    .select('lesson_id')
+    .eq('user_id', userId)
+    .eq('completed', true)
+    .in('lesson_id', lessons.map(l => l.id));
+
+  if (progressError) throw progressError;
+
+  const completedIds = new Set((progressRows || []).map(row => row.lesson_id));
+  const completedCount = lessons.filter(l => completedIds.has(l.id)).length;
+
+  const completedMinutes = lessons
+    .filter(l => completedIds.has(l.id))
+    .reduce((sum, l) => sum + (l.duration_minutes || 0), 0);
+
+  const nextLesson = lessons.find(l => !completedIds.has(l.id));
+
+  return {
+    totalLessons,
+    completedLessons: completedCount,
+    progress: Math.round((completedCount / totalLessons) * 100),
+    completedHours: Math.round(completedMinutes / 60),
+    nextLessonTitle: nextLesson ? nextLesson.title : null
+  };
+}
+
+// Latest career assessment for a user.
+// ONLY career_test_attempts is treated as the current assessment. The legacy
+// career_test table is retained as historical data but is NOT surfaced as the
+// user's current result (it holds pre-CS-assessment results).
+async function getLatestCareerAssessment(userId, completedOnly = false) {
+  let attemptQuery = supabase
+    .from('career_test_attempts')
+    .select('id, top_careers, score_data, completed, created_at')
+    .eq('user_id', userId);
+  if (completedOnly) attemptQuery = attemptQuery.eq('completed', true);
+
+  const { data: attempts, error: attemptError } = await attemptQuery
+    .order('created_at', { ascending: false })
+    .limit(1);
+
+  if (attemptError) {
+    console.error('Error fetching career assessment:', attemptError);
+    return null;
+  }
+
+  if (!attempts || attempts.length === 0) return null;
+
+  // strengths live inside score_data (career_test_attempts has no strengths column)
+  const scoreData = parseJsonField(attempts[0].score_data, {}) || {};
+
+  return {
+    attemptId: attempts[0].id,
+    completed: Boolean(attempts[0].completed),
+    topCareers: normalizeTopCareers(attempts[0].top_careers),
+    strengths: Array.isArray(scoreData.strengths) ? scoreData.strengths : [],
+    assessmentVersion: scoreData.assessment_version || null,
+    dimensionScores: scoreData.dimension_scores || null,
+    completedAt: attempts[0].created_at
+  };
+}
+
+// Has the user completed a career assessment? Used by the auth callback flow.
+async function hasCompletedCareerTest(userId) {
+  const assessment = await getLatestCareerAssessment(userId);
+  return Boolean(assessment && assessment.completed);
+}
 
 // Authentication middleware - verify Supabase JWT and fetch user metadata
 async function authenticateToken(req, res, next) {
@@ -40,7 +264,7 @@ async function authenticateToken(req, res, next) {
 
   try {
     // Verify the token with Supabase
-    const { data: { user }, error } = await supabase.auth.getUser(token);
+    const { data: { user }, error } = await createAuthClient().auth.getUser(token);
     if (error) {
       console.log('AUTH MIDDLEWARE: Invalid token, returning 401');
       return res.status(401).json({ error: 'Invalid or expired token' });
@@ -97,10 +321,56 @@ app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', message: 'Server is running' });
 });
 
+// Get all questions for the career test
+app.get('/api/questions', authenticateToken, async (_req, res) => {
+  try {
+    // Serve only the active question bank. The 48 inactive rows are the retired
+    // pre-"cs-career-v2" bank: 4 options each, with non-numeric option_value
+    // ("essential"/"important"/"moderate"). career-test.js draws its
+    // cross-dimensional question from whatever this returns, so leaving them in
+    // meant ~34% of attempts showed a 4-choice question whose value parses to NaN.
+    const { data, error } = await supabase
+      .from('questions')
+      .select(`
+        id,
+        question_text,
+        category,
+        question_options (
+          id,
+          option_text,
+          option_value
+        )
+      `)
+      .eq('active', true);
+
+    if (error) {
+      console.error('Error fetching questions:', error);
+      return res.status(500).json({ error: 'Failed to fetch questions' });
+    }
+
+    // Format questions for frontend
+    const formattedQuestions = data.map(q => ({
+      id: q.id,
+      text: q.question_text,
+      category: q.category,
+      options: q.question_options.map(opt => ({
+        value: opt.option_value,
+        text: opt.option_text
+      }))
+    }));
+
+    res.json(formattedQuestions);
+  } catch (error) {
+    console.error('Error in /api/questions:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // Auth endpoints
 app.post('/api/auth/register', async (req, res) => {
   try {
     const { email, password, name, careerGoal } = req.body;
+    const authClient = createAuthClient();
 
     if (!email || !password || !name) {
       return res.status(400).json({ error: 'Email, password, and name are required' });
@@ -110,7 +380,7 @@ app.post('/api/auth/register', async (req, res) => {
     const goal = careerGoal || 'undecided';
 
     // Register user with Supabase Auth
-    const { data, error } = await supabase.auth.signUp({
+    const { data, error } = await authClient.auth.signUp({
       email,
       password,
       options: {
@@ -131,6 +401,13 @@ app.post('/api/auth/register', async (req, res) => {
 
     const { user } = data;
 
+    // Supabase can return a user with no identities for a duplicate email when
+    // it suppresses the explicit "already registered" error. Do not turn that
+    // duplicate registration into a password login below.
+    if (user && Array.isArray(user.identities) && user.identities.length === 0) {
+      return res.status(400).json({ error: 'User already exists' });
+    }
+
     // Insert user metadata into our public.users table
     const { error: metadataError } = await supabase
       .from('users')
@@ -147,7 +424,7 @@ app.post('/api/auth/register', async (req, res) => {
     }
 
     // Try to create a session immediately (if email confirmation is not required)
-    const { data: sessionData, error: sessionError } = await supabase.auth.signInWithPassword({
+    const { data: sessionData, error: sessionError } = await authClient.auth.signInWithPassword({
       email,
       password
     });
@@ -165,6 +442,7 @@ app.post('/api/auth/register', async (req, res) => {
 
     res.status(201).json({
       token: session.access_token,
+      refresh_token: session.refresh_token,
       user: {
         id: user.id,
         email: user.email,
@@ -181,12 +459,13 @@ app.post('/api/auth/register', async (req, res) => {
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { email, password } = req.body;
+    const authClient = createAuthClient();
 
     if (!email || !password) {
       return res.status(400).json({ error: 'Email and password are required' });
     }
 
-    const { data, error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await authClient.auth.signInWithPassword({
       email,
       password
     });
@@ -209,6 +488,7 @@ app.post('/api/auth/login', async (req, res) => {
       // Fallback to auth user data
       res.json({
         token: session.access_token,
+        refresh_token: session.refresh_token,
         user: {
           id: user.id,
           email: user.email,
@@ -219,6 +499,7 @@ app.post('/api/auth/login', async (req, res) => {
     } else {
       res.json({
         token: session.access_token,
+        refresh_token: session.refresh_token,
         user: {
           id: user.id,
           email: user.email,
@@ -233,9 +514,39 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
-app.get('/api/auth/me', authenticateToken, (req, res) => {
-  // Return user data in expected format
-  res.json({ user: req.user });
+app.get('/api/auth/me', authenticateToken, async (req, res) => {
+  try {
+    // public.users has NO email column - email comes from the authenticated Supabase user.
+    const { data: userRow, error: userError } = await supabase
+      .from('users')
+      .select('id, full_name, career_goal')
+      .eq('id', req.user.id)
+      .maybeSingle();
+
+    if (userError) {
+      console.error('Error fetching profile:', userError);
+      return res.status(500).json({ error: 'Database error' });
+    }
+
+    const fullName = (userRow && userRow.full_name) || req.user.name;
+    const careerGoal = (userRow && userRow.career_goal) || req.user.careerGoal || 'undecided';
+    const careerTestCompleted = await hasCompletedCareerTest(req.user.id);
+
+    // Return a flat profile object (profile.js and auth-callback.js both read it
+    // directly). Both snake_case and camelCase keys are provided for compatibility.
+    res.json({
+      id: req.user.id,
+      email: req.user.email,
+      full_name: fullName,
+      name: fullName,
+      career_goal: careerGoal,
+      careerGoal: careerGoal,
+      careerTestCompleted
+    });
+  } catch (error) {
+    console.error('Error in /api/auth/me:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 // Google OAuth endpoint
@@ -255,380 +566,118 @@ app.post('/api/auth/google', async (_req, res) => {
 // Career test endpoints (keep same logic but use Supabase for DB)
 app.post('/api/career-test', authenticateToken, async (req, res) => {
   try {
-    console.log('CAREER TEST ENDPOINT CALLED - VERIFYING SERVER IS USING UPDATED FILE');
-    const { answers } = req.body;
+    const { assessment_version, question_ids, answers, completed } = req.body || {};
     const userId = req.user.id;
 
-    console.log('Career test received:', { answers, userId });
-
-    if (!answers || typeof answers !== 'object') {
-      return res.status(400).json({ error: 'Answers are required' });
+    if (assessment_version !== 'career-profile-v1') {
+      return res.status(400).json({ error: 'Unsupported assessment_version' });
+    }
+    if (!Array.isArray(question_ids) || question_ids.length !== 25) {
+      return res.status(400).json({ error: 'Exactly 25 question_ids are required' });
+    }
+    if (question_ids.some(id => !isUuid(id))) {
+      return res.status(400).json({ error: 'Every question ID must be a valid UUID' });
+    }
+    if (new Set(question_ids).size !== question_ids.length) {
+      return res.status(400).json({ error: 'Duplicate question IDs are not allowed' });
+    }
+    if (!answers || typeof answers !== 'object' || Array.isArray(answers)) {
+      return res.status(400).json({ error: 'answers must be an object keyed by question ID' });
+    }
+    const answerIds = Object.keys(answers);
+    if (answerIds.length !== question_ids.length || question_ids.some(id => !Object.prototype.hasOwnProperty.call(answers, id))) {
+      return res.status(400).json({ error: 'A valid answer is required for every submitted question ID' });
+    }
+    if (question_ids.some(id => !Number.isInteger(answers[id]) || answers[id] < 1 || answers[id] > 5)) {
+      return res.status(400).json({ error: 'Answers must be integer Likert values from 1 to 5' });
+    }
+    if (completed !== true) {
+      return res.status(400).json({ error: 'completed must be true when submitting an assessment' });
     }
 
-    console.log('TEST LOG: About to process answers - this should appear in logs');
+    const { data: questionRows, error: questionError } = await supabase
+      .from('questions')
+      .select('id, category, active, question_options(option_value)')
+      .in('id', question_ids)
+      .eq('active', true);
 
-    // Career database with scoring weights (same as before)
-    const careers = {
-      "Software Developer": {
-        weights: {
-          team: 1, mentor: 2, independent: 3, creative: 1,
-          startup: 2, corporate: 2, remote: 3, hybrid: 2,
-          pressure: 2, planner: 3, adaptive: 2, process: 2,
-          impact: 2, growth: 3, stability: 2, innovation: 3,
-          frontend: 2, backend: 2, data: 1, infrastructure: 1,
-          buildAI: 1, useAI: 2, analyzeData: 3, traditional: 2,
-          visual: 1, algorithmic: 3, architecture: 2, fullstack: 3,
-          handsOn: 3, structured: 2, community: 2, theory: 1,
-          breakdown: 3, research: 2, experiment: 3, collaborate: 2,
-          detective: 3, strategic: 3, necessary: 2, prevent: 1,
-          satisfaction: 2, quality: 3, accuracy: 2, innovationMeasure: 3,
-          active: 2, selective: 2, formal: 2, work: 2,
-          expert: 3, leader: 2, fullstackExpert: 3, impactVision: 2,
-          salary: 2, balance: 3, learning: 3, autonomy: 2,
-          innovationCulture: 3, stable: 2, impactCulture: 2, creativeCulture: 2
-        }
-      },
-      "Frontend Developer": {
-        weights: {
-          team: 2, mentor: 2, independent: 2, creative: 3,
-          startup: 3, corporate: 1, remote: 3, hybrid: 2,
-          pressure: 1, planner: 2, adaptive: 3, process: 1,
-          impact: 3, growth: 2, stability: 1, innovation: 2,
-          frontend: 3, backend: 1, data: 1, infrastructure: 1,
-          buildAI: 1, useAI: 2, analyzeData: 1, traditional: 1,
-          visual: 3, algorithmic: 1, architecture: 1, fullstack: 2,
-          handsOn: 3, structured: 2, community: 2, theory: 1,
-          breakdown: 2, research: 2, experiment: 3, collaborate: 3,
-          detective: 1, strategic: 2, necessary: 2, prevent: 1,
-          satisfaction: 3, quality: 2, accuracy: 1, innovationMeasure: 2,
-          active: 3, selective: 2, formal: 1, work: 2,
-          expert: 2, leader: 1, fullstackExpert: 2, impactVision: 3,
-          salary: 1, balance: 3, learning: 2, autonomy: 3,
-          innovationCulture: 3, stable: 1, impactCulture: 2, creativeCulture: 3
-        }
-      },
-      "Backend Developer": {
-        weights: {
-          team: 2, mentor: 3, independent: 2, creative: 1,
-          startup: 1, corporate: 3, remote: 2, hybrid: 2,
-          pressure: 2, planner: 3, adaptive: 2, process: 3,
-          impact: 2, growth: 2, stability: 3, innovation: 1,
-          frontend: 1, backend: 3, data: 2, infrastructure: 2,
-          buildAI: 2, useAI: 2, analyzeData: 3, traditional: 3,
-          visual: 1, algorithmic: 3, architecture: 3, fullstack: 2,
-          handsOn: 2, structured: 3, community: 2, theory: 2,
-          breakdown: 3, research: 3, experiment: 1, collaborate: 2,
-          detective: 2, strategic: 3, necessary: 3, prevent: 2,
-          satisfaction: 2, quality: 3, accuracy: 3, innovationMeasure: 1,
-          active: 2, selective: 3, formal: 3, work: 2,
-          expert: 3, leader: 2, fullstackExpert: 2, impactVision: 1,
-          salary: 3, balance: 1, learning: 2, autonomy: 1,
-          innovationCulture: 1, stable: 3, impactCulture: 1, creativeCulture: 1
-        }
-      },
-      "Full Stack Developer": {
-        weights: {
-          team: 2, mentor: 2, independent: 2, creative: 2,
-          startup: 2, corporate: 2, remote: 3, hybrid: 3,
-          pressure: 2, planner: 3, adaptive: 3, process: 2,
-          impact: 2, growth: 3, stability: 2, innovation: 2,
-          frontend: 2, backend: 2, data: 2, infrastructure: 2,
-          buildAI: 2, useAI: 2, analyzeData: 2, traditional: 2,
-          visual: 2, algorithmic: 2, architecture: 2, fullstack: 3,
-          handsOn: 3, structured: 2, community: 3, theory: 1,
-          breakdown: 2, research: 2, experiment: 3, collaborate: 3,
-          detective: 2, strategic: 2, necessary: 2, prevent: 1,
-          satisfaction: 2, quality: 2, accuracy: 2, innovationMeasure: 2,
-          active: 2, selective: 2, formal: 2, work: 3,
-          expert: 2, leader: 2, fullstackExpert: 3, impactVision: 2,
-          salary: 2, balance: 2, learning: 3, autonomy: 2,
-          innovationCulture: 2, stable: 2, impactCulture: 2, creativeCulture: 2
-        }
-      },
-      "Data Scientist": {
-        weights: {
-          team: 2, mentor: 2, independent: 3, creative: 1,
-          startup: 2, corporate: 3, remote: 3, hybrid: 2,
-          pressure: 1, planner: 3, adaptive: 2, process: 2,
-          impact: 2, growth: 3, stability: 2, innovation: 3,
-          frontend: 1, backend: 1, data: 3, infrastructure: 1,
-          buildAI: 3, useAI: 3, analyzeData: 3, traditional: 1,
-          visual: 1, algorithmic: 3, architecture: 2, fullstack: 1,
-          handsOn: 2, structured: 3, community: 2, theory: 3,
-          breakdown: 3, research: 3, experiment: 2, collaborate: 2,
-          detective: 3, strategic: 3, necessary: 2, prevent: 1,
-          satisfaction: 2, quality: 2, accuracy: 3, innovationMeasure: 3,
-          active: 3, selective: 2, formal: 3, work: 1,
-          expert: 3, leader: 1, fullstackExpert: 1, impactVision: 2,
-          salary: 2, balance: 2, learning: 3, autonomy: 2,
-          innovationCulture: 3, stable: 1, impactCulture: 2, creativeCulture: 1
-        }
-      },
-      "AI/ML Engineer": {
-        weights: {
-          team: 2, mentor: 2, independent: 3, creative: 1,
-          startup: 3, corporate: 2, remote: 3, hybrid: 2,
-          pressure: 2, planner: 2, adaptive: 2, process: 1,
-          impact: 2, growth: 3, stability: 1, innovation: 3,
-          frontend: 1, backend: 1, data: 2, infrastructure: 1,
-          buildAI: 3, useAI: 2, analyzeData: 3, traditional: 1,
-          visual: 1, algorithmic: 3, architecture: 2, fullstack: 1,
-          handsOn: 2, structured: 2, community: 2, theory: 3,
-          breakdown: 2, research: 2, experiment: 3, collaborate: 2,
-          detective: 2, strategic: 2, necessary: 1, prevent: 1,
-          satisfaction: 2, quality: 2, accuracy: 2, innovationMeasure: 3,
-          active: 3, selective: 1, formal: 2, work: 1,
-          expert: 3, leader: 1, fullstackExpert: 1, impactVision: 1,
-          salary: 1, balance: 1, learning: 3, autonomy: 2,
-          innovationCulture: 3, stable: 1, impactCulture: 2, creativeCulture: 1
-        }
-      },
-      "Data Analyst": {
-        weights: {
-          team: 2, mentor: 2, independent: 2, creative: 1,
-          startup: 2, corporate: 3, remote: 2, hybrid: 2,
-          pressure: 1, planner: 3, adaptive: 2, process: 3,
-          impact: 2, growth: 2, stability: 3, innovation: 1,
-          frontend: 1, backend: 1, data: 3, infrastructure: 1,
-          buildAI: 1, useAI: 2, analyzeData: 3, traditional: 2,
-          visual: 1, algorithmic: 2, architecture: 1, fullstack: 1,
-          handsOn: 2, structured: 3, community: 2, theory: 2,
-          breakdown: 3, research: 3, experiment: 1, collaborate: 2,
-          detective: 1, strategic: 2, necessary: 2, prevent: 1,
-          satisfaction: 2, quality: 2, accuracy: 3, innovationMeasure: 1,
-          active: 2, selective: 3, formal: 3, work: 2,
-          expert: 2, leader: 2, fullstackExpert: 1, impactVision: 1,
-          salary: 2, balance: 2, learning: 2, autonomy: 1,
-          innovationCulture: 1, stable: 3, impactCulture: 1, creativeCulture: 1
-        }
-      },
-      "Cloud Architect": {
-        weights: {
-          team: 2, mentor: 2, independent: 2, creative: 1,
-          startup: 2, corporate: 3, remote: 3, hybrid: 3,
-          pressure: 1, planner: 3, adaptive: 2, process: 2,
-          impact: 1, growth: 2, stability: 3, innovation: 1,
-          frontend: 1, backend: 1, data: 1, infrastructure: 3,
-          buildAI: 1, useAI: 2, analyzeData: 2, traditional: 2,
-          visual: 1, algorithmic: 1, architecture: 2, fullstack: 1,
-          handsOn: 2, structured: 3, community: 2, theory: 2,
-          breakdown: 2, research: 2, experiment: 1, collaborate: 2,
-          detective: 1, strategic: 2, necessary: 2, prevent: 2,
-          satisfaction: 1, quality: 2, accuracy: 2, innovationMeasure: 1,
-          active: 1, selective: 2, formal: 3, work: 2,
-          expert: 2, leader: 2, fullstackExpert: 2, impactVision: 1,
-          salary: 2, balance: 2, learning: 2, autonomy: 1,
-          innovationCulture: 1, stable: 3, impactCulture: 1, creativeCulture: 1
-        }
-      },
-      "DevOps Engineer": {
-        weights: {
-          team: 3, mentor: 2, independent: 2, creative: 1,
-          startup: 3, corporate: 2, remote: 3, hybrid: 3,
-          pressure: 2, planner: 2, adaptive: 2, process: 2,
-          impact: 1, growth: 2, stability: 2, innovation: 1,
-          frontend: 1, backend: 2, data: 1, infrastructure: 3,
-          buildAI: 1, useAI: 1, analyzeData: 1, traditional: 2,
-          visual: 1, algorithmic: 1, architecture: 2, fullstack: 2,
-          handsOn: 3, structured: 2, community: 2, theory: 1,
-          breakdown: 2, research: 1, experiment: 2, collaborate: 2,
-          detective: 1, strategic: 2, necessary: 2, prevent: 2,
-          satisfaction: 1, quality: 2, accuracy: 1, innovationMeasure: 1,
-          active: 1, selective: 1, formal: 2, work: 3,
-          expert: 2, leader: 2, fullstackExpert: 2, impactVision: 1,
-          salary: 1, balance: 1, learning: 1, autonomy: 2,
-          innovationCulture: 1, stable: 2, impactCulture: 1, creativeCulture: 1
-        }
-      },
-      "UI/UX Designer": {
-        weights: {
-          team: 2, mentor: 2, independent: 1, creative: 3,
-          startup: 3, corporate: 1, remote: 3, hybrid: 2,
-          pressure: 1, planner: 1, adaptive: 3, process: 1,
-          impact: 3, growth: 2, stability: 1, innovation: 2,
-          frontend: 2, backend: 1, data: 1, infrastructure: 1,
-          buildAI: 1, useAI: 1, analyzeData: 1, traditional: 1,
-          visual: 3, algorithmic: 1, architecture: 1, fullstack: 1,
-          handsOn: 2, structured: 1, community: 2, theory: 1,
-          breakdown: 1, research: 1, experiment: 2, collaborate: 3,
-          detective: 1, strategic: 1, necessary: 1, prevent: 1,
-          satisfaction: 3, quality: 1, accuracy: 1, innovationMeasure: 2,
-          active: 3, selective: 1, formal: 1, work: 1,
-          expert: 1, leader: 1, fullstackExpert: 1, impactVision: 2,
-          salary: 1, balance: 2, learning: 1, autonomy: 2,
-          innovationCulture: 2, stable: 1, impactCulture: 1, creativeCulture: 3
-        }
-      },
-      "Product Manager": {
-        weights: {
-          team: 3, mentor: 3, independent: 1, creative: 2,
-          startup: 3, corporate: 2, remote: 2, hybrid: 2,
-          pressure: 2, planner: 3, adaptive: 2, process: 2,
-          impact: 3, growth: 2, stability: 2, innovation: 2,
-          frontend: 1, backend: 1, data: 1, infrastructure: 1,
-          buildAI: 1, useAI: 1, analyzeData: 1, traditional: 1,
-          visual: 1, algorithmic: 1, architecture: 1, fullstack: 1,
-          handsOn: 2, structured: 2, community: 2, theory: 1,
-          breakdown: 1, research: 1, experiment: 1, collaborate: 3,
-          detective: 1, strategic: 1, necessary: 1, prevent: 1,
-          satisfaction: 3, quality: 1, accuracy: 1, innovationMeasure: 1,
-          active: 2, selective: 1, formal: 1, work: 2,
-          expert: 1, leader: 3, fullstackExpert: 1, impactVision: 1,
-          salary: 1, balance: 2, learning: 1, autonomy: 3,
-          innovationCulture: 2, stable: 1, impactCulture: 1, creativeCulture: 1
-        }
-      }
-    };
+    if (questionError) {
+      console.error('Error validating career assessment questions:', questionError);
+      return res.status(500).json({ error: 'Failed to validate submitted questions' });
+    }
+    if (!questionRows || questionRows.length !== question_ids.length) {
+      return res.status(400).json({ error: 'One or more question IDs do not exist in the active assessment' });
+    }
 
-    // Calculate scores
-    const scores = {};
+    const questionById = new Map(questionRows.map(question => [question.id, question]));
+    if (question_ids.some(id => {
+      const allowedValues = new Set((questionById.get(id).question_options || [])
+        .map(option => Number(option.option_value)));
+      return !allowedValues.has(answers[id]);
+    })) {
+      return res.status(400).json({ error: 'Each answer must match an available option for its question' });
+    }
 
-    // Initialize scores for all careers
-    Object.keys(careers).forEach(career => {
-      scores[career] = 0;
-    });
-
-    // Add weights from answers
-    Object.keys(answers).forEach(questionId => {
-      const value = answers[questionId];
-      console.log(`Processing question ${questionId}: value = ${value}`);
-
-      Object.keys(careers).forEach(career => {
-        if (careers[career].weights[value] !== undefined) {
-          const weight = careers[career].weights[value];
-          scores[career] += weight;
-          console.log(`  Adding ${weight} to ${career} (now ${scores[career]})`);
-        } else {
-          console.log(`  No weight found for ${value} in ${career}`);
-        }
-      });
-    });
-
-    // Normalize to 0-100
-    console.log('Raw scores:', scores);
-    const maxScore = Math.max(...Object.values(scores));
-    if (maxScore > 0) {
-      Object.keys(scores).forEach(career => {
-        scores[career] = Math.round((scores[career] / maxScore) * 100);
+    const representedDimensions = new Set(questionRows.map(question => question.category));
+    if (questionRows.some(question => !CAREER_ASSESSMENT_DIMENSIONS.includes(question.category))) {
+      return res.status(400).json({ error: 'Submitted questions include an unsupported assessment dimension' });
+    }
+    const missingDimensions = CAREER_ASSESSMENT_DIMENSIONS.filter(dimension => !representedDimensions.has(dimension));
+    if (missingDimensions.length) {
+      return res.status(400).json({
+        error: 'Submitted questions must represent every required dimension',
+        missing_dimensions: missingDimensions
       });
     }
-    console.log('Normalized scores:', scores);
 
-    // Get top 3 careers
-    const topCareers = Object.entries(scores)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 3)
-      .map(([career, score]) => ({
-        career,
-        score
-      }));
+    const calculated = calculateCareerAssessmentV1(questionRows, answers);
 
-    // Identify strengths from answers (copied from frontend career-test.js)
-    const strengthMap = {
-      team: "Collaboration and teamwork",
-      mentor: "Learning from experienced professionals",
-      independent: "Self-directed work and focus",
-      creative: "Creative problem-solving and innovation",
-      startup: "Adaptability in fast-paced environments",
-      corporate: "Process-oriented and structured approach",
-      remote: "Self-motivation and autonomy",
-      hybrid: "Flexibility in work arrangements",
-      pressure: "Thriving under pressure and deadlines",
-      planner: "Strategic planning and foresight",
-      adaptive: "Flexibility and adaptability",
-      process: "Following established procedures",
-      impact: "User-focused and impact-driven",
-      growth: "Continuous learning and development",
-      stability: "Seeking security and predictability",
-      innovation: "Pursuing cutting-edge technology",
-      frontend: "Visual design and user experience",
-      backend: "Server-side logic and system architecture",
-      data: "Data analysis and interpretation",
-      infrastructure: "Systems and infrastructure management",
-      buildAI: "AI system development and engineering",
-      useAI: "Practical AI application integration",
-      analyzeData: "Data pattern recognition and analysis",
-      traditional: "Preference for established technologies",
-      visual: "Visual thinking and design orientation",
-      algorithmic: "Logical and algorithmic problem solving",
-      architecture: "System design and architectural thinking",
-      fullstack: "Comprehensive full-stack development",
-      handsOn: "Learning by doing and experimentation",
-      structured: "Preference for guided learning",
-      community: "Collaborative and community-based learning",
-      theory: "Deep theoretical understanding",
-      breakdown: "Analytical problem decomposition",
-      research: "Solution research and investigation",
-      experiment: "Experimental approach to problem-solving",
-      collaborate: "Collaborative problem-solving approach",
-      detective: "Enjoyment of investigative debugging",
-      strategic: "Strategic and tool-based debugging",
-      necessary: "Pragmatic approach to necessary tasks",
-      prevent: "Proactive bug prevention mindset",
-      satisfaction: "User satisfaction as success metric",
-      quality: "Code quality and technical excellence",
-      accuracy: "Data precision and analytical accuracy",
-      innovationMeasure: "Innovation as success measure",
-      active: "Proactive trend following and learning",
-      selective: "Focused and relevant learning approach",
-      formal: "Preference for structured education",
-      work: "Learning through practical work experience",
-      expert: "Aspiration for deep technical expertise",
-      leader: "Desire for leadership and team management",
-      fullstackExpert: "Goal of full-stack mastery",
-      impactVision: "Wanting to make significant impact",
-      salary: "Value on financial compensation",
-      balance: "Priority on work-life balance",
-      learning: "Emphasis on continuous growth",
-      autonomy: "Desire for independence and decision-making",
-      innovationCulture: "Preference for innovative environments",
-      stable: "Desire for stability and predictability",
-      impactCulture: "Motivation by social impact",
-      creativeCulture: "Value on creative freedom"
-    };
+    // career_test_attempts stores assessment metadata/results in score_data JSONB;
+    // no schema change is needed for the existing attempt table.
+    const { data, error } = await supabase
+      .from('career_test_attempts')
+      .insert({
+        user_id: userId,
+        answers: answers,
+        top_careers: calculated.topCareers,
+        completed: true,
+        score_data: {
+          assessment_version,
+          question_ids,
+          dimension_scores: calculated.dimensionScores,
+          strengths: calculated.strengths
+        }
+      })
+      .select('id, created_at')
+      .single();
 
-    const strengths = [];
-    const uniqueValues = new Set(Object.values(answers));
-
-    uniqueValues.forEach(value => {
-      if (strengthMap[value] && !strengths.includes(strengthMap[value])) {
-        strengths.push(strengthMap[value]);
-      }
-    });
-
-    // Return top 4 strengths
-    const topStrengths = strengths.slice(0, 4);
-
-    // Save or update career test results using Supabase
-    const { error: upsertError } = await supabase
-      .from('career_test')
-      .upsert({
-        userId: userId,
-        answers: JSON.stringify(answers),
-        topCareers: JSON.stringify(topCareers),
-        strengths: JSON.stringify(topStrengths),
-        completed: true
-      }, { onConflict: ['userId'] });
-
-    if (upsertError) {
-      console.error('Error saving career test:', upsertError);
-      return res.status(500).json({ error: 'Failed to save career test' });
+    if (error) {
+      console.error('Error saving career test attempt:', error);
+      return res.status(500).json({ error: 'Failed to save career test attempt' });
     }
 
     // Update user's career goal with the top recommendation in public.users table
-    const { error: updateError } = await supabase
-      .from('users')
-      .update({ career_goal: topCareers[0].career })
-      .eq('id', userId);
+    if (calculated.topCareers.length > 0) {
+      const { error: updateError } = await supabase
+        .from('users')
+        .update({ career_goal: calculated.topCareers[0].career })
+        .eq('id', userId);
 
-    if (updateError) {
-      console.warn('Failed to update career goal:', updateError);
-      // Don't fail the request for this
+      if (updateError) {
+        console.warn('Failed to update career goal:', updateError);
+        // Don't fail the request for this
+      }
     }
 
     res.json({
-      topCareers: topCareers,
-      strengths: topStrengths
+      message: 'Career test attempt saved successfully',
+      attemptId: data ? data.id : null,
+      result: {
+        assessment_version,
+        dimension_scores: calculated.dimensionScores,
+        top_careers: calculated.topCareers,
+        strengths: calculated.strengths
+      }
     });
   } catch (error) {
     console.error('Career test error:', error);
@@ -639,30 +688,226 @@ app.post('/api/career-test', authenticateToken, async (req, res) => {
 // GET career test - get from Supabase
 app.get('/api/career-test', authenticateToken, async (req, res) => {
   try {
-    const { data, error } = await supabase
-      .from('career_test')
-      .select('*')
-      .eq('userId', req.user.id)
-      .order('created_at', { ascending: false })
-      .limit(1);
-
-    if (error) {
-      return res.status(500).json({ error: 'Database error' });
-    }
-
-    if (!data || data.length === 0) {
+    const assessment = await getLatestCareerAssessment(req.user.id, true);
+    if (!assessment || !assessment.completed) {
       return res.status(404).json({ error: 'No career test found' });
     }
 
-    const test = data[0];
     res.json({
-      topCareers: JSON.parse(test.topCareers).map(item => item.career),
-      strengths: JSON.parse(test.strengths),
-      completed: Boolean(test.completed)
+      attemptId: assessment.attemptId,
+      completed: assessment.completed,
+      result: {
+        assessment_version: assessment.assessmentVersion,
+        dimension_scores: assessment.dimensionScores,
+        top_careers: assessment.topCareers,
+        strengths: assessment.strengths
+      },
+      // Preserve the existing camelCase fields for any older consumer.
+      topCareers: assessment.topCareers,
+      strengths: assessment.strengths
     });
   } catch (error) {
     console.error('Career test error:', error);
     res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Certificates are issued only from server-verified enrollment, lesson, and
+// latest final-exam attempt records. The certificates row's UUID is also its
+// stable public verification identifier.
+async function certificatePresentation(certificate) {
+  const { data: learner, error } = await supabase
+    .from('users')
+    .select('full_name')
+    .eq('id', certificate.user_id)
+    .maybeSingle();
+  if (error) throw error;
+  return {
+    certificateId: certificate.id,
+    learnerName: learner?.full_name || 'CareerPath AI Learner',
+    courseId: certificate.course_id,
+    courseTitle: certificate.course_name,
+    issuedAt: certificate.earned_at,
+    status: 'issued',
+    valid: true
+  };
+}
+
+async function getCertificateForUser(certificateId, userId) {
+  const { data, error } = await supabase
+    .from('certificates')
+    .select('id, user_id, course_id, course_name, earned_at')
+    .eq('id', certificateId)
+    .eq('user_id', userId)
+    .maybeSingle();
+  if (error) throw error;
+  return data;
+}
+
+app.get('/api/certificate/verify/:certificateId', async (req, res) => {
+  try {
+    if (!isUuid(req.params.certificateId)) {
+      return res.status(400).json({ valid: false, status: 'invalid_id' });
+    }
+    const { data: certificate, error } = await supabase
+      .from('certificates')
+      .select('id, user_id, course_id, course_name, earned_at')
+      .eq('id', req.params.certificateId)
+      .maybeSingle();
+    if (error) throw error;
+    if (!certificate) return res.status(404).json({ valid: false, status: 'not_found' });
+    return res.json(await certificatePresentation(certificate));
+  } catch (error) {
+    console.error('Certificate verification error:', error);
+    return res.status(500).json({ error: 'Certificate verification is unavailable' });
+  }
+});
+
+app.get('/api/certificate/id/:certificateId', authenticateToken, async (req, res) => {
+  try {
+    if (!isUuid(req.params.certificateId)) return res.status(404).json({ error: 'Certificate not found' });
+    const certificate = await getCertificateForUser(req.params.certificateId, req.user.id);
+    if (!certificate) return res.status(404).json({ error: 'Certificate not found' });
+    return res.json(await certificatePresentation(certificate));
+  } catch (error) {
+    console.error('Certificate retrieval error:', error);
+    return res.status(500).json({ error: 'Failed to load certificate' });
+  }
+});
+
+app.get('/api/certificate/:courseId', authenticateToken, async (req, res) => {
+  try {
+    const { data: certificate, error } = await supabase
+      .from('certificates')
+      .select('id, user_id, course_id, course_name, earned_at')
+      .eq('course_id', req.params.courseId)
+      .eq('user_id', req.user.id)
+      .maybeSingle();
+    if (error) throw error;
+    if (!certificate) return res.status(404).json({ error: 'Certificate not found' });
+    return res.json(await certificatePresentation(certificate));
+  } catch (error) {
+    console.error('Certificate retrieval error:', error);
+    return res.status(500).json({ error: 'Failed to load certificate' });
+  }
+});
+
+app.post('/api/certificate/:courseId/issue', authenticateToken, async (req, res) => {
+  try {
+    if (Object.keys(req.body || {}).length) {
+      return res.status(400).json({ error: 'Certificate issuance does not accept client-provided result data' });
+    }
+    const userId = req.user.id;
+    const courseId = req.params.courseId;
+
+    const { data: course, error: courseError } = await supabase
+      .from('courses')
+      .select('id, title')
+      .eq('id', courseId)
+      .maybeSingle();
+    if (courseError) throw courseError;
+    if (!course) return res.status(404).json({ error: 'Course not found' });
+
+    const { data: enrollment, error: enrollmentError } = await supabase
+      .from('enrollments')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('course_id', courseId)
+      .maybeSingle();
+    if (enrollmentError) throw enrollmentError;
+    if (!enrollment) return res.status(403).json({ error: 'Enroll in this course before requesting its certificate' });
+
+    const { data: modules, error: moduleError } = await supabase
+      .from('modules')
+      .select('id')
+      .eq('course_id', courseId);
+    if (moduleError) throw moduleError;
+    const moduleIds = (modules || []).map(module => module.id);
+    if (!moduleIds.length) return res.status(409).json({ error: 'The course has no required lessons' });
+    const { data: lessons, error: lessonError } = await supabase
+      .from('lessons')
+      .select('id')
+      .in('module_id', moduleIds);
+    if (lessonError) throw lessonError;
+    const lessonIds = (lessons || []).map(lesson => lesson.id);
+    if (!lessonIds.length) return res.status(409).json({ error: 'The course has no required lessons' });
+    const { data: progress, error: progressError } = await supabase
+      .from('lesson_progress')
+      .select('lesson_id')
+      .eq('user_id', userId)
+      .eq('completed', true)
+      .in('lesson_id', lessonIds);
+    if (progressError) throw progressError;
+    const completedIds = new Set((progress || []).map(row => row.lesson_id));
+    if (lessonIds.some(id => !completedIds.has(id))) {
+      return res.status(409).json({ error: 'Complete every required course lesson before requesting its certificate' });
+    }
+
+    const { data: courseExams, error: examError } = await supabase
+      .from('exams')
+      .select('id, title')
+      .eq('course_id', courseId);
+    if (examError) throw examError;
+    const eligibleExams = [];
+    for (const candidate of courseExams || []) {
+      const { count, error } = await supabase
+        .from('exam_questions')
+        .select('id', { count: 'exact', head: true })
+        .eq('exam_id', candidate.id);
+      if (error) throw error;
+      // The current live schema has no final-exam discriminator. Its existing
+      // exam records identify the final assessment in the title; section quizzes
+      // are deliberately excluded here.
+      if (count > 0 && /\bfinal\s+exam\b/i.test(candidate.title || '')) eligibleExams.push(candidate);
+    }
+    if (eligibleExams.length !== 1) {
+      return res.status(409).json({ error: 'A single configured final exam is required for certificate issuance' });
+    }
+
+    const { data: latestAttempt, error: attemptError } = await supabase
+      .from('exam_attempts')
+      .select('id, submitted_at, passed, attempt_number')
+      .eq('exam_id', eligibleExams[0].id)
+      .eq('user_id', userId)
+      .order('attempt_number', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (attemptError) throw attemptError;
+    if (!latestAttempt || !latestAttempt.submitted_at || latestAttempt.passed !== true) {
+      return res.status(403).json({ error: 'Pass the latest submitted final exam attempt before requesting a certificate' });
+    }
+
+    const { data: existing, error: existingError } = await supabase
+      .from('certificates')
+      .select('id, user_id, course_id, course_name, earned_at')
+      .eq('user_id', userId)
+      .eq('course_id', courseId)
+      .maybeSingle();
+    if (existingError) throw existingError;
+    if (existing) return res.json({ success: true, certificate: await certificatePresentation(existing) });
+
+    const { data: created, error: insertError } = await supabase
+      .from('certificates')
+      .insert({ user_id: userId, course_id: courseId, course_name: course.title })
+      .select('id, user_id, course_id, course_name, earned_at')
+      .single();
+    if (insertError) {
+      if (insertError.code === '23505') {
+        const { data: concurrentCertificate, error: concurrentError } = await supabase
+          .from('certificates')
+          .select('id, user_id, course_id, course_name, earned_at')
+          .eq('user_id', userId)
+          .eq('course_id', courseId)
+          .maybeSingle();
+        if (concurrentError) throw concurrentError;
+        if (concurrentCertificate) return res.json({ success: true, certificate: await certificatePresentation(concurrentCertificate) });
+      }
+      throw insertError;
+    }
+    return res.status(201).json({ success: true, certificate: await certificatePresentation(created) });
+  } catch (error) {
+    console.error('Certificate issuance error:', error);
+    return res.status(500).json({ error: 'Failed to issue certificate' });
   }
 });
 
@@ -671,23 +916,23 @@ app.get('/api/dashboard', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.id;
 
-    // Get user data
+    // public.users has NO email column - email comes from the authenticated Supabase user.
     const { data: userData, error: userError } = await supabase
       .from('users')
-      .select('id, email, full_name, career_goal')
+      .select('id, full_name, career_goal')
       .eq('id', userId)
-      .single();
+      .maybeSingle();
 
     if (userError) {
       console.error('Error fetching user:', userError);
       return res.status(500).json({ error: 'Database error' });
     }
 
-    // Get stats
     const { data: enrollData, error: enrollError } = await supabase
       .from('enrollments')
       .select('*')
-      .eq('userId', userId);
+      .eq('user_id', userId)
+      .order('enrolled_at', { ascending: false });
 
     if (enrollError) {
       console.error('Error fetching enrollments:', enrollError);
@@ -696,57 +941,65 @@ app.get('/api/dashboard', authenticateToken, async (req, res) => {
 
     const { data: certData, error: certError } = await supabase
       .from('certificates')
-      .select('*')
-      .eq('userId', userId);
+      .select('id, course_id, course_name, earned_at')
+      .eq('user_id', userId);
 
     if (certError) {
       console.error('Error fetching certificates:', certError);
       return res.status(500).json({ error: 'Database error' });
     }
 
-    // Get latest career test
-    const { data: careerTestData, error: careerTestError } = await supabase
-      .from('career_test')
-      .select('*')
-      .eq('userId', userId)
+    // Real activity, if any has been recorded. Never fabricated.
+    const { data: activityData, error: activityError } = await supabase
+      .from('user_activity')
+      .select('activity_type, description, created_at')
+      .eq('user_id', userId)
       .order('created_at', { ascending: false })
-      .limit(1);
+      .limit(10);
 
-    if (careerTestError) {
-      console.error('Error fetching career test:', careerTestError);
-      return res.status(500).json({ error: 'Database error' });
+    if (activityError) {
+      console.error('Error fetching activity:', activityError);
     }
 
-    // Format response to match existing expectations
+    const enrollments = enrollData || [];
+    const certificates = certData || [];
+
+    const latestAssessment = await getLatestCareerAssessment(userId);
+    const careerTest = latestAssessment && latestAssessment.completed &&
+      latestAssessment.assessmentVersion === 'career-profile-v1' &&
+      latestAssessment.dimensionScores
+      ? latestAssessment
+      : null;
+
     res.json({
       user: {
-        id: userData.id,
-        email: userData.email,
-        name: userData.full_name || userData.email.split('@')[0],
-        careerGoal: userData.career_goal || 'undecided'
+        id: userId,
+        email: req.user.email,
+        name: (userData && userData.full_name) || req.user.name,
+        careerGoal: (userData && userData.career_goal) || 'undecided'
       },
       stats: {
-        coursesEnrolled: enrollData.length || 0,
-        overallProgress: enrollData.length > 0 ?
-          Math.round(enrollData.reduce((sum, e) => sum + (e.progress || 0), 0) / enrollData.length) : 0,
-        streak: 0, // Simplified - would need more complex logic for real streak
-        certificatesEarned: certData.length || 0
+        coursesEnrolled: enrollments.length,
+        overallProgress: enrollments.length > 0 ?
+          Math.round(enrollments.reduce((sum, e) => sum + (e.progress || 0), 0) / enrollments.length) : 0,
+        // Streak is not tracked by this application. Reported as unavailable
+        // rather than invented.
+        streak: null,
+        certificatesEarned: certificates.length
       },
-      careerTest: careerTestData && careerTestData.length > 0 ? {
-        completed: Boolean(careerTestData[0].completed),
-        topCareers: JSON.parse(careerTestData[0].topCareers).map(item => item.career),
-        strengths: JSON.parse(careerTestData[0].strengths),
-        learningPath: 'Complete recommended courses to build your skills'
-      } : null,
-      enrollments: enrollData.map(enrollment => ({
-        courseId: enrollment.course_id,
-        courseName: enrollment.course_name,
-        progress: enrollment.progress,
-        completedHours: enrollment.completed_hours,
-        totalHours: enrollment.total_hours,
-        nextLessonTitle: enrollment.next_lesson_title || 'Next lesson'
+      careerTest: careerTest && careerTest.completed ? careerTest : null,
+      enrollments: enrollments.map(formatEnrollment),
+      certificates: certificates.map(certificate => ({
+        id: certificate.id,
+        course_id: certificate.course_id,
+        course_name: certificate.course_name,
+        earned_at: certificate.earned_at
       })),
-      recentActivity: [] // Simplified for now
+      recentActivity: (activityData || []).map(activity => ({
+        type: activity.activity_type,
+        description: activity.description,
+        timestamp: activity.created_at
+      }))
     });
   } catch (error) {
     console.error('Dashboard error:', error);
@@ -754,22 +1007,708 @@ app.get('/api/dashboard', authenticateToken, async (req, res) => {
   }
 });
 
+// Secure course exam endpoints. All exam table access uses the server's
+// service-role client; browser clients have no exam-table RLS policies.
+function shuffleExamItems(items) {
+  const shuffled = [...items];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = randomInt(i + 1);
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
+
+function examMetadata(exam, questionCount) {
+  return {
+    id: exam.id,
+    course_id: exam.course_id,
+    title: exam.title,
+    description: exam.description || '',
+    passing_score: exam.passing_score,
+    duration_minutes: exam.duration_minutes,
+    max_attempts: exam.max_attempts,
+    question_count: questionCount
+  };
+}
+
+async function loadExamMetadata(examId) {
+  const { data: exam, error } = await supabase
+    .from('exams')
+    .select('id, course_id, title, description, passing_score, max_attempts, duration_minutes')
+    .eq('id', examId)
+    .maybeSingle();
+  if (error) throw error;
+  if (!exam) return null;
+
+  const { count, error: countError } = await supabase
+    .from('exam_questions')
+    .select('id', { count: 'exact', head: true })
+    .eq('exam_id', examId);
+  if (countError) throw countError;
+  return examMetadata(exam, count || 0);
+}
+
+async function getOwnedExamAttempt(attemptId, examId, userId) {
+  const { data, error } = await supabase
+    .from('exam_attempts')
+    .select('id, exam_id, user_id, attempt_number, score, passed, started_at, submitted_at, selected_question_ids, option_order, deadline_at, mcq_submitted_at, crossword_submitted_at, result_data')
+    .eq('id', attemptId)
+    .eq('exam_id', examId)
+    .eq('user_id', userId)
+    .maybeSingle();
+  if (error) throw error;
+  return data;
+}
+
+async function safeExamResult(attempt) {
+  const result = parseJsonField(attempt.result_data, {}) || {};
+  return {
+    attempt_id: attempt.id,
+    exam_id: attempt.exam_id,
+    mcq: result.mcq || null,
+    crossword: result.crossword || null,
+    score: result.final_score ?? attempt.score ?? 0,
+    final_score: result.final_score ?? attempt.score ?? 0,
+    percentage: result.final_score ?? attempt.score ?? 0,
+    passed: Boolean(result.passed ?? attempt.passed),
+    passing_score: result.passing_score ?? null,
+    total_questions: result.mcq?.total ?? (Array.isArray(attempt.selected_question_ids) ? attempt.selected_question_ids.length : 0),
+    answered_questions: result.mcq?.answered ?? 0,
+    submitted_at: attempt.submitted_at,
+    status: result.status || 'submitted'
+  };
+}
+
+async function formatExamAttempt(attempt, exam) {
+  if (attempt.mcq_submitted_at) return formatCrosswordAttempt(attempt, exam);
+  const questionIds = Array.isArray(attempt.selected_question_ids) ? attempt.selected_question_ids : [];
+  if (!questionIds.length) throw new Error('Attempt has no question snapshot');
+
+  const { data: questionRows, error: questionError } = await supabase
+    .from('exam_questions')
+    .select('id, question_text, points')
+    .eq('exam_id', exam.id)
+    .in('id', questionIds);
+  if (questionError) throw questionError;
+  const questionById = new Map((questionRows || []).map(question => [question.id, question]));
+  if (questionIds.some(id => !questionById.has(id))) throw new Error('Attempt question snapshot is invalid');
+
+  const optionIds = Object.values(attempt.option_order || {}).flat();
+  const { data: optionRows, error: optionError } = await supabase
+    .from('exam_options')
+    .select('id, question_id, option_text')
+    .in('id', optionIds);
+  if (optionError) throw optionError;
+  const optionById = new Map((optionRows || []).map(option => [option.id, option]));
+
+  const { data: answers, error: answerError } = await supabase
+    .from('exam_answers')
+    .select('question_id, selected_option_id')
+    .eq('attempt_id', attempt.id);
+  if (answerError) throw answerError;
+
+  const userAnswers = Object.fromEntries((answers || []).map(answer => [answer.question_id, answer.selected_option_id]));
+  const questions = questionIds.map(id => {
+    const question = questionById.get(id);
+    const orderedOptionIds = attempt.option_order?.[id] || [];
+    const options = orderedOptionIds.map(optionId => {
+      const option = optionById.get(optionId);
+      if (!option || option.question_id !== id) throw new Error('Attempt option snapshot is invalid');
+      return { id: option.id, optionText: option.option_text };
+    });
+    return { id: question.id, questionText: question.question_text, options };
+  });
+
+  return {
+    attempt_id: attempt.id,
+    exam_id: exam.id,
+    status: 'active',
+    started_at: attempt.started_at,
+    deadline_at: attempt.deadline_at,
+    questions,
+    answers: userAnswers
+  };
+}
+
+async function formatCrosswordAttempt(attempt, exam) {
+  const { data: crossword, error: crosswordError } = await supabase
+    .from('exam_crosswords')
+    .select('id, title, grid_rows, grid_columns')
+    .eq('exam_id', exam.id)
+    .maybeSingle();
+  if (crosswordError) throw crosswordError;
+  if (!crossword) return safeExamResult(attempt);
+
+  const { data: clues, error: clueError } = await supabase
+    .from('exam_crossword_clues')
+    .select('id, clue_number, clue_text, row, column, direction, points')
+    .eq('crossword_id', crossword.id)
+    .order('clue_number', { ascending: true });
+  if (clueError) throw clueError;
+  const { data: answers, error: answerError } = await supabase
+    .from('exam_crossword_answers')
+    .select('clue_id, submitted_answer')
+    .eq('attempt_id', attempt.id);
+  if (answerError) throw answerError;
+  const submittedByClue = Object.fromEntries((answers || []).map(answer => [answer.clue_id, answer.submitted_answer]));
+  const safeClues = (clues || []).map(clue => ({
+    ...clue,
+    answer_length: 0,
+    submitted_answer: submittedByClue[clue.id] || ''
+  }));
+  // The key is read only to calculate a safe length for building letter cells.
+  const { data: lengths, error: lengthError } = await supabase
+    .from('exam_crossword_clues')
+    .select('id, answer')
+    .eq('crossword_id', crossword.id);
+  if (lengthError) throw lengthError;
+  const lengthById = new Map((lengths || []).map(clue => [clue.id, Array.from(String(clue.answer || '').replace(/[^A-Za-z0-9]/g, '')).length]));
+  safeClues.forEach(clue => { clue.answer_length = lengthById.get(clue.id) || 0; });
+
+  return {
+    attempt_id: attempt.id,
+    exam_id: exam.id,
+    status: 'part_b',
+    started_at: attempt.started_at,
+    deadline_at: attempt.deadline_at,
+    mcq: parseJsonField(attempt.result_data, {})?.mcq || null,
+    crossword: {
+      id: crossword.id,
+      title: crossword.title,
+      rows: crossword.grid_rows,
+      columns: crossword.grid_columns,
+      clues: safeClues
+    },
+    answers: submittedByClue
+  };
+}
+
+async function checkExamEligibility(exam, userId) {
+  const { data: enrollment, error: enrollmentError } = await supabase
+    .from('enrollments')
+    .select('id')
+    .eq('user_id', userId)
+    .eq('course_id', exam.course_id)
+    .maybeSingle();
+  if (enrollmentError) throw enrollmentError;
+  if (!enrollment) return 'Enroll in this course before starting its exam.';
+
+  const lessons = await getCourseLessonIds(exam.course_id);
+  if (!lessons.length) return 'This course has no lessons available for exam eligibility.';
+  const { data: completed, error: progressError } = await supabase
+    .from('lesson_progress')
+    .select('lesson_id')
+    .eq('user_id', userId)
+    .eq('completed', true)
+    .in('lesson_id', lessons.map(lesson => lesson.id));
+  if (progressError) throw progressError;
+  const completedIds = new Set((completed || []).map(row => row.lesson_id));
+  if (lessons.some(lesson => !completedIds.has(lesson.id))) {
+    return 'Complete all course lessons before starting the final exam.';
+  }
+  return null;
+}
+
+async function submitExamAttemptAuthoritatively(attemptId, userId) {
+  const { data, error } = await supabase.rpc('submit_exam_attempt', {
+    p_attempt_id: attemptId,
+    p_user_id: userId
+  });
+  if (error) throw error;
+  return data;
+}
+
+app.get('/api/exams', authenticateToken, async (req, res) => {
+  try {
+    const courseId = req.query.course_id;
+    if (typeof courseId !== 'string' || !courseId.trim()) {
+      return res.status(400).json({ error: 'course_id is required' });
+    }
+    const { data: exams, error } = await supabase
+      .from('exams')
+      .select('id, course_id, title, description, passing_score, max_attempts, duration_minutes')
+      .eq('course_id', courseId)
+      .order('created_at', { ascending: true });
+    if (error) throw error;
+
+    const safeExams = await Promise.all((exams || []).map(async exam => {
+      const { count, error: countError } = await supabase
+        .from('exam_questions')
+        .select('id', { count: 'exact', head: true })
+        .eq('exam_id', exam.id);
+      if (countError) throw countError;
+      return examMetadata(exam, count || 0);
+    }));
+    return res.json({ exams: safeExams });
+  } catch (error) {
+    console.error('Exam list error:', error);
+    return res.status(500).json({ error: 'Failed to load exams' });
+  }
+});
+
+app.get('/api/exams/:examId', authenticateToken, async (req, res) => {
+  try {
+    const metadata = await loadExamMetadata(req.params.examId);
+    if (!metadata) return res.status(404).json({ error: 'Exam not found' });
+    return res.json(metadata);
+  } catch (error) {
+    console.error('Exam metadata error:', error);
+    return res.status(500).json({ error: 'Failed to load exam' });
+  }
+});
+
+app.post('/api/exams/:examId/start', authenticateToken, async (req, res) => {
+  try {
+    const examId = req.params.examId;
+    const userId = req.user.id;
+    const retry = req.body?.retry === true;
+    const { data: exam, error: examError } = await supabase
+      .from('exams')
+      .select('id, course_id, title, description, passing_score, max_attempts, duration_minutes')
+      .eq('id', examId)
+      .maybeSingle();
+    if (examError) throw examError;
+    if (!exam) return res.status(404).json({ error: 'Exam not found' });
+
+    const eligibilityError = await checkExamEligibility(exam, userId);
+    if (eligibilityError) return res.status(403).json({ error: eligibilityError });
+
+    const { data: activeAttempt, error: activeError } = await supabase
+      .from('exam_attempts')
+      .select('id, exam_id, user_id, attempt_number, score, passed, started_at, submitted_at, selected_question_ids, option_order, deadline_at, mcq_submitted_at, crossword_submitted_at, result_data')
+      .eq('exam_id', examId)
+      .eq('user_id', userId)
+      .is('submitted_at', null)
+      .maybeSingle();
+    if (activeError) throw activeError;
+    if (activeAttempt) {
+      if (activeAttempt.deadline_at && new Date(activeAttempt.deadline_at) <= new Date()) {
+        const result = await submitExamAttemptAuthoritatively(activeAttempt.id, userId);
+        return res.json(result);
+      }
+      return res.json(await formatExamAttempt(activeAttempt, exam));
+    }
+
+    const { data: previousAttempts, error: historyError } = await supabase
+      .from('exam_attempts')
+      .select('id, exam_id, user_id, attempt_number, score, passed, started_at, submitted_at, selected_question_ids, option_order, deadline_at, mcq_submitted_at, crossword_submitted_at, result_data')
+      .eq('exam_id', examId)
+      .eq('user_id', userId)
+      .order('attempt_number', { ascending: false })
+      .limit(1);
+    if (historyError) throw historyError;
+    const latestAttempt = previousAttempts?.[0];
+    if (latestAttempt && !retry) return res.json(await safeExamResult(latestAttempt));
+
+    const eligibilityQuestionIds = await supabase
+      .from('exam_questions')
+      .select('id, question_text, points, question_order')
+      .eq('exam_id', examId)
+      .order('question_order', { ascending: true });
+    if (eligibilityQuestionIds.error) throw eligibilityQuestionIds.error;
+    const allQuestions = eligibilityQuestionIds.data || [];
+    if (!allQuestions.length) return res.status(409).json({ error: 'This exam has no questions yet.' });
+
+    const { data: previousNumberRows, count: attemptCount, error: attemptsError } = await supabase
+      .from('exam_attempts')
+      .select('attempt_number', { count: 'exact' })
+      .eq('exam_id', examId)
+      .eq('user_id', userId)
+      .order('attempt_number', { ascending: false })
+      .limit(1);
+    if (attemptsError) throw attemptsError;
+    if (exam.max_attempts && attemptCount >= exam.max_attempts) {
+      return res.status(409).json({ error: 'Maximum exam attempts reached.' });
+    }
+    const attemptNumber = (previousNumberRows?.[0]?.attempt_number || 0) + 1;
+
+    const questionOrder = shuffleExamItems(allQuestions);
+    const selectedQuestionIds = questionOrder.map(question => question.id);
+    const { data: allOptions, error: optionsError } = await supabase
+      .from('exam_options')
+      .select('id, question_id')
+      .in('question_id', selectedQuestionIds);
+    if (optionsError) throw optionsError;
+    const optionOrder = {};
+    for (const questionId of selectedQuestionIds) {
+      const options = shuffleExamItems((allOptions || []).filter(option => option.question_id === questionId));
+      if (!options.length) return res.status(409).json({ error: 'A question is missing its answer options.' });
+      optionOrder[questionId] = options.map(option => option.id);
+    }
+
+    const startedAt = new Date();
+    const deadlineAt = new Date(startedAt.getTime() + Number(exam.duration_minutes) * 60_000);
+    const { data: createdAttempt, error: createError } = await supabase
+      .from('exam_attempts')
+      .insert({
+        exam_id: examId,
+        user_id: userId,
+        attempt_number: attemptNumber,
+        started_at: startedAt.toISOString(),
+        selected_question_ids: selectedQuestionIds,
+        option_order: optionOrder,
+        deadline_at: deadlineAt.toISOString()
+      })
+      .select('id, exam_id, user_id, attempt_number, score, passed, started_at, submitted_at, selected_question_ids, option_order, deadline_at, mcq_submitted_at, crossword_submitted_at, result_data')
+      .single();
+    if (createError) {
+      if (createError.code === '23505') {
+        const { data: concurrentAttempt, error: concurrentError } = await supabase
+          .from('exam_attempts')
+      .select('id, exam_id, user_id, attempt_number, score, passed, started_at, submitted_at, selected_question_ids, option_order, deadline_at, mcq_submitted_at, crossword_submitted_at, result_data')
+          .eq('exam_id', examId)
+          .eq('user_id', userId)
+          .is('submitted_at', null)
+          .maybeSingle();
+        if (concurrentError) throw concurrentError;
+        if (concurrentAttempt) return res.json(await formatExamAttempt(concurrentAttempt, exam));
+      }
+      throw createError;
+    }
+    return res.status(201).json(await formatExamAttempt(createdAttempt, exam));
+  } catch (error) {
+    console.error('Exam start error:', error);
+    return res.status(500).json({ error: 'Failed to start or resume exam' });
+  }
+});
+
+app.get('/api/exams/:examId/questions', authenticateToken, async (req, res) => {
+  try {
+    const attemptId = req.query.attempt_id;
+    if (!isUuid(attemptId)) return res.status(400).json({ error: 'A valid attempt_id is required' });
+    const attempt = await getOwnedExamAttempt(attemptId, req.params.examId, req.user.id);
+    if (!attempt) return res.status(404).json({ error: 'Attempt not found' });
+    if (attempt.submitted_at) return res.status(409).json({ error: 'Attempt is already submitted' });
+    if (attempt.mcq_submitted_at) return res.status(409).json({ error: 'Part A is already submitted' });
+    if (!attempt.deadline_at || new Date(attempt.deadline_at) <= new Date()) {
+      const result = await submitExamAttemptAuthoritatively(attempt.id, req.user.id);
+      return res.status(410).json({ error: 'Attempt expired', result });
+    }
+    const { data: exam, error } = await supabase
+      .from('exams')
+      .select('id, course_id, title, description, passing_score, max_attempts, duration_minutes')
+      .eq('id', req.params.examId)
+      .maybeSingle();
+    if (error) throw error;
+    if (!exam) return res.status(404).json({ error: 'Exam not found' });
+    const attemptData = await formatExamAttempt(attempt, exam);
+    return res.json({ attempt_id: attemptData.attempt_id, questions: attemptData.questions, answers: attemptData.answers });
+  } catch (error) {
+    console.error('Exam questions error:', error);
+    return res.status(500).json({ error: 'Failed to load exam questions' });
+  }
+});
+
+app.get('/api/exams/:examId/attempts/:attemptId/crossword', authenticateToken, async (req, res) => {
+  try {
+    const { examId, attemptId } = req.params;
+    if (!isUuid(attemptId)) return res.status(400).json({ error: 'A valid attempt ID is required' });
+    let attempt = await getOwnedExamAttempt(attemptId, examId, req.user.id);
+    if (!attempt) return res.status(404).json({ error: 'Attempt not found' });
+    if (attempt.submitted_at) return res.status(409).json({ error: 'Exam attempt is finalized' });
+    if (!attempt.mcq_submitted_at) return res.status(409).json({ error: 'Submit Part A before opening the crossword' });
+    if (!attempt.deadline_at || new Date(attempt.deadline_at) <= new Date()) {
+      const result = await submitExamAttemptAuthoritatively(attempt.id, req.user.id);
+      return res.status(410).json({ error: 'Exam attempt expired', result });
+    }
+    const { data: exam, error } = await supabase
+      .from('exams')
+      .select('id, course_id, title, description, passing_score, max_attempts, duration_minutes')
+      .eq('id', examId)
+      .maybeSingle();
+    if (error) throw error;
+    if (!exam) return res.status(404).json({ error: 'Exam not found' });
+    return res.json(await formatCrosswordAttempt(attempt, exam));
+  } catch (error) {
+    console.error('Exam crossword delivery error:', error);
+    return res.status(500).json({ error: 'Failed to load crossword' });
+  }
+});
+
+app.post('/api/exams/:examId/crossword/answers', authenticateToken, async (req, res) => {
+  try {
+    const body = req.body || {};
+    const allowedKeys = ['attempt_id', 'clue_id', 'answer'];
+    if (Object.keys(body).some(key => !allowedKeys.includes(key)) ||
+        !isUuid(body.attempt_id) || !isUuid(body.clue_id) ||
+        typeof body.answer !== 'string' || body.answer.length > 100) {
+      return res.status(400).json({ error: 'Provide only a valid attempt_id, clue_id, and answer.' });
+    }
+    const attempt = await getOwnedExamAttempt(body.attempt_id, req.params.examId, req.user.id);
+    if (!attempt) return res.status(404).json({ error: 'Attempt not found' });
+    const { error } = await supabase.rpc('save_exam_crossword_answer', {
+      p_attempt_id: body.attempt_id,
+      p_user_id: req.user.id,
+      p_clue_id: body.clue_id,
+      p_answer: body.answer
+    });
+    if (error) {
+      if (error.code === 'P0002') return res.status(404).json({ error: 'Attempt not found' });
+      if (error.code === '55000') return res.status(409).json({ error: error.message });
+      if (error.code === '22023' && error.message.includes('deadline has passed')) {
+        const result = await submitExamAttemptAuthoritatively(attempt.id, req.user.id);
+        return res.status(410).json({ error: 'Exam attempt expired', result });
+      }
+      if (error.code === '22023') return res.status(400).json({ error: error.message });
+      throw error;
+    }
+    return res.json({ saved: true });
+  } catch (error) {
+    console.error('Crossword answer save error:', error);
+    return res.status(500).json({ error: 'Failed to save crossword answer' });
+  }
+});
+
+app.post('/api/exams/:examId/crossword/submit', authenticateToken, async (req, res) => {
+  try {
+    const body = req.body || {};
+    if (Object.keys(body).some(key => key !== 'attempt_id') || !isUuid(body.attempt_id)) {
+      return res.status(400).json({ error: 'Provide only a valid attempt_id.' });
+    }
+    const attempt = await getOwnedExamAttempt(body.attempt_id, req.params.examId, req.user.id);
+    if (!attempt) return res.status(404).json({ error: 'Attempt not found' });
+    if (attempt.submitted_at) return res.status(409).json({ error: 'Exam attempt is already finalized' });
+    const { data, error } = await supabase.rpc('submit_exam_crossword', {
+      p_attempt_id: attempt.id,
+      p_user_id: req.user.id
+    });
+    if (error) {
+      if (error.code === 'P0002') return res.status(404).json({ error: 'Attempt not found' });
+      if (error.code === '55000') return res.status(409).json({ error: error.message });
+      throw error;
+    }
+    return res.json(data);
+  } catch (error) {
+    console.error('Crossword submit error:', error);
+    return res.status(500).json({ error: 'Failed to submit crossword' });
+  }
+});
+
+app.post('/api/exams/:examId/answers', authenticateToken, async (req, res) => {
+  try {
+    const body = req.body || {};
+    const allowedKeys = ['attempt_id', 'question_id', 'selected_option_id'];
+    if (Object.keys(body).some(key => !allowedKeys.includes(key)) ||
+        !isUuid(body.attempt_id) || !isUuid(body.question_id) || !isUuid(body.selected_option_id)) {
+      return res.status(400).json({ error: 'Provide only valid attempt_id, question_id, and selected_option_id values.' });
+    }
+    const attempt = await getOwnedExamAttempt(body.attempt_id, req.params.examId, req.user.id);
+    if (!attempt) return res.status(404).json({ error: 'Attempt not found' });
+    const { error } = await supabase.rpc('save_exam_answer', {
+      p_attempt_id: body.attempt_id,
+      p_user_id: req.user.id,
+      p_question_id: body.question_id,
+      p_selected_option_id: body.selected_option_id
+    });
+    if (error) {
+      if (error.code === 'P0002') return res.status(404).json({ error: 'Attempt not found' });
+      if (error.code === '55000') return res.status(409).json({ error: 'Attempt is already submitted' });
+      if (error.code === '22023' && error.message.includes('deadline has passed')) {
+        const result = await submitExamAttemptAuthoritatively(attempt.id, req.user.id);
+        return res.status(410).json({ error: 'Attempt expired', result });
+      }
+      if (error.code === '22023') return res.status(400).json({ error: error.message });
+      throw error;
+    }
+    return res.json({ saved: true });
+  } catch (error) {
+    console.error('Exam answer save error:', error);
+    return res.status(500).json({ error: 'Failed to save answer' });
+  }
+});
+
+app.post('/api/exams/:examId/submit', authenticateToken, async (req, res) => {
+  try {
+    const body = req.body || {};
+    if (Object.keys(body).some(key => key !== 'attempt_id') || !isUuid(body.attempt_id)) {
+      return res.status(400).json({ error: 'Provide only a valid attempt_id.' });
+    }
+    const attempt = await getOwnedExamAttempt(body.attempt_id, req.params.examId, req.user.id);
+    if (!attempt) return res.status(404).json({ error: 'Attempt not found' });
+    if (attempt.submitted_at) return res.status(409).json({ error: 'Exam attempt is already finalized' });
+    if (attempt.mcq_submitted_at && attempt.deadline_at && new Date(attempt.deadline_at) > new Date()) {
+      return res.status(409).json({ error: 'Part A is already submitted' });
+    }
+    const result = await submitExamAttemptAuthoritatively(attempt.id, req.user.id);
+    return res.json(result);
+  } catch (error) {
+    console.error('Exam submit error:', error);
+    if (error.code === 'P0002') return res.status(404).json({ error: 'Attempt not found' });
+    return res.status(500).json({ error: 'Failed to submit exam' });
+  }
+});
+
+app.get('/api/exams/:examId/result', authenticateToken, async (req, res) => {
+  try {
+    const attemptId = req.query.attempt_id;
+    if (!isUuid(attemptId)) return res.status(400).json({ error: 'A valid attempt_id is required' });
+    let attempt = await getOwnedExamAttempt(attemptId, req.params.examId, req.user.id);
+    if (!attempt) return res.status(404).json({ error: 'Attempt not found' });
+    if (!attempt.submitted_at && attempt.deadline_at && new Date(attempt.deadline_at) <= new Date()) {
+      await submitExamAttemptAuthoritatively(attempt.id, req.user.id);
+      attempt = await getOwnedExamAttempt(attemptId, req.params.examId, req.user.id);
+    }
+    if (!attempt.submitted_at) return res.status(409).json({ error: 'Attempt has not been submitted' });
+    return res.json(await safeExamResult(attempt));
+  } catch (error) {
+    console.error('Exam result error:', error);
+    return res.status(500).json({ error: 'Failed to load exam result' });
+  }
+});
+
+// Course catalog read endpoints.
+// DB is authoritative: courses.image -> image_url, courses.weeks -> duration_weeks.
+function formatCourse(course) {
+  const level = course.level || 'beginner';
+  return {
+    id: course.id,
+    title: course.title,
+    description: course.description,
+    image_url: course.image,
+    badge: course.badge,
+    difficulty: course.difficulty,
+    duration_weeks: course.weeks,
+    category: courseCatalogConfig.courseCategories[course.id] || 'Uncategorized',
+    level: level,
+    // Course classification only. There is no payment/entitlement system.
+    premium: level === 'advanced'
+  };
+}
+
+app.get('/api/courses', async (_req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('courses')
+      .select('id, title, description, image, badge, difficulty, weeks, level')
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching courses:', error);
+      return res.status(500).json({ error: 'Failed to fetch courses' });
+    }
+
+    const courses = (data || []).map(formatCourse);
+    const existingCourseIds = new Set(courses.map(course => course.id));
+    const careerCourseMapping = Object.fromEntries(
+      Object.entries(courseCatalogConfig.careerCourseMapping).map(([career, ids]) => [
+        career,
+        ids.filter(id => existingCourseIds.has(id))
+      ])
+    );
+
+    res.json({
+      categories: courseCatalogConfig.categories,
+      career_course_mapping: careerCourseMapping,
+      courses
+    });
+  } catch (error) {
+    console.error('Error in /api/courses:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.get('/api/courses/:id', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('courses')
+      .select('id, title, description, image, badge, difficulty, weeks, level')
+      .eq('id', req.params.id)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Error fetching course:', error);
+      return res.status(500).json({ error: 'Database error' });
+    }
+
+    if (!data) {
+      return res.status(404).json({ error: 'Course not found' });
+    }
+
+    res.json({ course: formatCourse(data) });
+  } catch (error) {
+    console.error('Error in /api/courses/:id:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.get('/api/courses/:id/modules', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('modules')
+      .select('id, course_id, title, description, module_order')
+      .eq('course_id', req.params.id)
+      .order('module_order', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching modules:', error);
+      return res.status(500).json({ error: 'Database error' });
+    }
+
+    res.json({ modules: data || [] });
+  } catch (error) {
+    console.error('Error in /api/courses/:id/modules:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.get('/api/modules/:id/lessons', async (req, res) => {
+  try {
+    // modules.id is a uuid column - reject malformed ids as a client error
+    // instead of letting Postgres fail with 22P02.
+    if (!isUuid(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid module id' });
+    }
+
+    const { data, error } = await supabase
+      .from('lessons')
+      .select('id, module_id, title, content, lesson_order, duration_minutes')
+      .eq('module_id', req.params.id)
+      .order('lesson_order', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching lessons:', error);
+      return res.status(500).json({ error: 'Database error' });
+    }
+
+    res.json({ lessons: data || [] });
+  } catch (error) {
+    console.error('Error in /api/modules/:id/lessons:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // Course endpoints
 app.post('/api/enroll', authenticateToken, async (req, res) => {
   try {
-    const { courseId, courseName, totalHours } = req.body;
+    const { courseId, totalHours } = req.body;
     const userId = req.user.id;
 
-    if (!courseId || !courseName) {
-      return res.status(400).json({ error: 'Course ID and name are required' });
+    if (!courseId) {
+      return res.status(400).json({ error: 'Course ID is required' });
     }
 
-    // Check if already enrolled
+    // Validate the course exists. The courses table is the source of truth for the name.
+    const { data: course, error: courseError } = await supabase
+      .from('courses')
+      .select('id, title')
+      .eq('id', courseId)
+      .maybeSingle();
+
+    if (courseError) {
+      console.error('Error validating course:', courseError);
+      return res.status(500).json({ error: 'Database error' });
+    }
+
+    if (!course) {
+      return res.status(404).json({ error: 'Course not found' });
+    }
+
+    // Prevent duplicate enrollment
     const { data: existingEnrollment, error: checkError } = await supabase
       .from('enrollments')
       .select('id')
-      .eq('userId', userId)
-      .eq('courseId', courseId);
+      .eq('user_id', userId)
+      .eq('course_id', courseId);
 
     if (checkError) {
       console.error('Error checking enrollment:', checkError);
@@ -780,15 +1719,19 @@ app.post('/api/enroll', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: 'Already enrolled in this course' });
     }
 
-    // Insert enrollment
-    const { error: insertError } = await supabase
+    // Insert enrollment with progress initialized safely
+    const { data: createdEnrollment, error: insertError } = await supabase
       .from('enrollments')
       .insert({
-        userId: userId,
-        courseId: courseId,
-        courseName: courseName,
-        totalHours: totalHours || 0
-      });
+        user_id: userId,
+        course_id: courseId,
+        course_name: course.title || courseId,
+        progress: 0,
+        completed_hours: 0,
+        total_hours: totalHours || 0
+      })
+      .select()
+      .single();
 
     if (insertError) {
       console.error('Error inserting enrollment:', insertError);
@@ -796,7 +1739,8 @@ app.post('/api/enroll', authenticateToken, async (req, res) => {
     }
 
     res.status(201).json({
-      message: 'Successfully enrolled in course'
+      message: 'Successfully enrolled in course',
+      enrollment: formatEnrollment(createdEnrollment)
     });
   } catch (error) {
     console.error('Enroll error:', error);
@@ -850,26 +1794,269 @@ app.get('/api/enrollments', authenticateToken, async (req, res) => {
     const { data, error } = await supabase
       .from('enrollments')
       .select('*')
-      .eq('userId', req.user.id)
-      .order('enrolledAt', { ascending: false });
+      .eq('user_id', req.user.id)
+      .order('enrolled_at', { ascending: false });
 
     if (error) {
+      console.error('Error fetching enrollments:', error);
       return res.status(500).json({ error: 'Database error' });
     }
 
     res.json({
-      enrollments: data.map(enrollment => ({
-        courseId: enrollment.courseId,
-        courseName: enrollment.courseName,
-        progress: enrollment.progress,
-        completedHours: enrollment.completedHours,
-        totalHours: enrollment.totalHours,
-        nextLessonTitle: enrollment.nextLessonTitle || 'Next lesson',
-        enrolledAt: enrollment.enrolledAt
-      }))
+      enrollments: (data || []).map(formatEnrollment)
     });
   } catch (error) {
     console.error('Enrollments error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.get('/api/enrollments/:courseId', authenticateToken, async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('enrollments')
+      .select('*')
+      .eq('user_id', req.user.id)
+      .eq('course_id', req.params.courseId)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Error fetching enrollment:', error);
+      return res.status(500).json({ error: 'Database error' });
+    }
+
+    if (!data) {
+      return res.status(404).json({ error: 'Not enrolled in this course' });
+    }
+
+    res.json(formatEnrollment(data));
+  } catch (error) {
+    console.error('Enrollment error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Lesson progress endpoints - progress is derived from lesson_progress, never
+// from a client-supplied value.
+app.get('/api/courses/:courseId/progress/lessons', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const courseId = req.params.courseId;
+
+    const lessons = await getCourseLessonIds(courseId);
+
+    if (lessons.length === 0) {
+      return res.json({ completedLessons: [] });
+    }
+
+    const { data, error } = await supabase
+      .from('lesson_progress')
+      .select('lesson_id')
+      .eq('user_id', userId)
+      .eq('completed', true)
+      .in('lesson_id', lessons.map(l => l.id));
+
+    if (error) {
+      console.error('Error fetching lesson progress:', error);
+      return res.status(500).json({ error: 'Database error' });
+    }
+
+    res.json({ completedLessons: (data || []).map(row => row.lesson_id) });
+  } catch (error) {
+    console.error('Lesson progress error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.post('/api/lessons/:lessonId/complete', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const lessonId = req.params.lessonId;
+
+    // lessons.id is a uuid column - reject malformed ids as a client error.
+    if (!isUuid(lessonId)) {
+      return res.status(400).json({ error: 'Invalid lesson id' });
+    }
+
+    // The lesson must exist
+    const { data: lesson, error: lessonError } = await supabase
+      .from('lessons')
+      .select('id, module_id, title')
+      .eq('id', lessonId)
+      .maybeSingle();
+
+    if (lessonError) {
+      console.error('Error fetching lesson:', lessonError);
+      return res.status(500).json({ error: 'Database error' });
+    }
+
+    if (!lesson) {
+      return res.status(404).json({ error: 'Lesson not found' });
+    }
+
+    // Resolve the lesson's course through its module
+    const { data: module, error: moduleError } = await supabase
+      .from('modules')
+      .select('id, course_id')
+      .eq('id', lesson.module_id)
+      .maybeSingle();
+
+    if (moduleError) {
+      console.error('Error fetching module:', moduleError);
+      return res.status(500).json({ error: 'Database error' });
+    }
+
+    if (!module) {
+      return res.status(404).json({ error: 'Module not found for lesson' });
+    }
+
+    // The user must be enrolled in the course that owns this lesson
+    const { data: enrollment, error: enrollError } = await supabase
+      .from('enrollments')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('course_id', module.course_id)
+      .maybeSingle();
+
+    if (enrollError) {
+      console.error('Error fetching enrollment:', enrollError);
+      return res.status(500).json({ error: 'Database error' });
+    }
+
+    if (!enrollment) {
+      return res.status(403).json({ error: 'You are not enrolled in this course' });
+    }
+
+    // Record completion (server-authoritative). Update the existing row if there
+    // is one, otherwise insert a new one.
+    const { data: existingRow, error: existingError } = await supabase
+      .from('lesson_progress')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('lesson_id', lessonId)
+      .maybeSingle();
+
+    if (existingError) {
+      console.error('Error checking lesson progress:', existingError);
+      return res.status(500).json({ error: 'Database error' });
+    }
+
+    const now = new Date().toISOString();
+
+    if (existingRow) {
+      const { error: updateError } = await supabase
+        .from('lesson_progress')
+        .update({ completed: true, completed_at: now, updated_at: now })
+        .eq('id', existingRow.id);
+
+      if (updateError) {
+        console.error('Error updating lesson progress:', updateError);
+        return res.status(500).json({ error: 'Failed to update lesson progress' });
+      }
+    } else {
+      const { error: insertError } = await supabase
+        .from('lesson_progress')
+        .insert({
+          user_id: userId,
+          lesson_id: lessonId,
+          completed: true,
+          completed_at: now
+        });
+
+      if (insertError) {
+        console.error('Error inserting lesson progress:', insertError);
+        return res.status(500).json({ error: 'Failed to save lesson progress' });
+      }
+    }
+
+    // Recalculate and persist the enrollment's progress from real lesson data
+    const summary = await recomputeEnrollmentProgress(userId, module.course_id);
+
+    const { error: progressUpdateError } = await supabase
+      .from('enrollments')
+      .update({
+        progress: summary.progress,
+        completed_hours: summary.completedHours,
+        next_lesson_title: summary.nextLessonTitle
+      })
+      .eq('id', enrollment.id);
+
+    if (progressUpdateError) {
+      console.error('Error updating enrollment progress:', progressUpdateError);
+      // The lesson completion itself succeeded, so do not fail the request.
+    }
+
+    res.json({
+      lessonId: lessonId,
+      completed: true,
+      completedLessons: summary.completedLessons,
+      totalLessons: summary.totalLessons,
+      progress: summary.progress
+    });
+  } catch (error) {
+    console.error('Lesson complete error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Profile update
+app.put('/api/user/profile', authenticateToken, async (req, res) => {
+  try {
+    const { fullName, careerGoal } = req.body;
+    const userId = req.user.id;
+
+    const updates = {};
+    if (typeof fullName === 'string' && fullName.trim()) updates.full_name = fullName.trim();
+    if (typeof careerGoal === 'string' && careerGoal.trim()) updates.career_goal = careerGoal.trim();
+
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({ error: 'No valid profile fields provided' });
+    }
+
+    const { data, error } = await supabase
+      .from('users')
+      .update(updates)
+      .eq('id', userId)
+      .select('id, full_name, career_goal')
+      .maybeSingle();
+
+    if (error) {
+      console.error('Error updating profile:', error);
+      return res.status(500).json({ error: 'Failed to update profile' });
+    }
+
+    let profile = data;
+
+    // Auth users may not have a public.users row yet - create it.
+    if (!profile) {
+      const { data: created, error: createError } = await supabase
+        .from('users')
+        .insert({
+          id: userId,
+          full_name: updates.full_name || req.user.name,
+          career_goal: updates.career_goal || 'undecided'
+        })
+        .select('id, full_name, career_goal')
+        .single();
+
+      if (createError) {
+        console.error('Error creating profile:', createError);
+        return res.status(500).json({ error: 'Failed to update profile' });
+      }
+
+      profile = created;
+    }
+
+    res.json({
+      id: profile.id,
+      email: req.user.email,
+      full_name: profile.full_name,
+      name: profile.full_name,
+      career_goal: profile.career_goal,
+      careerGoal: profile.career_goal
+    });
+  } catch (error) {
+    console.error('Profile update error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -967,7 +2154,7 @@ app.delete('/api/chat/clear', authenticateToken, async (req, res) => {
 });
 
 // Start server
-app.listen(PORT, () => {
+app.listen(PORT, HOST, () => {
   console.log(`Server running on port ${PORT}`);
 
   // Initialize database

@@ -3,69 +3,217 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Career Assessment - AI Career Platform</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+
+  <script src="theme.js"></script>
+  <script src="i18n.js"></script>
+<title>Career Assessment - CareerPath AI</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,600;1,400;1,500&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+  <style>
+    /* ---- Career assessment answer choices -------------------------------
+       Scoped to #options-container so these win over the generic
+       `.question label` rules in styles.css without touching the shared
+       stylesheet or any other page. */
+
+    #options-container {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+      margin-top: var(--space-5);
+    }
+
+    #options-container .answer-choice {
+      display: flex;
+      align-items: center;
+      gap: var(--space-4);
+      width: 100%;
+      min-height: 56px;
+      padding: var(--space-4) var(--space-5);
+      margin: 0;
+      background: var(--surface-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      color: var(--text-secondary);
+      font-family: var(--font-body);
+      font-size: 1.0625rem; /* 17px */
+      line-height: 1.4;
+      cursor: pointer;
+      transition: var(--transition);
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    #options-container .answer-choice:hover {
+      background: rgba(223, 185, 157, 0.14);
+      border-color: var(--bege);
+      color: var(--bege_light);
+      transform: translateY(-2px);
+    }
+
+    /* The native radio stays in the accessibility tree but is drawn by the
+       marker span, so the whole card is a single large target. */
+    #options-container .answer-choice input[type="radio"] {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      margin: 0;
+      padding: 0;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    #options-container .answer-choice__marker {
+      flex: 0 0 auto;
+      width: 22px;
+      height: 22px;
+      border: 2px solid var(--green_light);
+      border-radius: var(--radius-full);
+      position: relative;
+      transition: var(--transition);
+    }
+
+    #options-container .answer-choice__marker::after {
+      content: "";
+      position: absolute;
+      inset: 4px;
+      border-radius: var(--radius-full);
+      background: var(--bege);
+      transform: scale(0);
+      transition: var(--transition);
+    }
+
+    #options-container .answer-choice__text {
+      flex: 1 1 auto;
+    }
+
+    /* Selected state - explicit class plus the :checked selector so it is
+       correct even before JS syncs the class. */
+    #options-container .answer-choice.is-selected,
+    #options-container .answer-choice:has(input[type="radio"]:checked) {
+      background: rgba(223, 185, 157, 0.14);
+      border-color: var(--bege);
+      color: var(--bege_light);
+      box-shadow: var(--shadow-sm);
+    }
+
+    #options-container .answer-choice.is-selected .answer-choice__marker,
+    #options-container .answer-choice:has(input[type="radio"]:checked) .answer-choice__marker {
+      border-color: var(--bege);
+    }
+
+    #options-container .answer-choice.is-selected .answer-choice__marker::after,
+    #options-container .answer-choice:has(input[type="radio"]:checked) .answer-choice__marker::after {
+      transform: scale(1);
+    }
+
+    /* Keyboard focus must be obvious even though the input itself is hidden */
+    #options-container .answer-choice:focus-within {
+      border-color: var(--bege);
+      box-shadow: 0 0 0 3px rgba(223, 185, 157, 0.18);
+      color: var(--bege_light);
+    }
+
+    /* ---- Assessment header / navigation layout ---- */
+
+    .assessment-progress-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: var(--space-3);
+      margin-bottom: var(--space-2);
+    }
+
+    /* Keep the Previous/Next row directly under the choices, and keep the
+       question card focusable for scroll management. */
+    .navigation-container {
+      margin-top: var(--space-5);
+    }
+
+    #question-card {
+      scroll-margin-top: var(--space-8);
+    }
+
+    @media (max-width: 480px) {
+      #options-container .answer-choice {
+        min-height: 60px;
+        padding: var(--space-4);
+        font-size: 1rem;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      #options-container .answer-choice,
+      #options-container .answer-choice__marker,
+      #options-container .answer-choice__marker::after {
+        transition: none;
+      }
+      #options-container .answer-choice:hover {
+        transform: none;
+      }
+    }
+  </style>
 </head>
 
 <body>
 
-  <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">
+  <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode" style="width: 40px; height: 40px; border-radius: 50%; background-color: var(--bege_light); color: var(--green); display: flex; align-items: center; justify-content: center; font-size: 1.25rem; transition: var(--transition); margin-left: auto;">
     <i class="fas fa-moon moon-icon"></i>
     <i class="fas fa-sun sun-icon"></i>
   </button>
 
   <header>
-    <div class="logo"><i class="fas fa-robot"></i> AI Career Platform</div>
+    <div class="logo">
+      <a href="index.html" class="text-h6">CareerPath AI</a>
+    </div>
     <nav>
-      <a href="index.html">Home</a>
-      <a href="courses.html">Career Courses</a>
-      <a href="career-test.html">Career Test</a>
-      <a href="dashboard.html">Dashboard</a>
-      <a href="contactus.html">Contact</a>
-      <button class="cta-button" onclick="location.href='register.html'">Get Started</button>
+      <a href="index.html" class="text-menu color-bege_light nav-item">Home</a>
+      <a href="courses.html" class="text-menu color-bege_light nav-item">Career Courses</a>
+      <a href="career-test.html" class="text-menu color-bege_light nav-item w--current">Career Test</a>
+      <a href="dashboard.html" class="text-menu color-bege_light nav-item">Dashboard</a>
+      <div id="profile-nav"></div>
+      <div id="auth-action-nav"></div>
     </nav>
   </header>
 
-  <main class="dashboard-container" style="max-width: 700px; margin: 0 auto; padding: var(--space-4); min-height: calc(100vh - 120px);">
-    <div id="quiz-container">
+  <main class="dashboard-section">
+    <div class="container">
+      <div id="quiz-container">
       <!-- Header -->
-      <div class="dashboard-header" style="margin-bottom: var(--space-6);">
-        <h1><i class="fas fa-star"></i> Career Assessment</h1>
-        <p style="color: var(--text-muted);">Answer a few questions and our AI will recommend the best career path for you.</p>
+      <div class="dashboard-header">
+        <p class="editorial-eyebrow">CAREER ASSESSMENT</p>
+        <h1>Discover where your strengths could take you.</h1>
+        <p class="text-body_small color-green_light">Explore your interests and find technology career directions to consider.</p>
       </div>
 
       <!-- Progress Section -->
       <div class="progress-section">
-        <div class="progress-text" id="progress-text">Question 1 of 15</div>
+        <div class="assessment-progress-head">
+          <span id="question-counter" class="text-body_small color-bege_light">1 / 0</span>
+          <span class="progress-text text-body_small color-bege_light" id="progress-text">Question 1</span>
+        </div>
         <div class="progress-bar">
           <div class="progress-bar-fill" id="progress-fill"></div>
         </div>
       </div>
 
       <!-- Question Card -->
-      <div class="dashboard-card" style="margin: var(--space-6) 0;">
-        <div class="question-card" id="question-card">
-          <h2 class="question-title" id="question-title"></h2>
-          <div class="options-container" id="options-container"></div>
-        </div>
+      <div class="question" id="question-card">
+        <h2 class="question-title text-h4" id="question-title"></h2>
+        <div class="options-container" id="options-container"></div>
       </div>
 
       <!-- Navigation -->
       <div class="navigation-container" style="display: flex; justify-content: space-between; margin-top: var(--space-4); flex-wrap: wrap; gap: var(--space-2);">
-        <button class="btn-outline" id="prev-btn" disabled>Previous</button>
-        <div style="flex-grow: 1; text-align: center;">
-          <span id="question-counter">1 / 15</span>
-        </div>
-        <button class="btn-primary" id="next-btn">Next</button>
-        <button class="btn-primary" id="submit-btn" style="display:none;">Submit Test</button>
+        <button class="btn-outline" id="prev-btn" disabled style="background: transparent; border: 1px solid var(--border); border-radius: 50px; color: var(--bege_light); font-family: var(--font-display); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; transition: var(--transition); padding: var(--space-3) var(--space-4); display: flex; justify-content: center; align-items: center; gap: var(--space-2); cursor: pointer;" onmouseover="this.style.background='var(--accent-light)'; this.style.borderColor='var(--bege)'; this.style.color='var(--bege)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.background='transparent'; this.style.borderColor='var(--border)'; this.style.color='var(--bege_light)'; this.style.transform='translateY(0)';">Previous</button>
+        <button class="btn-primary component-button" id="next-btn">Next</button>
+        <button class="btn-primary component-button" id="submit-btn" style="display:none;">Submit Test</button>
       </div>
 
       <!-- Loading Spinner -->
       <div id="loading-spinner" style="display:none; text-align:center; padding: var(--space-8);">
         <div class="spinner"></div>
-        <p>Calculating your career path...</p>
+        <p class="text-body_small color-bege_light">Calculating your career path...</p>
       </div>
     </div>
 
@@ -73,8 +221,8 @@
     <div id="results-container" style="display:none;">
       <!-- Results Header -->
       <div class="dashboard-header" style="margin-bottom: var(--space-6);">
-        <h2><i class="fas fa-bullseye"></i> Your Career Assessment Results</h2>
-        <p style="color: var(--text-muted);">Based on your answers, here are your top career matches:</p>
+        <h1><i class="fas fa-bullseye"></i> Your Career Profile</h1>
+        <p class="text-body_small color-green_light">Career alignment across the defined career directions, based on your assessment answers.</p>
       </div>
 
       <!-- Results Content -->
@@ -82,24 +230,26 @@
 
       <!-- Strengths Section -->
       <div class="strengths-section" id="strengths-section" style="display:none;">
-        <h3><i class="fas fa-star"></i> Your Key Strengths</h3>
+        <h4 class="text-h4"><i class="fas fa-star"></i> Strongest Dimensions</h4>
         <div id="strengths-list"></div>
       </div>
 
       <!-- Action Buttons -->
       <div class="action-buttons" style="display: flex; gap: var(--space-4); flex-wrap: wrap; justify-content: center; margin-top: var(--space-6);">
         <a href="courses.html" class="btn-primary">Explore Recommended Courses</a>
-        <a href="dashboard.html" class="btn-secondary">Go to Dashboard</a>
-        <button class="btn-outline" id="retake-btn">Retake Test</button>
+        <a href="dashboard.html" class="btn-outline" style="background: transparent; border: 1px solid var(--border); border-radius: 50px; color: var(--bege_light); font-family: var(--font-display); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; transition: var(--transition); padding: var(--space-3) var(--space-4); display: flex; justify-content: center; align-items: center; gap: var(--space-2); cursor: pointer;" onmouseover="this.style.background='var(--accent-light)'; this.style.borderColor='var(--bege)'; this.style.color='var(--bege)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.background='transparent'; this.style.borderColor='var(--border)'; this.style.color='var(--bege_light)'; this.style.transform='translateY(0)';">Go to Dashboard</a>
+        <button class="btn-outline" id="retake-btn" style="background: transparent; border: 1px solid var(--border); border-radius: 50px; color: var(--bege_light); font-family: var(--font-display); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; transition: var(--transition); padding: var(--space-3) var(--space-4); display: flex; justify-content: center; align-items: center; gap: var(--space-2); cursor: pointer;" onmouseover="this.style.background='var(--accent-light)'; this.style.borderColor='var(--bege)'; this.style.color='var(--bege)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.background='transparent'; this.style.borderColor='var(--border)'; this.style.color='var(--bege_light)'; this.style.transform='translateY(0)';">Retake Test</button>
       </div>
     </div>
   </main>
 
   <footer>
-    <p>© 2025 AI Career Development Platform. All Rights Reserved.</p>
+    <p>© CareerPath AI · B.Tech Final Year Project</p>
   </footer>
 
-  <script src="theme.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script src="auth-navigation.js"></script>
   <script src="career-test.js"></script>
 </body>
 </html>

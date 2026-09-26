@@ -1,0 +1,9 @@
+{
+  "nav": { "home": "الرئيسية", "careerTest": "اختبار المسار المهني", "courses": "الدورات", "dashboard": "لوحة التحكم", "profile": "الملف الشخصي", "login": "تسجيل الدخول" },
+  "common": { "logout": "تسجيل الخروج", "back": "رجوع", "save": "حفظ التغييرات", "cancel": "إلغاء", "edit": "تعديل الملف الشخصي", "continue": "متابعة", "next": "التالي", "previous": "السابق", "submit": "إرسال", "loading": "جارٍ التحميل…", "retry": "حاول مرة أخرى" },
+  "settings": { "title": "الإعدادات", "theme": "المظهر", "language": "اللغة", "system": "النظام", "dark": "داكن", "light": "فاتح" },
+  "auth": { "loginTitle": "مرحبًا بعودتك", "registerTitle": "إنشاء حسابك", "email": "البريد الإلكتروني", "password": "كلمة المرور", "confirmPassword": "تأكيد كلمة المرور", "forgotPassword": "هل نسيت كلمة المرور؟", "signIn": "تسجيل الدخول", "signUp": "إنشاء حساب", "google": "المتابعة باستخدام Google", "checkEmail": "تحقق من بريدك الإلكتروني لتأكيد حسابك قبل المتابعة.", "resetTitle": "اختر كلمة مرور جديدة", "resetSubmit": "تحديث كلمة المرور" },
+  "profile": { "personal": "معلومات شخصية", "careerProfile": "الملف المهني", "careerAlignment": "التوافق المهني", "topDirections": "أبرز المسارات المهنية", "learning": "تعلمي", "certificates": "شهادات CareerPath", "uploadedCertificates": "الشهادات المرفوعة", "account": "الحساب", "retake": "إعادة التقييم", "noCertificates": "أكمل دورة للحصول على أول شهادة من CareerPath.", "noUploads": "ارفع الشهادات التي حصلت عليها في مكان آخر للاحتفاظ بها هنا." },
+  "course": { "free": "مجاني", "pro": "احترافي", "progress": "تقدم الدورة", "continueLearning": "متابعة التعلم", "viewCourse": "عرض الدورة", "exploreAll": "استكشاف جميع الدورات" },
+  "certificate": { "title": "شهادة إتمام", "verify": "التحقق من الشهادة", "verified": "تم التحقق", "notFound": "لم يتم العثور على الشهادة.", "invalid": "الشهادة غير صالحة.", "download": "تنزيل الشهادة", "upload": "رفع شهادة خارجية", "uploaded": "شهادة مرفوعة" }
+}

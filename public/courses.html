@@ -3,11 +3,14 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Career Courses - CareerPath AI</title>
+
+  <script src="theme.js"></script>
+  <script src="i18n.js"></script>
+<title>Career Courses - CareerPath AI</title>
     <meta name="description" content="Explore our free career courses in AI, Data Science, Web Development, and more.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,600;1,400;1,500&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,600;1,400;1,500&family=IBM+Plex+Sans:wght=300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <style>
@@ -19,6 +22,27 @@
             border-radius: 12px;
         }
         /* keep the exact same shape as original .about-image */
+
+        /* Loading and error states for courses */
+        .loading-state, .error-state {
+            text-align: center;
+            padding: var(--space-24);
+        }
+        .loading-spinner {
+            font-size: 2rem;
+            color: var(--green_light);
+            margin-bottom: var(--space-8);
+        }
+        .error-icon {
+            font-size: 2rem;
+            color: var(--danger);
+            margin-bottom: var(--space-8);
+        }
+        .error-state button {
+            margin-top: var(--space-8);
+        }
+        .course-category-group { grid-column: 1 / -1; width: 100%; }
+        .course-category-title { margin: var(--space-8) 0 var(--space-4); color: var(--bege_light); }
     </style>
 </head>
 <body>
@@ -38,7 +62,7 @@
                         <a href="career-test.html" class="text-menu color-bege_light nav-item">Career Test</a>
                         <a href="courses.html" class="text-menu color-bege_light nav-item">Courses</a>
                         <a href="dashboard.html" class="text-menu color-bege_light nav-item">Dashboard</a>
-                        <a href="about.html" class="text-menu color-bege_light nav-item">About</a>
+                        <a href="index.html#about" class="text-menu color-bege_light nav-item">About</a>
                     </div>
                     <div class="menu-button w-nav-button">
                         <i class="fas fa-bars" style="color: var(--bege_light); font-size: 1.25rem;"></i>
@@ -51,54 +75,33 @@
             </div>
         </div>
     </div>
-
-    <!-- Mobile Nav -->
-    <nav role="navigation" class="nav-mobile" id="nav-mobile">
-        <div style="display: flex; justify-content: space-between; align-items: center; padding: 20px;">
-            <span class="text-h6" style="font-size: 1.25rem; color: var(--bege_light);"><em>CareerPath</em> AI</span>
-            <button onclick="document.getElementById('nav-mobile').classList.remove('active')" style="color: var(--bege_light); background: none; border: none; font-size: 1.5rem;">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div style="display: flex; flex-direction: column; padding: 20px; gap: 8px;">
-            <a href="index.html" class="text-menu color-bege_light nav-item" style="font-size: 1rem; padding: 12px 0;">Home</a>
-            <a href="career-test.html" class="text-menu color-bege_light nav-item" style="font-size: 1rem; padding: 12px 0;">Career Test</a>
-            <a href="courses.html" class="text-menu color-bege_light nav-item" style="font-size: 1rem; padding: 12px 0;">Courses</a>
-            <a href="dashboard.html" class="text-menu color-bege_light nav-item" style="font-size: 1rem; padding: 12px 0;">Dashboard</a>
-            <a href="about.html" class="text-menu color-bege_light nav-item" style="font-size: 1rem; padding: 12px 0;">About</a>
-            <a href="login.html" class="header-book-link-buttom" style="margin-top: 20px; justify-content: center;">
-                <div class="text-button">Login</div>
-                <i class="fas fa-arrow-right" style="font-size: 0.8rem;"></i>
-            </a>
-        </div>
-    </nav>
-
     <!-- ===== HERO ===== -->
     <section class="section-hero">
         <div class="background-video">
-            <img src="https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=1920&q=80"
+            <img src="images/courses-hero.webp"
             alt="Career background"
             style="width: 100%; height: 100%; object-fit: cover;" />
         </div>
         <div class="hero-video-shadow"></div>
         <div class="hero-content-wrapper">
             <div class="container">
-                <h1 class="text-h1 color-bege_light">Master Your<br/><em>Tech</em><br/>Skills</h1>
+                <p class="home-eyebrow">COURSE EXPLORATION</p>
+                <h1 class="text-h1 color-bege_light">Explore the<br/><em>technical worlds</em><br/>you can enter.</h1>
+                <p class="courses-hero-copy">Explore the technical worlds connected to today’s technology careers, from modern AI to software, data and product design.</p>
                 <div style="margin-top: 40px; display: flex; gap: 20px; flex-wrap: wrap;">
-                    <a href="#free-courses" class="component-button">Explore Free Courses</a>
-                    <a href="register.html" class="component-button" style="background: transparent; border: 1px solid var(--bege_light); color: var(--bege_light);">Create Account</a>
+                    <a href="#free-courses" class="component-button">Explore Courses</a>
+                    <a href="career-test.html" class="component-button" style="background: transparent; border: 1px solid var(--bege_light); color: var(--bege_light);">Take the Career Assessment</a>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- ===== COURSES OVERVIEW ===== -->
-    <section class="section" id="course-overview">
+    <section class="section" id="free-courses">
         <div class="container">
-            <h2 class="text-title_small color-green_light">Our Course Offerings</h2>
-            <div class="text-h4 color-bege_light" style="text-align: center; margin-bottom: var(--space-16);">
-                Learn in-demand tech skills with our comprehensive, free courses
-            </div>
+            <p class="home-eyebrow">LEARNING PATHS</p>
+            <h2 class="courses-section-title">Courses connected to today’s technology careers.</h2>
+            <p class="courses-section-intro">Browse the current catalog by field. Open a course to see its curriculum, lesson sequence and access details.</p>
 
             <div class="course-filters">
                 <div style="display: flex; gap: var(--space-4); flex-wrap: wrap; justify-content: center; margin-bottom: var(--space-8);">
@@ -110,117 +113,38 @@
             </div>
 
             <!-- Free Courses Grid -->
-            <div class="text-h3 color-bege_light" style="text-align: center; margin-bottom: var(--space-12);">
-                100% Free Career Courses
-            </div>
             <div class="courses-grid" id="course-list">
-                <!-- Course cards will be populated here -->
+                <div id="free-courses-loading" class="loading-state">
+                    <div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i></div>
+                    <p>Loading courses...</p>
+                </div>
+                <div id="free-courses-error" class="error-state" style="display: none;">
+                    <div class="error-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                    <p>Could not load the course catalog. Please try again.</p>
+                    <button class="component-button" id="free-courses-retry">Retry</button>
+                </div>
             </div>
 
-            <div style="text-align: center; margin-top: var(--space-8);">
-                <a href="#" style="display: inline-block;">
-                    <img src="https://cdn.prod.website-files.com/686baa6dcb68b80c7dc411ba/686d4d139453466410bc869e_arrow-long-right_white.svg" style="width: 40px; opacity: 0.7; transition: opacity 0.3s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.7" alt="View all" />
-                </a>
-            </div>
         </div>
     </section>
 
-    <!-- ===== PREMIUM COURSES ===== -->
-    <section class="section-dark" id="premium-courses">
-        <div class="container">
-            <h2 class="text-h3 color-bege_light" style="text-align: center; margin-bottom: var(--space-12);">
-                Premium Career Tracks
-            </div>
-            <div style="text-align: center; color: var(--green_light); max-width: 600px; margin: 0 auto var(--space-8);">
-                Access specialized learning paths with mentorship, projects, and career support
-            </div>
-            <div class="courses-grid">
-                <!-- Premium course cards will be populated here -->
-            </div>
-            <div style="text-align: center; margin-top: var(--space-8);">
-                <a href="choose-plan.html" class="component-button">See All Premium Plans</a>
-            </div>
-        </div>
-    </section>
-
-    <!-- ===== HOW IT WORKS ===== -->
-    <section class="steps-section" id="how-it-works">
-        <div class="container">
-            <h2>How Our Courses Work</h2>
-            <div class="steps-grid">
-                <div class="step-card animate-on-scroll">
-                    <div class="step-number">1</div>
-                    <h3>Choose Your Path</h3>
-                    <p>Select from our free courses or premium tracks based on your career goals.</p>
-                </div>
-                <div class="step-card animate-on-scroll">
-                    <div class="step-number">2</div>
-                    <h3>Learn & Practice</h3>
-                    <p>Complete hands-on projects, quizzes, and exercises to build real skills.</p>
-                </div>
-                <div class="step-card animate-on-scroll">
-                    <div class="step-number">3</div>
-                    <h3>Earn & Advance</h3>
-                    <p>Earn certificates, build your portfolio, and prepare for tech interviews.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- ===== AI CHAT CTA ===== -->
+    <!-- ===== ASSESSMENT CTA ===== -->
     <section class="ai-chat-cta">
-        <h2><i class="fas fa-robot" style="margin-right: 12px;"></i>Have Questions?</h2>
-        <p>Our Gemini-powered AI Career Mentor is available 24/7 to help with course recommendations, learning tips, and career advice.</p>
-        <button class="component-button" onclick="window.bot?.toggleChat?.()">
-            <i class="fas fa-comments" style="margin-right: 8px;"></i> Chat with AI Mentor
-        </button>
-    </section>
-
-    <!-- ===== TESTIMONIALS ===== -->
-    <section class="section-about" id="testimonials">
-        <div class="container">
-            <h2 class="text-h3 color-bege_light" style="text-align: center; margin-bottom: var(--space-12);">What Learners Say</h2>
-            <div class="testimonial-carousel">
-                <div class="testimonial-card animate-on-scroll">
-                    <div class="stars">
-                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
-                    </div>
-                    <p>"The Python course gave me the skills to land my first data analyst job. The hands-on projects were invaluable."</p>
-                    <div class="testimonial-author">
-                        <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80" alt="Student">
-                        <div>
-                            <strong>Priya Sharma</strong>
-                            <span>Data Analyst</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="testimonial-card animate-on-scroll">
-                    <div class="stars">
-                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
-                    </div>
-                    <p>"I transitioned from marketing to web development using the free courses here. The structured approach made it possible."</p>
-                    <div class="testimonial-author">
-                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80" alt="Student">
-                        <div>
-                            <strong>Marcus Chen</strong>
-                            <span>Frontend Developer</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <h2>Not sure where to begin?</h2>
+        <p>Take the Career Assessment to explore technology directions that may fit your interests.</p>
+        <a class="component-button" href="career-test.html">Explore Career Directions</a>
     </section>
 
     <!-- ===== FINAL CTA ===== -->
     <section class="cta-section">
-        <h2>Ready to Start Learning?</h2>
-        <p>Join thousands of learners who are building their tech careers with our free courses.</p>
-        <div style="display: flex; gap: var(--space-4); justify-content: center; flex-wrap: wrap;">
+        <h2>Choose a useful next step.</h2>
+        <p>Explore courses directly, or start with a Career Assessment to see directions connected to your interests.</p>
+            <div style="display: flex; gap: var(--space-4); justify-content: center; flex-wrap: wrap;">
             <a href="#free-courses" class="component-button" style="display: inline-flex; align-items: center; gap: 8px;">
-                <i class="fas fa-book-open"></i> Start Learning Free
+                <i class="fas fa-book-open"></i> Explore Courses
             </a>
             <a href="register.html" class="component-button" style="background: transparent; border: 1px solid var(--bege); color: var(--bege); display: inline-flex; align-items: center; gap: 8px;">
-                <i class="fas fa-user-plus"></i> Create Free Account
+                <i class="fas fa-arrow-right"></i> Take the Career Assessment
             </a>
         </div>
     </section>
@@ -235,21 +159,18 @@
                 <span class="text-footer color-bege_light" style="display: block; opacity: 0.6;">B.Tech Final Year Project</span>
             </div>
             <div class="footer-block" style="text-align: center;">
-                <div class="text-footer color-bege_light" style="opacity: 0.7;">© 2025 CareerPath AI | Powered by Gemini AI</div>
+                <div class="text-footer color-bege_light" style="opacity: 0.7;">© CareerPath AI</div>
             </div>
             <div class="footer-block" style="text-align: right;">
                 <span class="text-footer color-bege_light" style="opacity: 0.6;">Symbiosis Institute of Technology, Pune</span>
             </div>
         </footer>
-        <div class="footer-bottom">
-            <p>© 2025 CareerPath AI. B.Tech Final Year Project. Built with <i class="fas fa-heart" style="color: var(--bege); margin: 0 4px;"></i> for academic purposes.</p>
-        </div>
     </div>
 
     <!-- ===== COOKIE BANNER ===== -->
     <div class="cookies-wrapper container" id="cookie-banner">
         <div style="display: flex; justify-content: space-between; align-items: center; gap: 24px; flex-wrap: wrap;">
-            <div class="text-body_small">This website uses cookies to improve your experience.</div>
+            <div class="text-body_small">This website uses browser storage to remember your preferences.</div>
             <div style="display: flex; align-items: center; gap: 12px;">
                 <button class="button text-button" id="accept-cookies" style="background: var(--bege_light); color: var(--green); padding: 10px 24px; border-radius: 60px; font-family: var(--font-display); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; border: none; cursor: pointer;">Continue</button>
                 <i class="fas fa-arrow-right" style="color: var(--bege); font-size: 0.8rem;"></i>
@@ -258,11 +179,11 @@
     </div>
 
     <!-- ===== SCRIPTS ===== -->
-    <script src="theme.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="auth-navigation.js"></script>
+    <script src="courses.js"></script>
     <script>
-        document.querySelector('.menu-button').addEventListener('click', function() {
-            document.getElementById('nav-mobile').classList.add('active');
-        });
 
         const observerOptions = { threshold: 0.1, rootMargin: '0px 0px -50px 0px' };
         const observer = new IntersectionObserver((entries) => {
@@ -286,8 +207,19 @@
             // Initialize course filtering
             initCourseFilters();
 
-            // Populate courses
-            populateCourses();
+            // Populate courses after data is loaded
+            populateCoursesFromAPI();
+
+            // Add retry button listeners
+            const freeCoursesRetry = document.getElementById('free-courses-retry');
+            const premiumCoursesRetry = document.getElementById('premium-courses-retry');
+
+            if (freeCoursesRetry) {
+                freeCoursesRetry.addEventListener('click', populateCoursesFromAPI);
+            }
+            if (premiumCoursesRetry) {
+                premiumCoursesRetry.addEventListener('click', populateCoursesFromAPI);
+            }
         });
 
         function initCourseFilters() {
@@ -310,177 +242,181 @@
             const courses = document.querySelectorAll('.course-card');
             courses.forEach(course => {
                 if (filter === 'all') {
-                    course.style.display = 'block';
+                    course.style.display = '';
                 } else {
                     const level = course.dataset.level;
                     if (level === filter) {
-                        course.style.display = 'block';
+                        course.style.display = '';
                     } else {
                         course.style.display = 'none';
                     }
                 }
             });
+            document.querySelectorAll('.course-category-group').forEach(group => {
+                group.style.display = [...group.querySelectorAll('.course-card')]
+                    .some(course => course.style.display !== 'none') ? '' : 'none';
+            });
         }
 
-        function populateCourses() {
-            const freeCoursesGrid = document.getElementById('course-list');
-            const premiumCoursesGrid = document.querySelector('.section-dark .courses-grid');
+        function renderCourseGroups(courses, container, categoryOrder) {
+            const grouped = new Map();
+            const descriptions = {
+                'AI & Machine Learning': 'Learn about models, data, and the foundations of intelligent systems.',
+                'AI Building & Automation': 'Connect AI tools, prompts, and workflows to practical tasks.',
+                'Software Engineering': 'Build software foundations and explore AI-assisted development.',
+                'Data': 'Work with data, analysis, and the patterns behind useful decisions.',
+                'Cloud & Infrastructure': 'Explore the systems and infrastructure that support software.',
+                'Cybersecurity': 'Study security concepts and ways to protect digital systems.',
+                'Design & Product': 'Explore user experience, product thinking, and digital design.'
+            };
+            courses.forEach(course => {
+                const category = course.category || 'Uncategorized';
+                if (!grouped.has(category)) grouped.set(category, []);
+                grouped.get(category).push(course);
+            });
 
-            // Free courses data
-            const freeCourses = [
-                {
-                    id: "intro_to_ai",
-                    title: "Introduction to AI & ML",
-                    description: "Learn the fundamentals of Artificial Intelligence and Machine Learning.",
-                    image: "https://images.unsplash.com/photo-1526379095098-d400fd0bf935?w=600&q=80",
-                    badge: "Beginner",
-                    weeks: 8,
-                    level: "beginner"
-                },
-                {
-                    id: "python_for_careers",
-                    title: "Python for Career Development",
-                    description: "Master Python programming for data science and automation.",
-                    image: "https://images.unsplash.com/photo-1516116216624-53e697fedbea?w=600&q=80",
-                    badge: "Beginner",
-                    weeks: 6,
-                    level: "beginner"
-                },
-                {
-                    id: "data_analytics_basics",
-                    title: "Data Analytics Basics",
-                    description: "Learn to analyze data and create insightful visualizations.",
-                    image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&q=80",
-                    badge: "Beginner",
-                    weeks: 5,
-                    level: "beginner"
-                },
-                {
-                    id: "web_dev",
-                    title: "Web Development Fundamentals",
-                    description: "HTML, CSS, JavaScript, and responsive design. Build your first portfolio website.",
-                    image: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=600&q=80",
-                    badge: "Beginner",
-                    weeks: 5,
-                    level: "beginner"
-                },
-                {
-                    id: "dsa",
-                    title: "Data Structures & Algorithms",
-                    description: "Arrays, linked lists, trees, graphs, sorting, and searching. Foundation for technical interviews.",
-                    image: "https://images.unsplash.com/photo-1516116216624-53e697fedbea?w=600&q=80",
-                    badge: "Intermediate",
-                    weeks: 6,
-                    level: "intermediate"
-                },
-                {
-                    id: "devops",
-                    title: "DevOps & Cloud Basics",
-                    description: "Learn Docker, Kubernetes, AWS basics, and CI/CD pipelines.",
-                    image: "https://images.unsplash.com/photo-1534796636912-4b0d45872b50?w=600&q=80",
-                    badge: "Intermediate",
-                    weeks: 6,
-                    level: "intermediate"
-                },
-                {
-                    id: "cybersecurity",
-                    title: "Cybersecurity Fundamentals",
-                    description: "Learn network security, ethical hacking, and threat prevention.",
-                    image: "https://images.unsplash.com/photo-1554254487-84bc309b4d0-bd2a1dcfee8?w=600&q=80",
-                    badge: "Beginner",
-                    weeks: 8,
-                    level: "beginner"
-                },
-                {
-                    id: "ui_ux",
-                    title: "UI/UX Design Principles",
-                    description: "User research, wireframing, prototyping, and user testing methodologies.",
-                    image: "https://images.unsplash.com/photo-1561070683-8deb3b36cfb5?w=600&q=80",
-                    badge: "Beginner",
-                    weeks: 6,
-                    level: "beginner"
-                }
+            const orderedCategories = [
+                ...categoryOrder,
+                ...[...grouped.keys()].filter(category => !categoryOrder.includes(category))
             ];
-
-            // Premium courses data
-            const premiumCourses = [
-                {
-                    id: "advanced_ml",
-                    title: "Advanced Machine Learning",
-                    description: "Deep dive into neural networks, NLP, and computer vision.",
-                    image: "https://images.unsplash.com/photo-1550751826-890d87068e02?w=600&q=80",
-                    badge: "Advanced",
-                    weeks: 12,
-                    level: "advanced",
-                    premium: true
-                },
-                {
-                    id: "aws_architect",
-                    title: "AWS Solutions Architect",
-                    description: "Design and deploy scalable applications on Amazon Web Services.",
-                    image: "https://images.unsplash.com/photo-1526600246430-eaa1ee276708?w=600&q=80",
-                    badge: "Intermediate",
-                    weeks: 10,
-                    level: "intermediate",
-                    premium: true
-                },
-                {
-                    id: "data_science",
-                    title: "Data Science Professional",
-                    description: "Complete data science pipeline from cleaning to deployment.",
-                    image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&q=80",
-                    badge: "Advanced",
-                    weeks: 14,
-                    level: "advanced",
-                    premium: true
-                },
-                {
-                    id: "full_stack",
-                    title: "Full Stack Web Development",
-                    description: "MERN stack development with advanced frontend and backend concepts.",
-                    image: "https://images.unsplash.com/photo-1526379095098-d400fd0bf935?w=600&q=80",
-                    badge: "Intermediate",
-                    weeks: 12,
-                    level: "intermediate",
-                    premium: true
-                }
-            ];
-
-            // Populate free courses
-            freeCoursesGrid.innerHTML = freeCourses.map(course => `
-                <div class="course-card animate-on-scroll" data-level="${course.level}">
+            const cardMarkup = (course, isPremium) => `
+                <div class="course-card animate-on-scroll" data-level="${course.level}" data-course-id="${course.id}" data-course-name="${course.title}" onclick="location.href='course-detail.html?id=${encodeURIComponent(course.id)}'">
                     <div class="course-image">
                         <img src="${course.image}" alt="${course.title}">
-                        <div class="course-overlay">${course.badge}</div>
                     </div>
-                    <h3>${course.title}</h3>
+                    <div class="course-card-content">
+                    <p class="course-card-level">${course.badge}${isPremium ? ' · Pro' : ''}</p>
+                    <h3><a class="course-title-link" href="course-detail.html?id=${encodeURIComponent(course.id)}" onclick="event.stopPropagation()">${course.title}</a></h3>
                     <p>${course.description}</p>
                     <div class="course-meta">
-                        <span><i class="fas fa-clock"></i> ${course.weeks} weeks</span>
-                        <span><i class="fas fa-signal"></i> ${course.badge}</span>
+                        <span>${course.weeks} weeks</span>
                     </div>
-                    <a href="enroll-free.html?course=${course.id}" class="course-btn">Enroll Free</a>
+                    ${isPremium
+                        ? '<a class="course-btn" href="course-detail.html?id=' + encodeURIComponent(course.id) + '" onclick="event.stopPropagation()">Explore Course</a>'
+                        : '<button class="course-btn enroll-btn" onclick="event.stopPropagation()">Enroll Free</button>'}
+                    </div>
                 </div>
-            `).join('');
+            `;
 
-            // Populate premium courses
-            premiumCoursesGrid.innerHTML = premiumCourses.map(course => `
-                <div class="course-card animate-on-scroll" data-level="${course.level}">
-                    ${course.premium ? '<div class="premium-banner"><i class="fas fa-crown"></i> Premium</div>' : ''}
-                    <div class="course-image">
-                        <img src="${course.image}" alt="${course.title}">
-                        <div class="course-overlay">${course.badge}</div>
-                    </div>
-                    <h3>${course.title}</h3>
-                    <p>${course.description}</p>
-                    <div class="course-meta">
-                        <span><i class="fas fa-clock"></i> ${course.weeks} weeks</span>
-                        <span><i class="fas fa-signal"></i> ${course.badge}</span>
-                    </div>
-                    <a href="choose-plan.html" class="course-btn">Get Premium</a>
-                </div>
-            `).join('');
+            container.innerHTML = orderedCategories
+                .filter(category => grouped.has(category))
+                .map(category => `
+                    <section class="course-category-group" data-category="${category}">
+                        <header class="course-category-heading"><span>${String(orderedCategories.indexOf(category) + 1).padStart(2, '0')}</span><div><h3 class="course-category-title">${category}</h3><p>${descriptions[category] || 'Explore courses in this technical field.'}</p></div></header>
+                        <div class="courses-grid category-courses-grid">
+                            ${grouped.get(category).map(course => cardMarkup(course, course.premium)).join('')}
+                        </div>
+                    </section>
+                `).join('');
+        }
+
+        async function populateCoursesFromAPI() {
+            // Show loading states
+            const freeCoursesLoading = document.getElementById('free-courses-loading');
+            const freeCoursesError = document.getElementById('free-courses-error');
+            const premiumCoursesLoading = document.getElementById('premium-courses-loading');
+            const premiumCoursesError = document.getElementById('premium-courses-error');
+
+            if (freeCoursesLoading) freeCoursesLoading.style.display = 'flex';
+            if (freeCoursesError) freeCoursesError.style.display = 'none';
+            if (premiumCoursesLoading) premiumCoursesLoading.style.display = 'flex';
+            if (premiumCoursesError) premiumCoursesError.style.display = 'none';
+
+            try {
+                // Fetch courses directly from API
+                const API_BASE = window.API_BASE || '/api';
+                const response = await fetch(`${API_BASE}/courses`);
+
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch courses: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                // Transform API response to match expected UI format
+                const allCourses = data.courses.map(course => ({
+                    id: course.id,
+                    title: course.title,
+                    description: course.description,
+                    image: course.image_url,
+                    badge: course.level.charAt(0).toUpperCase() + course.level.slice(1), // Capitalize first letter
+                    weeks: course.duration_weeks,
+                    category: course.category,
+                    level: course.level,
+                    // Determine if premium based on level or other criteria
+                    premium: Boolean(course.premium)
+                }));
+
+                // Hide loading states
+                if (freeCoursesLoading) freeCoursesLoading.style.display = 'none';
+                if (premiumCoursesLoading) premiumCoursesLoading.style.display = 'none';
+
+                const freeCoursesGrid = document.getElementById('course-list');
+                const premiumCoursesGrid = document.querySelector('.section-dark .courses-grid');
+
+                // Filter free and premium courses from API data
+                const freeCourses = allCourses;
+                const premiumCourses = [];
+
+                // Handle empty results (error state)
+                const hasError = freeCourses.length === 0 && premiumCourses.length === 0;
+
+                if (hasError) {
+                    // Show error states
+                    if (freeCoursesError) freeCoursesError.style.display = 'flex';
+                    if (premiumCoursesError) premiumCoursesError.style.display = 'flex';
+                    return;
+                }
+
+                // Hide error states
+                if (freeCoursesError) freeCoursesError.style.display = 'none';
+                if (premiumCoursesError) premiumCoursesError.style.display = 'none';
+
+                const preferredCategoryOrder = [
+                    'AI & Machine Learning', 'AI Building & Automation', 'Software Engineering',
+                    'Data', 'Cloud & Infrastructure', 'Cybersecurity', 'Design & Product'
+                ];
+                const categoryOrder = [
+                    ...preferredCategoryOrder.filter(category => (data.categories || []).includes(category)),
+                    ...(data.categories || []).filter(category => !preferredCategoryOrder.includes(category))
+                ];
+
+                // Populate courses by the category supplied with each course record.
+                if (freeCoursesGrid) {
+                    renderCourseGroups(freeCourses, freeCoursesGrid, categoryOrder);
+                }
+
+                // Populate premium courses
+                if (premiumCoursesGrid) {
+                    renderCourseGroups(premiumCourses, premiumCoursesGrid, categoryOrder);
+                }
+            } catch (error) {
+                console.error('Error loading course data:', error);
+
+                // Hide loading states
+                if (freeCoursesLoading) freeCoursesLoading.style.display = 'none';
+                if (premiumCoursesLoading) premiumCoursesLoading.style.display = 'none';
+
+                // Show error states
+                if (freeCoursesError) freeCoursesError.style.display = 'flex';
+                if (premiumCoursesError) premiumCoursesError.style.display = 'flex';
+            }
         }
     </script>
+    <div id="enroll-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000;">
+    <div style="background: white; padding: 2rem; border-radius: 8px; width: 90%; max-width: 400px;">
+        <div class="modal-header">
+            <h3>Confirm Enrollment</h3>
+            <button class="close-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p>Are you sure you want to enroll in <span id="modal-course-name"></span>?</p>
+        </div>
+        <div class="modal-footer">
+            <button id="cancel-enroll" class="course-btn">Cancel</button>
+            <button id="confirm-enroll" class="course-btn">Enroll</button>
+        </div>
+    </div>
+</div>
 </body>
 </html>

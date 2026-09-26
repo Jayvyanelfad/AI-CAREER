@@ -1,0 +1,48 @@
+{
+  "categories": [
+    "AI & Machine Learning",
+    "Software Engineering",
+    "AI Building & Automation",
+    "Data",
+    "Cloud & Infrastructure",
+    "Cybersecurity",
+    "Design & Product"
+  ],
+  "courseCategories": {
+    "intro_to_ai": "AI & Machine Learning",
+    "advanced_ml": "AI & Machine Learning",
+    "python_for_careers": "Software Engineering",
+    "web_dev": "Software Engineering",
+    "dsa": "Software Engineering",
+    "full_stack": "Software Engineering",
+    "data_analytics_basics": "Data",
+    "data_science": "Data",
+    "devops": "Cloud & Infrastructure",
+    "aws_architect": "Cloud & Infrastructure",
+    "cybersecurity": "Cybersecurity",
+    "ui_ux": "Design & Product",
+    "prompt_engineering": "AI Building & Automation",
+    "ai_automation_n8n": "AI Building & Automation",
+    "vibe_coding": "AI Building & Automation",
+    "generative_ai_llm": "AI & Machine Learning",
+    "rag_knowledge_systems": "AI & Machine Learning",
+    "ai_agents": "AI & Machine Learning",
+    "mcp_tool_connected_ai": "AI Building & Automation",
+    "ai_software_engineering": "Software Engineering",
+    "ai_evaluation": "AI & Machine Learning",
+    "ai_builder_capstone": "AI Building & Automation"
+  },
+  "careerCourseMapping": {
+    "Software Developer": ["python_for_careers", "web_dev", "dsa", "full_stack", "vibe_coding", "ai_software_engineering", "ai_builder_capstone"],
+    "Data Scientist": ["python_for_careers", "data_science", "advanced_ml", "generative_ai_llm", "rag_knowledge_systems", "ai_evaluation"],
+    "Full Stack Developer": ["web_dev", "dsa", "full_stack", "python_for_careers", "vibe_coding", "ai_software_engineering", "ai_builder_capstone"],
+    "Frontend Developer": ["web_dev", "ui_ux", "full_stack", "vibe_coding", "ai_software_engineering"],
+    "Backend Developer": ["python_for_careers", "dsa", "full_stack", "devops", "generative_ai_llm", "rag_knowledge_systems", "ai_software_engineering", "ai_agents"],
+    "AI/ML Engineer": ["intro_to_ai", "python_for_careers", "advanced_ml", "generative_ai_llm", "rag_knowledge_systems", "ai_agents", "mcp_tool_connected_ai", "ai_evaluation", "ai_builder_capstone"],
+    "Data Analyst": ["data_analytics_basics", "python_for_careers", "data_science", "intro_to_ai", "prompt_engineering", "ai_automation_n8n", "generative_ai_llm", "ai_evaluation"],
+    "Cloud Architect": ["aws_architect", "devops", "cybersecurity", "ai_automation_n8n", "mcp_tool_connected_ai"],
+    "DevOps Engineer": ["devops", "aws_architect", "python_for_careers", "cybersecurity", "ai_automation_n8n", "vibe_coding", "mcp_tool_connected_ai", "ai_software_engineering", "ai_evaluation"],
+    "UI/UX Designer": ["ui_ux", "web_dev", "full_stack", "prompt_engineering", "vibe_coding", "generative_ai_llm"],
+    "Product Manager": ["ui_ux", "data_analytics_basics", "web_dev", "intro_to_ai", "prompt_engineering", "ai_automation_n8n", "vibe_coding", "ai_evaluation", "ai_builder_capstone"]
+  }
+}

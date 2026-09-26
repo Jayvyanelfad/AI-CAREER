@@ -1,8 +1,10 @@
-// Career Test Logic - 15 Question Assessment
+// Career Test Logic - CS Career Assessment Redesign
 (function() {
+  const API_BASE = window.API_BASE || '/api';
   const quizContainer = document.getElementById('quiz-container');
   const resultsContainer = document.getElementById('results-container');
   const questionTitle = document.getElementById('question-title');
+  const questionCard = document.getElementById('question-card');
   const optionsContainer = document.getElementById('options-container');
   const prevBtn = document.getElementById('prev-btn');
   const nextBtn = document.getElementById('next-btn');
@@ -17,495 +19,293 @@
 
   // Current state
   let currentQuestion = 0;
-  let answers = {};
+  let answers = {}; // question_id -> value (1-5)
+  let questions = []; // All fetched questions
+  let selectedQuestionIds = []; // IDs of questions selected for this attempt
+  let usedQuestionIds = []; // IDs of questions used in previous attempts (to avoid immediate repetition)
+  let assessmentVersion = 'career-profile-v1';
 
-  // Questions database - 15 questions across 4 categories
-  const questions = [
-    // WORK STYLE (4 questions)
-    {
-      id: 1,
-      text: "How do you prefer to work on complex projects?",
-      options: [
-        { text: "Collaboratively with a team", value: "team" },
-        { text: "With guidance from experienced mentors", value: "mentor" },
-        { text: "Independently on focused tasks", value: "independent" },
-        { text: "On open-ended creative problems", value: "creative" }
-      ],
-      category: "workStyle"
-    },
-    {
-      id: 2,
-      text: "What's your ideal work environment?",
-      options: [
-        { text: "Fast-paced startup with quick decisions", value: "startup" },
-        { text: "Structured corporate with clear processes", value: "corporate" },
-        { text: "Remote/flexible with autonomy", value: "remote" },
-        { text: "Mix of in-person and remote work", value: "hybrid" }
-      ],
-      category: "workStyle"
-    },
-    {
-      id: 3,
-      text: "How do you handle tight deadlines?",
-      options: [
-        { text: "I thrive under pressure", value: "pressure" },
-        { text: "I plan ahead to avoid rush situations", value: "planner" },
-        { text: "I adapt my pace based on circumstances", value: "adaptive" },
-        { text: "I follow established processes", value: "process" }
-      ],
-      category: "workStyle"
-    },
-    {
-      id: 4,
-      text: "What motivates you most at work?",
-      options: [
-        { text: "Seeing my work directly impact users", value: "impact" },
-        { text: "Learning and professional development", value: "growth" },
-        { text: "Stable income and predictable career path", value: "stability" },
-        { text: "Being on the cutting edge of technology", value: "innovation" }
-      ],
-      category: "workStyle"
-    },
+  // In-progress attempt is kept in sessionStorage so a refresh mid-assessment
+  // does not throw away the user's answers. This is client-side only: nothing
+  // incomplete is ever written to the database.
+  const ATTEMPT_STORAGE_KEY = 'cs-career-v2-attempt';
+  const ATTEMPT_STATE_VERSION = 'cs-career-v2';
 
-    // TECHNICAL INTEREST (4 questions)
-    {
-      id: 5,
-      text: "Which tech area interests you most?",
-      options: [
-        { text: "Frontend (UI, design, user experience)", value: "frontend" },
-        { text: "Backend (servers, databases, APIs)", value: "backend" },
-        { text: "Data (analysis, visualization, insights)", value: "data" },
-        { text: "Infrastructure, deployment & operations", value: "infrastructure" }
-      ],
-      category: "technical"
-    },
-    {
-      id: 6,
-      text: "How do you feel about AI and Machine Learning?",
-      options: [
-        { text: "Fascinated - I want to build AI systems", value: "buildAI" },
-        { text: "Interested in using AI in applications", value: "useAI" },
-        { text: "More interested in analyzing data patterns", value: "analyzeData" },
-        { text: "Less interested, prefer traditional development", value: "traditional" }
-      ],
-      category: "technical"
-    },
-    {
-      id: 7,
-      text: "What's your preferred programming style?",
-      options: [
-        { text: "Visual - I like building UIs I can see", value: "visual" },
-        { text: "Logic puzzles and algorithmic thinking", value: "algorithmic" },
-        { text: "System design and architecture", value: "architecture" },
-        { text: "Both frontend and backend equally", value: "fullstack" }
-      ],
-      category: "technical"
-    },
-    {
-      id: 8,
-      text: "How do you approach learning new technologies?",
-      options: [
-        { text: "Hands-on projects and experimentation", value: "handsOn" },
-        { text: "Structured courses and documentation", value: "structured" },
-        { text: "Community forums and collaborative learning", value: "community" },
-        { text: "Deep dive into theory and fundamentals", value: "theory" }
-      ],
-      category: "technical"
-    },
-
-    // PROBLEM SOLVING (4 questions)
-    {
-      id: 9,
-      text: "When facing a difficult problem, you typically:",
-      options: [
-        { text: "Break it down into smaller pieces", value: "breakdown" },
-        { text: "Research existing solutions", value: "research" },
-        { text: "Experiment with different approaches", value: "experiment" },
-        { text: "Ask for help and collaborate", value: "collaborate" }
-      ],
-      category: "problemSolving"
-    },
-    {
-      id: 10,
-      text: "What's your relationship with debugging?",
-      options: [
-        { text: "I love the detective work of debugging", value: "detective" },
-        { text: "I approach it strategically with tools", value: "strategic" },
-        { text: "It's frustrating but necessary", value: "necessary" },
-        { text: "I prefer writing code to avoid bugs", value: "prevent" }
-      ],
-      category: "problemSolving"
-    },
-    {
-      id: 11,
-      text: "How do you measure success in your work?",
-      options: [
-        { text: "User satisfaction and engagement", value: "satisfaction" },
-        { text: "Code quality and system performance", value: "quality" },
-        { text: "Data accuracy and insights", value: "accuracy" },
-        { text: "Innovation and pushing boundaries", value: "innovationMeasure" }
-      ],
-      category: "problemSolving"
-    },
-    {
-      id: 12,
-      text: "How do you stay updated with tech trends?",
-      options: [
-        { text: "Very active - follow blogs, podcasts, Twitter", value: "active" },
-        { text: "Selective - focus on what's relevant", value: "selective" },
-        { text: "Through formal learning and courses", value: "formal" },
-        { text: "Mainly through work projects", value: "work" }
-      ],
-      category: "problemSolving"
-    },
-
-    // CAREER VISION (3 questions)
-    {
-      id: 13,
-      text: "Where do you see yourself in 5 years?",
-      options: [
-        { text: "Deep expert in a specific technology", value: "expert" },
-        { text: "Leading a team or division", value: "leader" },
-        { text: "Full-stack expert across technologies", value: "fullstackExpert" },
-        { text: "Making significant impact on users/business", value: "impactVision" }
-      ],
-      category: "careerVision"
-    },
-    {
-      id: 14,
-      text: "What's more important to you?",
-      options: [
-        { text: "High salary and financial security", value: "salary" },
-        { text: "Work-life balance and flexibility", value: "balance" },
-        { text: "Learning opportunities and growth", value: "learning" },
-        { text: "Autonomy and decision-making power", value: "autonomy" }
-      ],
-      category: "careerVision"
-    },
-    {
-      id: 15,
-      text: "Ideal company culture for you?",
-      options: [
-        { text: "Innovation-focused, cutting-edge tech", value: "innovationCulture" },
-        { text: "Stable, established, predictable", value: "stable" },
-        { text: "Social impact, making a difference", value: "impactCulture" },
-        { text: "Creative freedom, artistic expression", value: "creativeCulture" }
-      ],
-      category: "careerVision"
-    }
-  ];
-
-  // Career database with scoring weights
-  const careers = {
-    "Software Developer": {
-      icon: "fa-code",
-      description: "Build full-stack applications from frontend to backend",
-      salary: "₹4-8 LPA Entry, ₹8-15 LPA Mid-level",
-      skills: ["JavaScript", "Python", "System Design", "Problem Solving"],
-      course: "Full Stack Web Development",
-      weights: {
-        team: 1, mentor: 2, independent: 3, creative: 1,
-        startup: 2, corporate: 2, remote: 3, hybrid: 2,
-        pressure: 2, planner: 3, adaptive: 2, process: 2,
-        impact: 2, growth: 3, stability: 2, innovation: 3,
-        frontend: 2, backend: 2, data: 1, infrastructure: 1,
-        buildAI: 1, useAI: 2, analyzeData: 3, traditional: 2,
-        visual: 1, algorithmic: 3, architecture: 2, fullstack: 3,
-        handsOn: 3, structured: 2, community: 2, theory: 1,
-        breakdown: 3, research: 2, experiment: 3, collaborate: 2,
-        detective: 3, strategic: 3, necessary: 2, prevent: 1,
-        satisfaction: 2, quality: 3, accuracy: 2, innovationMeasure: 3,
-        active: 2, selective: 2, formal: 2, work: 2,
-        expert: 3, leader: 2, fullstackExpert: 3, impactVision: 2,
-        salary: 2, balance: 3, learning: 3, autonomy: 2,
-        innovationCulture: 3, stable: 2, impactCulture: 2, creativeCulture: 2
-      }
-    },
-    "Frontend Developer": {
-      icon: "fa-paint-brush",
-      description: "Create beautiful user interfaces and interactive experiences",
-      salary: "₹3-6 LPA Entry, ₹6-12 LPA Mid-level",
-      skills: ["HTML/CSS", "JavaScript", "UI/UX Design", "Responsive Design"],
-      course: "Frontend Web Development",
-      weights: {
-        team: 2, mentor: 2, independent: 2, creative: 3,
-        startup: 3, corporate: 1, remote: 3, hybrid: 2,
-        pressure: 1, planner: 2, adaptive: 3, process: 1,
-        impact: 3, growth: 2, stability: 1, innovation: 2,
-        frontend: 3, backend: 1, data: 1, infrastructure: 1,
-        buildAI: 1, useAI: 2, analyzeData: 1, traditional: 1,
-        visual: 3, algorithmic: 1, architecture: 1, fullstack: 2,
-        handsOn: 3, structured: 2, community: 2, theory: 1,
-        breakdown: 2, research: 2, experiment: 3, collaborate: 3,
-        detective: 1, strategic: 2, necessary: 2, prevent: 1,
-        satisfaction: 3, quality: 2, accuracy: 1, innovationMeasure: 2,
-        active: 3, selective: 2, formal: 1, work: 2,
-        expert: 2, leader: 1, fullstackExpert: 2, impactVision: 3,
-        salary: 1, balance: 3, learning: 2, autonomy: 3,
-        innovationCulture: 3, stable: 1, impactCulture: 2, creativeCulture: 3
-      }
-    },
-    "Backend Developer": {
-      icon: "fa-server",
-      description: "Build server-side logic, databases, and APIs",
-      salary: "₹3-6 LPA Entry, ₹6-12 LPA Mid-level",
-      skills: ["Python/Java", "SQL/NoSQL", "API Design", "System Architecture"],
-      course: "Backend Development",
-      weights: {
-        team: 2, mentor: 3, independent: 2, creative: 1,
-        startup: 1, corporate: 3, remote: 2, hybrid: 2,
-        pressure: 2, planner: 3, adaptive: 2, process: 3,
-        impact: 2, growth: 2, stability: 3, innovation: 1,
-        frontend: 1, backend: 3, data: 2, infrastructure: 2,
-        buildAI: 2, useAI: 2, analyzeData: 3, traditional: 3,
-        visual: 1, algorithmic: 3, architecture: 3, fullstack: 2,
-        handsOn: 2, structured: 3, community: 2, theory: 2,
-        breakdown: 3, research: 3, experiment: 1, collaborate: 2,
-        detective: 2, strategic: 3, necessary: 3, prevent: 2,
-        satisfaction: 2, quality: 3, accuracy: 3, innovationMeasure: 1,
-        active: 2, selective: 3, formal: 3, work: 2,
-        expert: 3, leader: 2, fullstackExpert: 2, impactVision: 1,
-        salary: 3, balance: 1, learning: 2, autonomy: 1,
-        innovationCulture: 1, stable: 3, impactCulture: 1, creativeCulture: 1
-      }
-    },
-    "Full Stack Developer": {
-      icon: "fa-layer-group",
-      description: "Work across both frontend and backend technologies",
-      salary: "₹4-8 LPA Entry, ₹8-15 LPA Mid-level",
-      skills: ["HTML/CSS/JS", "Python/Java", "Databases", "DevOps"],
-      course: "Full Stack Web Development",
-      weights: {
-        team: 2, mentor: 2, independent: 2, creative: 2,
-        startup: 2, corporate: 2, remote: 3, hybrid: 3,
-        pressure: 2, planner: 3, adaptive: 3, process: 2,
-        impact: 2, growth: 3, stability: 2, innovation: 2,
-        frontend: 2, backend: 2, data: 2, infrastructure: 2,
-        buildAI: 2, useAI: 2, analyzeData: 2, traditional: 2,
-        visual: 2, algorithmic: 2, architecture: 2, fullstack: 3,
-        handsOn: 3, structured: 2, community: 3, theory: 1,
-        breakdown: 2, research: 2, experiment: 3, collaborate: 3,
-        detective: 2, strategic: 2, necessary: 2, prevent: 1,
-        satisfaction: 2, quality: 2, accuracy: 2, innovationMeasure: 2,
-        active: 2, selective: 2, formal: 2, work: 3,
-        expert: 2, leader: 2, fullstackExpert: 3, impactVision: 2,
-        salary: 2, balance: 2, learning: 3, autonomy: 2,
-        innovationCulture: 2, stable: 2, impactCulture: 2, creativeCulture: 2
-      }
-    },
-    "Data Scientist": {
-      icon: "fa-chart-line",
-      description: "Extract insights and build predictive models from data",
-      salary: "₹4-9 LPA Entry, ₹9-18 LPA Mid-level",
-      skills: ["Python/R", "Statistics", "Machine Learning", "Data Visualization"],
-      course: "Data Science Fundamentals",
-      weights: {
-        team: 2, mentor: 2, independent: 3, creative: 1,
-        startup: 2, corporate: 3, remote: 3, hybrid: 2,
-        pressure: 1, planner: 3, adaptive: 2, process: 2,
-        impact: 2, growth: 3, stability: 2, innovation: 3,
-        frontend: 1, backend: 1, data: 3, infrastructure: 1,
-        buildAI: 3, useAI: 3, analyzeData: 3, traditional: 1,
-        visual: 1, algorithmic: 3, architecture: 2, fullstack: 1,
-        handsOn: 2, structured: 3, community: 2, theory: 3,
-        breakdown: 3, research: 3, experiment: 2, collaborate: 2,
-        detective: 3, strategic: 3, necessary: 2, prevent: 1,
-        satisfaction: 2, quality: 2, accuracy: 3, innovationMeasure: 3,
-        active: 3, selective: 2, formal: 3, work: 1,
-        expert: 3, leader: 1, fullstackExpert: 1, impactVision: 2,
-        salary: 2, balance: 2, learning: 3, autonomy: 2,
-        innovationCulture: 3, stable: 1, impactCulture: 2, creativeCulture: 1
-      }
-    },
-    "AI/ML Engineer": {
-      icon: "fa-brain",
-      description: "Develop artificial intelligence and machine learning systems",
-      salary: "₹5-10 LPA Entry, ₹10-20 LPA Mid-level",
-      skills: ["Python", "TensorFlow/PyTorch", "Math/Statistics", "Deep Learning"],
-      course: "Introduction to AI/ML",
-      weights: {
-        team: 2, mentor: 2, independent: 3, creative: 1,
-        startup: 3, corporate: 2, remote: 3, hybrid: 2,
-        pressure: 2, planner: 2, adaptive: 2, process: 1,
-        impact: 2, growth: 3, stability: 1, innovation: 3,
-        frontend: 1, backend: 1, data: 2, infrastructure: 1,
-        buildAI: 3, useAI: 2, analyzeData: 3, traditional: 1,
-        visual: 1, algorithmic: 3, architecture: 2, fullstack: 1,
-        handsOn: 2, structured: 2, community: 2, theory: 3,
-        breakdown: 2, research: 2, experiment: 3, collaborate: 2,
-        detective: 2, strategic: 2, necessary: 1, prevent: 1,
-        satisfaction: 2, quality: 2, accuracy: 2, innovationMeasure: 3,
-        active: 3, selective: 1, formal: 2, work: 1,
-        expert: 3, leader: 1, fullstackExpert: 1, impactVision: 1,
-        salary: 1, balance: 1, learning: 3, autonomy: 2,
-        innovationCulture: 3, stable: 1, impactCulture: 2, creativeCulture: 1
-      }
-    },
-    "Data Analyst": {
-      icon: "fa-chart-bar",
-      description: "Analyze data to help businesses make informed decisions",
-      salary: "₹3-6 LPA Entry, ₹6-12 LPA Mid-level",
-      skills: ["SQL", "Excel/PowerBI", "Statistics", "Data Visualization"],
-      course: "Data Analytics Basics",
-      weights: {
-        team: 2, mentor: 2, independent: 2, creative: 1,
-        startup: 2, corporate: 3, remote: 2, hybrid: 2,
-        pressure: 1, planner: 3, adaptive: 2, process: 3,
-        impact: 2, growth: 2, stability: 3, innovation: 1,
-        frontend: 1, backend: 1, data: 3, infrastructure: 1,
-        buildAI: 1, useAI: 2, analyzeData: 3, traditional: 2,
-        visual: 1, algorithmic: 2, architecture: 1, fullstack: 1,
-        handsOn: 2, structured: 3, community: 2, theory: 2,
-        breakdown: 3, research: 3, experiment: 1, collaborate: 2,
-        detective: 1, strategic: 2, necessary: 2, prevent: 1,
-        satisfaction: 2, quality: 2, accuracy: 3, innovationMeasure: 1,
-        active: 2, selective: 3, formal: 3, work: 2,
-        expert: 2, leader: 2, fullstackExpert: 1, impactVision: 1,
-        salary: 2, balance: 2, learning: 2, autonomy: 1,
-        innovationCulture: 1, stable: 3, impactCulture: 1, creativeCulture: 1
-      }
-    },
-    "Cloud Architect": {
-      icon: "fa-cloud",
-      description: "Design and manage cloud computing systems and infrastructure",
-      salary: "₹4-9 LPA Entry, ₹9-18 LPA Mid-level",
-      skills: ["AWS/Azure/GCP", "Networking", "Security", "DevOps"],
-      course: "Cloud Computing with AWS",
-      weights: {
-        team: 2, mentor: 2, independent: 2, creative: 1,
-        startup: 2, corporate: 3, remote: 3, hybrid: 3,
-        pressure: 1, planner: 3, adaptive: 2, process: 2,
-        impact: 1, growth: 2, stability: 3, innovation: 1,
-        frontend: 1, backend: 1, data: 1, infrastructure: 3,
-        buildAI: 1, useAI: 2, analyzeData: 2, traditional: 2,
-        visual: 1, algorithmic: 1, architecture: 2, fullstack: 1,
-        handsOn: 2, structured: 3, community: 2, theory: 2,
-        breakdown: 2, research: 2, experiment: 1, collaborate: 2,
-        detective: 1, strategic: 2, necessary: 2, prevent: 2,
-        satisfaction: 1, quality: 2, accuracy: 2, innovationMeasure: 1,
-        active: 1, selective: 2, formal: 3, work: 2,
-        expert: 2, leader: 2, fullstackExpert: 2, impactVision: 1,
-        salary: 2, balance: 2, learning: 2, autonomy: 1,
-        innovationCulture: 1, stable: 3, impactCulture: 1, creativeCulture: 1
-      }
-    },
-    "DevOps Engineer": {
-      icon: "fa-cogs",
-      description: "Bridge development and operations with automation and CI/CD",
-      salary: "₹4-8 LPA Entry, ₹8-15 LPA Mid-level",
-      skills: ["Linux/Shell", "Docker/Kubernetes", "CI/CD", "Monitoring"],
-      course: "DevOps Essentials",
-      weights: {
-        team: 3, mentor: 2, independent: 2, creative: 1,
-        startup: 3, corporate: 2, remote: 3, hybrid: 3,
-        pressure: 2, planner: 2, adaptive: 2, process: 2,
-        impact: 1, growth: 2, stability: 2, innovation: 1,
-        frontend: 1, backend: 2, data: 1, infrastructure: 3,
-        buildAI: 1, useAI: 1, analyzeData: 1, traditional: 2,
-        visual: 1, algorithmic: 1, architecture: 2, fullstack: 2,
-        handsOn: 3, structured: 2, community: 2, theory: 1,
-        breakdown: 2, research: 1, experiment: 2, collaborate: 2,
-        detective: 1, strategic: 2, necessary: 2, prevent: 2,
-        satisfaction: 1, quality: 2, accuracy: 1, innovationMeasure: 1,
-        active: 1, selective: 1, formal: 2, work: 3,
-        expert: 2, leader: 2, fullstackExpert: 2, impactVision: 1,
-        salary: 1, balance: 1, learning: 1, autonomy: 2,
-        innovationCulture: 1, stable: 2, impactCulture: 1, creativeCulture: 1
-      }
-    },
-    "UI/UX Designer": {
-      icon: "fa-user-secret",
-      description: "Design intuitive and engaging user experiences",
-      salary: "₹3-6 LPA Entry, ₹6-12 LPA Mid-level",
-      skills: ["Figma/Sketch", "User Research", "Wireframing", "Prototyping"],
-      course: "User Experience Fundamentals",
-      weights: {
-        team: 2, mentor: 2, independent: 1, creative: 3,
-        startup: 3, corporate: 1, remote: 3, hybrid: 2,
-        pressure: 1, planner: 1, adaptive: 3, process: 1,
-        impact: 3, growth: 2, stability: 1, innovation: 2,
-        frontend: 2, backend: 1, data: 1, infrastructure: 1,
-        buildAI: 1, useAI: 1, analyzeData: 1, traditional: 1,
-        visual: 3, algorithmic: 1, architecture: 1, fullstack: 1,
-        handsOn: 2, structured: 1, community: 2, theory: 1,
-        breakdown: 1, research: 1, experiment: 2, collaborate: 3,
-        detective: 1, strategic: 1, necessary: 1, prevent: 1,
-        satisfaction: 3, quality: 1, accuracy: 1, innovationMeasure: 2,
-        active: 3, selective: 1, formal: 1, work: 1,
-        expert: 1, leader: 1, fullstackExpert: 1, impactVision: 2,
-        salary: 1, balance: 2, learning: 1, autonomy: 2,
-        innovationCulture: 2, stable: 1, impactCulture: 1, creativeCulture: 3
-      }
-    },
-    "Product Manager": {
-      icon: "fa-chart-pie",
-      description: "Guide product development from concept to launch",
-      salary: "₹4-8 LPA Entry, ₹8-15 LPA Mid-level",
-      skills: ["Product Strategy", "User Research", "Analytics", "Communication"],
-      course: "Product Management Basics",
-      weights: {
-        team: 3, mentor: 3, independent: 1, creative: 2,
-        startup: 3, corporate: 2, remote: 2, hybrid: 2,
-        pressure: 2, planner: 3, adaptive: 2, process: 2,
-        impact: 3, growth: 2, stability: 2, innovation: 2,
-        frontend: 1, backend: 1, data: 1, infrastructure: 1,
-        buildAI: 1, useAI: 1, analyzeData: 1, traditional: 1,
-        visual: 1, algorithmic: 1, architecture: 1, fullstack: 1,
-        handsOn: 2, structured: 2, community: 2, theory: 1,
-        breakdown: 1, research: 1, experiment: 1, collaborate: 3,
-        detective: 1, strategic: 1, necessary: 1, prevent: 1,
-        satisfaction: 3, quality: 1, accuracy: 1, innovationMeasure: 1,
-        active: 2, selective: 1, formal: 1, work: 2,
-        expert: 1, leader: 3, fullstackExpert: 1, impactVision: 1,
-        salary: 1, balance: 2, learning: 1, autonomy: 3,
-        innovationCulture: 2, stable: 1, impactCulture: 1, creativeCulture: 1
-      }
-    }
+  // Display labels for the Likert scale, keyed by option_value. The stored
+  // question bank uses "Neutral" for 3; the assessment shows the full wording.
+  // This only affects what is rendered - the question bank is untouched.
+  const ANSWER_LABELS = {
+    1: 'Strongly Disagree',
+    2: 'Disagree',
+    3: 'Neither agree nor disagree',
+    4: 'Agree',
+    5: 'Strongly Agree'
   };
 
+  function answerLabelFor(option) {
+    const numeric = parseInt(option.value, 10);
+    return ANSWER_LABELS[numeric] || option.text || String(option.value);
+  }
+
+  // Define the 8 dimensions
+  const dimensions = [
+    "Software Engineering",
+    "Data & Analytical Thinking",
+    "AI & Computational Intelligence",
+    "Systems & Infrastructure",
+    "Security & Reliability",
+    "Product & User Orientation",
+    "Design & Human Experience",
+    "Leadership & Delivery"
+  ];
+
   // Initialize quiz
-  function initQuiz() {
-    currentQuestion = 0;
-    answers = {};
-    updateQuestionDisplay();
-    updateNavigation();
-    updateProgress();
+  async function initQuiz({ skipSavedResult = false } = {}) {
+    try {
+      const token = await window.getAuthAccessToken();
+      if (!token) {
+        alert('Please log in first to take the career test.');
+        window.location.href = 'login.html';
+        return;
+      }
+
+      // Load used question IDs from localStorage (to avoid immediate repetition)
+      const used = localStorage.getItem('cs-career-v2-used-questions');
+      usedQuestionIds = used ? JSON.parse(used) : [];
+
+      // Resume an unfinished attempt first; otherwise reopen the latest saved result.
+      const hasInProgressAttempt = Boolean(sessionStorage.getItem(ATTEMPT_STORAGE_KEY));
+      if (!skipSavedResult && !hasInProgressAttempt) {
+        const savedResponse = await fetch(`${API_BASE}/career-test`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (savedResponse.ok) {
+          const savedPayload = await savedResponse.json();
+          if (savedPayload.result?.assessment_version === assessmentVersion && savedPayload.result.dimension_scores) {
+            loadingSpinner.style.display = 'none';
+            quizContainer.style.display = 'none';
+            resultsContainer.style.display = 'block';
+            displayResults(savedPayload.result);
+            return;
+          } else if (savedPayload.result) {
+            console.info('The saved assessment predates career-profile-v1 and is not displayed as a v1 profile.');
+          }
+        } else if (savedResponse.status !== 404) {
+          console.warn('Could not load the saved career profile:', await savedResponse.text());
+        }
+      }
+
+      // Load questions from Supabase
+      await loadQuestions();
+
+      // Resume an unfinished attempt if one is stored, otherwise start fresh.
+      if (restoreAttemptState()) {
+        console.log('Resuming unfinished assessment attempt');
+      } else {
+        selectQuestionsForAttempt();
+        currentQuestion = 0;
+        answers = {};
+        persistAttemptState();
+      }
+
+      // Update UI (this also refreshes navigation and progress)
+      updateQuestionDisplay();
+    } catch (error) {
+      console.error('Failed to initialize quiz:', error);
+      alert('Failed to load career test. Please try again later.');
+      window.location.href = 'dashboard.html';
+    }
+  }
+
+  // Load all questions from Supabase
+  async function loadQuestions() {
+    try {
+      const token = await window.getAuthAccessToken();
+      if (!token) throw new Error('Your session has expired. Please log in again.');
+
+      const response = await fetch(`${API_BASE}/questions`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch questions');
+      }
+
+      const data = await response.json();
+
+      // Normalize question data.
+      // /api/questions returns already-formatted { id, text, category, options }.
+      // Accept the raw database shape (question_text / question_options) as well.
+      questions = (Array.isArray(data) ? data : data.questions || []).map(q => ({
+        id: q.id,
+        text: q.question_text || q.text,
+        category: q.category,
+        options: (q.options || q.question_options || []).map(opt => ({
+          value: opt.value === undefined ? opt.option_value : opt.value,
+          text: opt.text === undefined ? opt.option_text : opt.text
+        }))
+      }));
+
+      if (questions.length === 0) {
+        throw new Error('No questions found');
+      }
+    } catch (error) {
+      console.error('Error loading questions:', error);
+      throw error;
+    }
+  }
+
+  // Select 25 questions for the attempt: 3 per dimension + 1 cross-dimensional
+  function selectQuestionsForAttempt() {
+    // Group questions by dimension
+    const questionsByDimension = {};
+    dimensions.forEach(dim => {
+      questionsByDimension[dim] = questions.filter(q => q.category === dim);
+    });
+
+    // For each dimension, select 3 questions that haven't been used recently
+    selectedQuestionIds = [];
+    dimensions.forEach(dim => {
+      const dimQuestions = questionsByDimension[dim];
+      // Filter out recently used questions
+      const available = dimQuestions.filter(q => !usedQuestionIds.includes(q.id));
+      // If we don't have enough available, fall back to all questions in the dimension
+      const pool = available.length >= 3 ? available : dimQuestions;
+      // Randomly select 3
+      const selected = [];
+
+      if (pool.length >= 3) {
+        // Shuffle and take first 3
+        const shuffled = [...pool].sort(() => 0.5 - Math.random());
+        selected.push(...shuffled.slice(0, 3));
+      } else {
+        // If less than 3 available, take all and then fill with random from the dimension
+        selected.push(...pool);
+        const remainingNeeded = 3 - pool.length;
+        if (remainingNeeded > 0) {
+          const remainingPool = dimQuestions.filter(q => !selected.includes(q));
+          if (remainingPool.length > 0) {
+            const shuffled = [...remainingPool].sort(() => 0.5 - Math.random());
+            selected.push(...shuffled.slice(0, remainingNeeded));
+          }
+        }
+      }
+
+      selectedQuestionIds.push(...selected.map(q => q.id));
+    });
+
+    // Add 1 cross-dimensional question (random from any dimension)
+    const allQuestions = questions.filter(q => !selectedQuestionIds.includes(q.id));
+    if (allQuestions.length > 0) {
+      const cross = allQuestions[Math.floor(Math.random() * allQuestions.length)];
+      selectedQuestionIds.push(cross.id);
+    }
+
+    // Ensure we have exactly 25 questions
+    if (selectedQuestionIds.length !== 25) {
+      console.warn(`Expected 25 questions, got ${selectedQuestionIds.length}. Adjusting...`);
+      // If we have more than 25, trim
+      if (selectedQuestionIds.length > 25) {
+        selectedQuestionIds = selectedQuestionIds.slice(0, 25);
+      } else if (selectedQuestionIds.length < 25) {
+        // Add more questions from the pool
+        const needed = 25 - selectedQuestionIds.length;
+        const remaining = questions.filter(q => !selectedQuestionIds.includes(q.id));
+        if (remaining.length >= needed) {
+          const shuffled = [...remaining].sort(() => 0.5 - Math.random());
+          selectedQuestionIds.push(...shuffled.slice(0, needed).map(q => q.id));
+        }
+      }
+    }
+
+    // Filter questions to only those selected for this attempt
+    questions = questions.filter(q => selectedQuestionIds.includes(q.id));
+
+    // Shuffle the order for display
+    questions.sort(() => 0.5 - Math.random());
   }
 
   // Update question display
   function updateQuestionDisplay() {
+    if (currentQuestion >= questions.length) {
+      return;
+    }
     const question = questions[currentQuestion];
-    console.log('Current question:', question, 'index:', currentQuestion);
     questionTitle.textContent = question.text;
 
     // Clear options
     optionsContainer.innerHTML = '';
 
+    // The saved answer for THIS question, if any. answers is keyed by question
+    // id, so returning to a question must re-mark its choice - previously the
+    // radios were rebuilt unchecked, which made answered questions look blank.
+    const savedValue = answers[question.id];
+
     // Create options
     question.options.forEach(option => {
-      const optionDiv = document.createElement('div');
-      optionDiv.className = 'option';
-      optionDiv.innerHTML = `
-        <label>
-          <input type="radio" name="option" value="${option.value}">
-          <span>${option.text}</span>
-        </label>
-      `;
+      const optionValue = parseInt(option.value, 10);
+      const isSelected = savedValue !== undefined && savedValue === optionValue;
+
+      const label = document.createElement('label');
+      label.className = 'answer-choice' + (isSelected ? ' is-selected' : '');
+      label.setAttribute('for', `answer-${question.id}-${option.value}`);
+
+      const input = document.createElement('input');
+      input.type = 'radio';
+      input.name = `answer-${question.id}`;
+      input.id = `answer-${question.id}-${option.value}`;
+      input.value = option.value;
+      input.checked = isSelected;
+
+      const marker = document.createElement('span');
+      marker.className = 'answer-choice__marker';
+      marker.setAttribute('aria-hidden', 'true');
+
+      const text = document.createElement('span');
+      text.className = 'answer-choice__text';
+      text.textContent = answerLabelFor(option);
+
+      label.appendChild(input);
+      label.appendChild(marker);
+      label.appendChild(text);
+
       // Add event listener after the element is inserted into DOM
-      optionDiv.querySelector('input').addEventListener('change', () => {
+      input.addEventListener('change', () => {
         saveAnswer(question.id, option.value);
       });
-      optionsContainer.appendChild(optionDiv);
+
+      optionsContainer.appendChild(label);
     });
 
     // Update question counter
     document.getElementById('question-counter').textContent = `${currentQuestion + 1} / ${questions.length}`;
+
+    // Button state depends on whether THIS question is answered, so it has to be
+    // recomputed on every render - not only when an answer changes.
+    updateNavigation();
+    updateProgress();
+    scrollToQuestion();
+  }
+
+  // Keep the question card at the top of the viewport so the five choices and
+  // the Previous/Next row stay reachable without manual scrolling.
+  function scrollToQuestion() {
+    if (!questionCard) return;
+    questionCard.scrollIntoView({ block: 'start', behavior: 'smooth' });
   }
 
   // Save answer
   function saveAnswer(questionId, value) {
-    answers[questionId] = value;
+    answers[questionId] = parseInt(value, 10);
+
+    // Reflect the selection on the rendered choices
+    optionsContainer.querySelectorAll('.answer-choice').forEach(choice => {
+      const input = choice.querySelector('input[type="radio"]');
+      choice.classList.toggle('is-selected', Boolean(input && input.checked));
+    });
+
     updateNavigation();
+    persistAttemptState();
   }
 
   // Update navigation buttons
@@ -537,14 +337,13 @@
     progressText.textContent = `Question ${currentQuestion + 1} of ${questions.length}`;
   }
 
-  // Navigate to next question
+  // Navigate to next question. Existing answers are never cleared - moving
+  // between questions only changes which question is rendered.
   function nextQuestion() {
     if (currentQuestion < questions.length - 1) {
       currentQuestion++;
+      persistAttemptState();
       updateQuestionDisplay();
-      updateProgress();
-      // Scroll to top
-      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }
 
@@ -552,132 +351,79 @@
   function previousQuestion() {
     if (currentQuestion > 0) {
       currentQuestion--;
+      persistAttemptState();
       updateQuestionDisplay();
-      updateProgress();
-      // Scroll to top
-      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }
 
-  // Calculate scores
-  function calculateScores() {
-    const scores = {};
+  // ---- In-progress attempt persistence (sessionStorage) --------------------
+  // Only the temporary client-side state is stored: the selected question
+  // order, the current index, and the answers keyed by question id. Nothing is
+  // written to the database until the user submits.
 
-    // Initialize scores for all careers
-    Object.keys(careers).forEach(career => {
-      scores[career] = 0;
-    });
-
-    // Add weights from answers
-    Object.keys(answers).forEach(questionId => {
-      const value = answers[questionId];
-      const question = questions.find(q => q.id === parseInt(questionId));
-
-      if (question) {
-        Object.keys(careers).forEach(career => {
-          scores[career] += careers[career].weights[value] || 0;
-        });
-      }
-    });
-
-    // Normalize to 0-100
-    const maxScore = Math.max(...Object.values(scores));
-    if (maxScore > 0) {
-      Object.keys(scores).forEach(career => {
-        scores[career] = Math.round((scores[career] / maxScore) * 100);
-      });
-    }
-
-    return scores;
-  }
-
-  // Get top 3 careers
-  function getTopCareers(scores, count = 3) {
-    return Object.entries(scores)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, count)
-      .map(([career, score]) => ({
-        career,
-        score
+  function persistAttemptState() {
+    if (!questions.length) return;
+    try {
+      sessionStorage.setItem(ATTEMPT_STORAGE_KEY, JSON.stringify({
+        version: ATTEMPT_STATE_VERSION,
+        // DISPLAY order. currentIndex is an index into this list, and
+        // selectQuestionsForAttempt() shuffles the questions before showing
+        // them, so this is deliberately not the selection order.
+        questionIds: questions.map(q => q.id),
+        // Kept separately so the submitted question_ids keep their original order.
+        selectedQuestionIds: selectedQuestionIds,
+        currentIndex: currentQuestion,
+        answers: answers
       }));
+    } catch (e) {
+      console.warn('Could not persist assessment state:', e);
+    }
   }
 
-  // Identify strengths from answers
-  function identifyStrengths() {
-    const strengthMap = {
-      team: "Collaboration and teamwork",
-      mentor: "Learning from experienced professionals",
-      independent: "Self-directed work and focus",
-      creative: "Creative problem-solving and innovation",
-      startup: "Adaptability in fast-paced environments",
-      corporate: "Process-oriented and structured approach",
-      remote: "Self-motivation and autonomy",
-      hybrid: "Flexibility in work arrangements",
-      pressure: "Thriving under pressure and deadlines",
-      planner: "Strategic planning and foresight",
-      adaptive: "Flexibility and adaptability",
-      process: "Following established procedures",
-      impact: "User-focused and impact-driven",
-      growth: "Continuous learning and development",
-      stability: "Seeking security and predictability",
-      innovation: "Pursuing cutting-edge technology",
-      frontend: "Visual design and user experience",
-      backend: "Server-side logic and system architecture",
-      data: "Data analysis and interpretation",
-      infrastructure: "Systems and infrastructure management",
-      buildAI: "AI system development and engineering",
-      useAI: "Practical AI application integration",
-      analyzeData: "Data pattern recognition and analysis",
-      traditional: "Preference for established technologies",
-      visual: "Visual thinking and design orientation",
-      algorithmic: "Logical and algorithmic problem solving",
-      architecture: "System design and architectural thinking",
-      fullstack: "Comprehensive full-stack development",
-      handsOn: "Learning by doing and experimentation",
-      structured: "Preference for guided learning",
-      community: "Collaborative and community-based learning",
-      theory: "Deep theoretical understanding",
-      breakdown: "Analytical problem decomposition",
-      research: "Solution research and investigation",
-      experiment: "Experimental approach to problem-solving",
-      collaborate: "Collaborative problem-solving approach",
-      detective: "Enjoyment of investigative debugging",
-      strategic: "Strategic and tool-based debugging",
-      necessary: "Pragmatic approach to necessary tasks",
-      prevent: "Proactive bug prevention mindset",
-      satisfaction: "User satisfaction as success metric",
-      quality: "Code quality and technical excellence",
-      accuracy: "Data precision and analytical accuracy",
-      innovationMeasure: "Innovation as success measure",
-      active: "Proactive trend following and learning",
-      selective: "Focused and relevant learning approach",
-      formal: "Preference for structured education",
-      work: "Learning through practical work experience",
-      expert: "Aspiration for deep technical expertise",
-      leader: "Desire for leadership and team management",
-      fullstackExpert: "Goal of full-stack mastery",
-      impactVision: "Wanting to make significant impact",
-      salary: "Value on financial compensation",
-      balance: "Priority on work-life balance",
-      learning: "Emphasis on continuous growth",
-      autonomy: "Desire for independence and decision-making",
-      innovationCulture: "Preference for innovative environments",
-      stable: "Desire for stability and predictability",
-      impactCulture: "Motivation by social impact",
-      creativeCulture: "Value on creative freedom"
-    };
+  function clearAttemptState() {
+    try {
+      sessionStorage.removeItem(ATTEMPT_STORAGE_KEY);
+    } catch (e) {
+      console.warn('Could not clear assessment state:', e);
+    }
+  }
 
-    const strengths = [];
-    const uniqueValues = new Set(Object.values(answers));
+  // Restore an unfinished attempt. Returns false when there is nothing usable
+  // stored, in which case the caller starts a fresh attempt.
+  function restoreAttemptState() {
+    let stored = null;
+    try {
+      const raw = sessionStorage.getItem(ATTEMPT_STORAGE_KEY);
+      if (!raw) return false;
+      stored = JSON.parse(raw);
+    } catch (e) {
+      return false;
+    }
 
-    uniqueValues.forEach(value => {
-      if (strengthMap[value] && !strengths.includes(strengthMap[value])) {
-        strengths.push(strengthMap[value]);
-      }
-    });
+    if (!stored || stored.version !== ATTEMPT_STATE_VERSION) return false;
+    if (!Array.isArray(stored.questionIds) || stored.questionIds.length === 0) return false;
 
-    // Return top 4 strengths
-    return strengths.slice(0, 4);
+    // Every stored id must still be present in the pool we just fetched.
+    const restoredQuestions = stored.questionIds
+      .map(id => questions.find(q => q.id === id))
+      .filter(Boolean);
+    if (restoredQuestions.length !== stored.questionIds.length) return false;
+
+    // Rebuild the questions in the SAME display order they were stored in, so
+    // the restored index points at the question the user was actually on.
+    questions = restoredQuestions;
+
+    const selectionOrder = Array.isArray(stored.selectedQuestionIds) &&
+      stored.selectedQuestionIds.length === stored.questionIds.length
+      ? stored.selectedQuestionIds
+      : stored.questionIds;
+    selectedQuestionIds = selectionOrder.slice();
+
+    answers = (stored.answers && typeof stored.answers === 'object') ? stored.answers : {};
+
+    const index = Number(stored.currentIndex);
+    currentQuestion = Number.isInteger(index) && index >= 0 && index < questions.length ? index : 0;
+    return true;
   }
 
   // Submit test
@@ -694,15 +440,26 @@
     loadingSpinner.style.display = 'block';
 
     try {
-      // Call API
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/career-test', {
+      const token = await window.getAuthAccessToken();
+      if (!token) {
+        throw new Error('Your session has expired. Please log in again.');
+      }
+
+      const submissionData = {
+        assessment_version: assessmentVersion,
+        question_ids: selectedQuestionIds,
+        answers: answers,
+        completed: true
+      };
+
+      // Submit to backend
+      const response = await fetch(`${API_BASE}/career-test`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ answers })
+        body: JSON.stringify(submissionData)
       });
 
       const result = await response.json();
@@ -711,10 +468,23 @@
         throw new Error(result.error || 'Failed to save career test');
       }
 
+      // The attempt is now saved server-side, so the temporary in-progress
+      // state is no longer needed.
+      clearAttemptState();
+
+      // Update used question IDs for next time (avoid immediate repetition)
+      usedQuestionIds.push(...selectedQuestionIds);
+      // Keep only the last 100 used questions to prevent localStorage from growing too large
+      if (usedQuestionIds.length > 100) {
+        usedQuestionIds = usedQuestionIds.slice(-100);
+      }
+      localStorage.setItem('cs-career-v2-used-questions', JSON.stringify(usedQuestionIds));
+
       // Hide loading, show results
       loadingSpinner.style.display = 'none';
       resultsContainer.style.display = 'block';
-      displayResults(result);
+      displayResults(result.result);
+
     } catch (error) {
       console.error('Career test error:', error);
       loadingSpinner.style.display = 'none';
@@ -725,47 +495,85 @@
 
   // Display results
   function displayResults(result) {
-    // Clear previous results
+    const topCareers = result?.top_careers || result?.topCareers || [];
+    const strengths = result?.strengths || [];
+    const dimensionScores = result?.dimension_scores || result?.dimensionScores || {};
     resultsContent.innerHTML = '';
 
-    // Display top 3 careers
-    if (result.topCareers && result.topCareers.length > 0) {
-      result.topCareers.forEach((careerObj, index) => {
-        const career = careers[careerObj.career];
-        if (!career) return;
-
-        const careerCard = document.createElement('div');
-        careerCard.className = 'career-card';
-        careerCard.innerHTML = `
-          <div class="career-icon">
-            <i class="fas ${career.icon}"></i>
-          </div>
-          <div class="career-info">
-            <h3>${careerObj.career}</h3>
-            <div class="confidence">Confidence: <strong>${careerObj.score}%</strong></div>
-            <p class="description">${career.description}</p>
-            <div class="career-details">
-              <div class="detail-item">
-                <i class="fas fa-rupee-sign"></i> <span>${career.salary}</span>
-              </div>
-              <div class="detail-item">
-                <i class="fas fa-signal"></i> <span>${career.skills.slice(0, 3).join(', ')}</span>
-              </div>
-            </div>
-            <div class="suggested-course">
-              <i class="fas fa-graduation-cap"></i> Suggested first course: <strong>${career.course}</strong>
-            </div>
-          </div>
-        `;
-        resultsContent.appendChild(careerCard);
-      });
+    if (!topCareers || topCareers.length === 0) {
+      const emptyMessage = document.createElement('p');
+      emptyMessage.textContent = 'No career profile is available. Please retake the assessment.';
+      resultsContent.appendChild(emptyMessage);
+      return;
     }
 
-    // Display strengths
-    if (result.strengths && result.strengths.length > 0) {
+    const dimensionHeading = document.createElement('h2');
+    dimensionHeading.className = 'text-h3';
+    dimensionHeading.textContent = '8-Dimension Profile';
+    resultsContent.appendChild(dimensionHeading);
+
+    dimensions.forEach(dimension => {
+      const score = Number(dimensionScores[dimension]);
+      if (!Number.isFinite(score)) return;
+      const percentage = Math.round(score * 100);
+      const row = document.createElement('div');
+      row.className = 'dimension-insight';
+      row.style.margin = 'var(--space-3) 0';
+
+      const label = document.createElement('div');
+      label.className = 'dimension-label';
+      label.textContent = dimension;
+      const track = document.createElement('div');
+      track.className = 'dimension-bar';
+      track.style.height = '0.6rem';
+      track.style.background = 'var(--border)';
+      track.style.borderRadius = '999px';
+      track.style.overflow = 'hidden';
+      const fill = document.createElement('div');
+      fill.className = 'dimension-fill';
+      fill.style.width = `${percentage}%`;
+      fill.style.height = '100%';
+      fill.style.background = 'var(--accent, var(--bege))';
+      track.appendChild(fill);
+      const value = document.createElement('div');
+      value.className = 'dimension-percentage';
+      value.textContent = `${percentage}%`;
+
+      row.append(label, track, value);
+      resultsContent.appendChild(row);
+    });
+
+    const careersHeading = document.createElement('h2');
+    careersHeading.className = 'text-h3';
+    careersHeading.style.marginTop = 'var(--space-6)';
+    careersHeading.textContent = 'Top Career Directions';
+    resultsContent.appendChild(careersHeading);
+
+    topCareers.forEach((careerObj, index) => {
+      const careerCard = document.createElement('div');
+      careerCard.className = 'career-card';
+      const rank = document.createElement('div');
+      rank.className = 'career-rank';
+      rank.textContent = `#${index + 1}`;
+      const info = document.createElement('div');
+      info.className = 'career-info';
+      const title = document.createElement('h3');
+      title.textContent = careerObj.career;
+      const alignment = document.createElement('div');
+      alignment.className = 'score';
+      alignment.append('Career Alignment: ');
+      const score = document.createElement('strong');
+      score.textContent = `${careerObj.score}%`;
+      alignment.appendChild(score);
+      info.append(title, alignment);
+      careerCard.append(rank, info);
+      resultsContent.appendChild(careerCard);
+    });
+
+    if (strengths && strengths.length > 0) {
       strengthsSection.style.display = 'block';
       strengthsList.innerHTML = '';
-      result.strengths.forEach(strength => {
+      strengths.forEach(strength => {
         const li = document.createElement('li');
         li.textContent = strength;
         strengthsList.appendChild(li);
@@ -773,13 +581,76 @@
     } else {
       strengthsSection.style.display = 'none';
     }
+
+    const factualExplanation = document.createElement('p');
+    factualExplanation.className = 'text-body_small color-green_light';
+    factualExplanation.style.marginTop = 'var(--space-4)';
+    factualExplanation.textContent = strengths.length
+      ? `This profile's highest dimensions were ${strengths.map(label => label.replace(/^Strong | orientation$/g, '')).join(', ')}.`
+      : 'Career alignment compares this profile with the defined career direction references.';
+    resultsContent.appendChild(factualExplanation);
+
+    renderCareerCourseRecommendations(topCareers);
+  }
+
+  async function renderCareerCourseRecommendations(topCareers) {
+    try {
+      const response = await fetch(`${API_BASE}/courses`);
+      if (!response.ok) throw new Error(`Course catalog request failed: ${response.status}`);
+      const catalog = await response.json();
+      const coursesById = new Map((catalog.courses || []).map(course => [course.id, course]));
+      const mappings = catalog.career_course_mapping || {};
+      const usedCourseIds = new Set();
+      const section = document.createElement('section');
+      section.className = 'career-course-recommendations';
+
+      const heading = document.createElement('h2');
+      heading.className = 'text-h3';
+      heading.style.marginTop = 'var(--space-8)';
+      heading.textContent = 'Learning paths related to your career profile';
+      section.appendChild(heading);
+
+      topCareers.forEach(careerResult => {
+        const careerName = careerResult.career;
+        const relatedCourses = (mappings[careerName] || [])
+          .map(id => coursesById.get(id))
+          .filter(course => course && !usedCourseIds.has(course.id));
+        if (!relatedCourses.length) return;
+
+        const careerHeading = document.createElement('h3');
+        careerHeading.className = 'text-h4';
+        careerHeading.style.marginTop = 'var(--space-4)';
+        careerHeading.textContent = careerName;
+        section.appendChild(careerHeading);
+
+        const list = document.createElement('ul');
+        relatedCourses.forEach(course => {
+          usedCourseIds.add(course.id);
+          const item = document.createElement('li');
+          const link = document.createElement('a');
+          link.href = `course-detail.html?id=${encodeURIComponent(course.id)}`;
+          link.textContent = `${course.title} · ${course.category}`;
+          item.appendChild(link);
+          list.appendChild(item);
+        });
+        section.appendChild(list);
+      });
+
+      if (usedCourseIds.size) resultsContent.appendChild(section);
+    } catch (error) {
+      console.warn('Could not load courses related to this career profile:', error);
+    }
   }
 
   // Retake test
   retakeBtn.addEventListener('click', () => {
+    // Discard any stored attempt so the retake starts from a clean slate
+    clearAttemptState();
     resultsContainer.style.display = 'none';
     quizContainer.style.display = 'block';
-    initQuiz();
+    window.scrollTo({ top: 0, behavior: 'auto' });
+    // Re-initialize quiz
+    initQuiz({ skipSavedResult: true });
   });
 
   // Event listeners
@@ -787,25 +658,7 @@
   nextBtn.addEventListener('click', nextQuestion);
   submitBtn.addEventListener('click', submitTest);
 
-  // Initialize quiz on load
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initQuiz);
-  } else {
-    // DOM already ready
-    initQuiz();
-  }
+  // Initialize quiz; initQuiz validates the current Supabase access token.
+  initQuiz();
 
-  // Check auth
-  let token = null;
-  try {
-    token = localStorage.getItem('token');
-  } catch (e) {
-    console.warn('Unable to access localStorage:', e);
-    // Continue with token = null, which will trigger the login redirect
-  }
-
-  if (!token) {
-    alert('Please log in first to take the career test.');
-    window.location.href = 'login.html';
-  }
 })();

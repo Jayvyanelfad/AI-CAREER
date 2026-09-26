@@ -1,5 +1,5 @@
-// Get base API URL
-const API_BASE = `${window.location.protocol}//${window.location.hostname}:5000`;
+// Use shared API base from supabase-config.js
+const API_BASE = window.API_BASE || '/api';
 
 // � ✅ Global JS error trap
 window.addEventListener("error", (e) => {
@@ -13,34 +13,19 @@ async function handleGoogleSignIn() {
     message.style.color = 'var(--primary)';
 
     try {
-        const { data, error } = await supabase.auth.signInWithOAuth({
-            provider: 'google'
-        });
+        const { error } = await supabase.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+              redirectTo: `${window.location.origin}/auth-callback.html`
+            }
+          });
 
         if (error) throw error;
-
-        // Supabase handles redirect and session automatically
-        // But we can also handle it manually if needed:
-        const { data: { session } } = data;
-        if (session) {
-            localStorage.setItem('token', session.access_token);
-
-            // Get user data from our backend
-            const res = await fetch(`${API_BASE}/api/auth/me`, {
-                headers: { Authorization: `Bearer ${session.access_token}` }
-            });
-            const user = await res.json();
-            localStorage.setItem('user', JSON.stringify(user));
-
-            if (user.careerGoal && user.careerGoal !== 'undecided') {
-                window.location.href = 'dashboard.html';
-            } else {
-                window.location.href = 'career-test.html';
-            }
-        }
+        // The method will redirect to Google and then back to auth-callback.html
+        // No need to handle session here.
     } catch (err) {
         console.error('Google Sign-In Error:', err);
-        message.textContent = `Sign-in failed: ${err.message}`;
+        message.textContent = 'Google sign-in could not be started. Please try again.';
         message.style.color = 'var(--danger)';
     }
 }
@@ -68,29 +53,58 @@ document.addEventListener("DOMContentLoaded", () => {
         const email = document.getElementById("email").value.trim();
         const password = document.getElementById("password").value;
 
+        const emailInput = document.getElementById("email");
         if (!email || !password) {
-            return showError("��⚠��️ Please fill in all fields.");
+            return showError("Please fill in all fields.");
         }
 
+        if (!emailInput.checkValidity()) return showError('Enter a valid email address.');
+
         try {
-            const res = await fetch(`${API_BASE}/api/auth/login`, {
+            const res = await fetch(`${API_BASE}/auth/login`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email, password }),
             });
 
-            const data = await res.json();
+            const text = await res.text();
+            let data;
+            try {
+                data = text ? JSON.parse(text) : {};
+            } catch (e) {
+                data = {};
+            }
 
-            if (!res.ok) throw new Error(data.error || "Login failed");
+            if (!res.ok) {
+                const errorText = `${data.error || ''} ${text || ''}`.toLowerCase();
+                if (res.status === 401 || /invalid login|invalid credentials|wrong password/.test(errorText)) {
+                    throw new Error('The email or password is incorrect.');
+                }
+                if (/confirm|not confirmed/.test(errorText)) {
+                    throw new Error('Check your email to confirm your account before signing in.');
+                }
+                throw new Error('We could not sign you in. Please try again.');
+            }
 
-            localStorage.setItem("token", data.token);
+            if (!data.token || !data.refresh_token) {
+                throw new Error('We could not establish a secure sign-in session. Please try again.');
+            }
+            if (data.token && data.refresh_token) {
+                const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
+                    access_token: data.token,
+                    refresh_token: data.refresh_token
+                });
+                if (sessionError) throw sessionError;
+                if (!sessionData || !sessionData.session) throw new Error('We could not establish a secure sign-in session. Please try again.');
+                localStorage.setItem("token", sessionData.session.access_token);
+            }
             localStorage.setItem("user", JSON.stringify(data.user));
 
             // Redirect based on user state
-            if (data.user.careerGoal && data.user.careerGoal !== 'undecided') {
+            if (data.user.careerTestCompleted) {
                 window.location.href = "dashboard.html";
             } else {
-                window.location.href = "career-test.html"; // First-time users take career test
+                window.location.href = "career-test.html";
             }
         } catch (error) {
             console.error("��❌ Login error:", error);
@@ -104,15 +118,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // �� 👁��️ Toggle password visibility
     const passwordInput = document.getElementById("password");
-    const toggleIcon = document.querySelector(".password-toggle i");
+    const passwordToggle = document.querySelector(".password-toggle");
 
-    if (toggleIcon && passwordInput) {
-        document.querySelector(".password-toggle").addEventListener("click", (e) => {
+    if (passwordToggle && passwordInput) {
+        passwordToggle.addEventListener("click", (e) => {
             e.preventDefault();
             const isVisible = passwordInput.type === "text";
             passwordInput.type = isVisible ? "password" : "text";
-            toggleIcon.classList.toggle("fa-eye");
-            toggleIcon.classList.toggle("fa-eye-slash");
+            passwordToggle.textContent = isVisible ? "Show" : "Hide";
+            passwordToggle.setAttribute("aria-pressed", String(!isVisible));
+            passwordToggle.setAttribute("aria-label", isVisible ? "Show password" : "Hide password");
         });
     }
 
@@ -125,9 +140,38 @@ document.addEventListener("DOMContentLoaded", () => {
         window.scrollTo(0, 0);
     }
 
-    // Google Sign-In button handler
+    // Google Sign-In button handler - NOW USING DIRECT GOOGLE OAUTH FLOW
     const googleButton = document.getElementById('google-signin-btn');
     if (googleButton) {
         googleButton.addEventListener('click', handleGoogleSignIn);
+    }
+
+    const forgotPasswordButton = document.getElementById('forgot-password-btn');
+    const resetMessage = document.getElementById('auth-reset-message');
+    if (forgotPasswordButton && resetMessage) {
+        forgotPasswordButton.addEventListener('click', async () => {
+            const emailInput = document.getElementById('email');
+            const email = emailInput.value.trim();
+            resetMessage.hidden = false;
+            if (!email || !emailInput.checkValidity()) {
+                resetMessage.textContent = 'Enter a valid email address above, then request a reset link.';
+                emailInput.focus();
+                return;
+            }
+
+            forgotPasswordButton.disabled = true;
+            resetMessage.textContent = 'Sending a password reset link…';
+            try {
+                const { error } = await supabase.auth.resetPasswordForEmail(email, {
+                    redirectTo: `${window.location.origin}/reset-password.html`
+                });
+                if (error) throw error;
+                resetMessage.textContent = 'If an account uses this address, a password reset link is on its way.';
+            } catch (_error) {
+                resetMessage.textContent = 'We could not send a reset link right now. Please try again later.';
+            } finally {
+                forgotPasswordButton.disabled = false;
+            }
+        });
     }
 });

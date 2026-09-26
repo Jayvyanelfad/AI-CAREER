@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <script src="theme.js"></script>
+  <script src="i18n.js"></script>
+<title>Exam - CareerPath AI</title>
+    <meta name="description" content="Take your final exam.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,600;1,400;1,500&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <style>
+        /* Inline fallback for any overrides */
+        .exam-container { max-width: 800px; margin: 0 auto; padding: var(--space-6); }
+        .exam-header { text-align: center; margin-bottom: var(--space-8); }
+        .exam-title { font-family: var(--font-display); font-size: clamp(2.5rem, 6vw, 3rem); font-weight: 100; color: var(--bege_light); margin-bottom: var(--space-4); }
+        .exam-course { color: var(--green_light); font-size: 1.125rem; margin-bottom: var(--space-2); }
+        .exam-instructions { color: var(--bege_light); font-size: 1rem; line-height: 1.6; margin-bottom: var(--space-8); }
+        .exam-progress { margin: var(--space-8) 0; }
+        .progress-label { display: flex; justify-content: space-between; margin-bottom: var(--space-2); font-size: 0.9rem; color: var(--bege_light); }
+        .progress-bar { height: 8px; background: var(--border-light); border-radius: var(--radius-full); overflow: hidden; }
+        .progress-bar > div { height: 100%; background: linear-gradient(90deg, var(--green_light), var(--bege)); border-radius: var(--radius-full); transition: width 0.3s ease; }
+        .exam-question { margin: var(--space-8) 0; }
+        .question-text { font-family: var(--font-display); font-size: clamp(1.75rem, 4vw, 2.25rem); font-weight: 100; color: var(--bege_light); margin-bottom: var(--space-6); }
+        .question-options { display: grid; gap: var(--space-4); margin: 0 0 var(--space-6); padding: 0; border: 0; min-width: 0; }
+        .option-label { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-4); background: rgba(13, 43, 33, 0.3); border-radius: var(--radius-sm); cursor: pointer; transition: var(--transition); border: 2px solid transparent; }
+        .option-label:hover { background: rgba(13, 43, 33, 0.4); }
+        .option-label.selected { border-color: var(--bege); background: rgba(13, 43, 33, 0.4); }
+        .option-label.correct { border-color: var(--success); } /* For review only */
+        .option-label.incorrect { border-color: var(--danger); } /* For review only */
+        .option-radio { width: 0; height: 0; position: absolute; opacity: 0; }
+        .option-label:focus-within { outline: 2px solid var(--green_light); outline-offset: 2px; }
+        .option-text { flex: 1; font-size: 1rem; color: var(--bege_light); }
+        .exam-actions { display: flex; gap: var(--space-4); margin-top: var(--space-8); flex-wrap: wrap; }
+        .btn-exam { flex: 1; min-width: 120px; }
+        .btn-exam:disabled { opacity: 0.5; cursor: not-allowed; }
+        .exam-results { text-align: center; margin: var(--space-8) 0; }
+        .results-title { font-family: var(--font-display); font-size: clamp(2rem, 5vw, 2.5rem); font-weight: 100; color: var(--bege_light); margin-bottom: var(--space-4); }
+        .results-score { font-size: 2.5rem; font-weight: 100; color: var(--bege_light); margin: var(--space-4) 0; }
+        .results-pass { color: var(--success); }
+        .results-fail { color: var(--danger); }
+        .exam-timer { margin: var(--space-3) 0; color: var(--bege_light); font-variant-numeric: tabular-nums; }
+        .results-details { margin: var(--space-6) 0; font-size: 1rem; color: var(--bege_light); }
+        .question-review { margin: var(--space-6) 0; padding: var(--space-4); background: rgba(13, 43, 33, 0.3); border-radius: var(--radius-sm); }
+        .review-question { font-weight: 500; margin-bottom: var(--space-2); color: var(--bege_light); }
+        .review-answer { margin: var(--space-2) 0; padding: var(--space-3); background: rgba(13, 43, 33, 0.2); border-radius: var(--radius-sm); }
+        .review-correct { border-left: 4px solid var(--success); }
+        .review-incorrect { border-left: 4px solid var(--danger); }
+        .crossword-scroll { overflow-x: auto; padding: var(--space-3) 0; }
+        .crossword-board { display: grid; grid-template-columns: repeat(var(--crossword-columns), minmax(28px, 38px)); grid-auto-rows: minmax(28px, 38px); width: max-content; margin: 0 auto; border: 1px solid var(--border-light); }
+        .crossword-cell { position: relative; display: block; width: 100%; height: 100%; min-width: 28px; min-height: 28px; box-sizing: border-box; background: rgba(13, 43, 33, 0.3); border: 1px solid var(--border-light); }
+        .crossword-block { background: rgba(0, 0, 0, 0.5); }
+        .crossword-number { position: absolute; z-index: 1; top: 1px; left: 2px; color: var(--bege_light); font-size: 0.55rem; line-height: 1; pointer-events: none; }
+        .crossword-letter { width: 100%; height: 100%; padding: 5px 1px 0; border: 0; background: transparent; color: var(--bege_light); text-align: center; text-transform: uppercase; font-size: 1rem; font-weight: 600; }
+        .crossword-letter:focus { outline: 2px solid var(--green_light); outline-offset: -2px; }
+        .crossword-clues { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-6); margin-top: var(--space-6); color: var(--bege_light); }
+        .crossword-clues h3 { color: var(--green_light); }
+        .crossword-clues ol { padding-left: 1.5rem; }
+        .crossword-clue { border: 0; background: none; color: inherit; text-align: left; padding: var(--space-2) 0; cursor: pointer; }
+        .crossword-clue:hover, .crossword-clue:focus { color: var(--green_light); text-decoration: underline; }
+        @media (max-width: 600px) { .crossword-clues { grid-template-columns: 1fr; gap: var(--space-3); } }
+        .empty-state { text-align: center; padding: var(--space-24); color: var(--text-muted); }
+        .empty-state-icon { font-size: 4rem; margin-bottom: var(--space-8); opacity: 0.5; }
+        @media (max-width: 768px) {
+            .exam-title { font-size: clamp(2rem, 5vw, 2.5rem); }
+        }
+    </style>
+</head>
+<body>
+    <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode" style="width: 40px; height: 40px; border-radius: 50%; background-color: var(--bege_light); color: var(--green); display: flex; align-items: center; justify-content: center; font-size: 1.25rem; transition: var(--transition); margin-left: auto;">
+        <i class="fas fa-moon moon-icon"></i>
+        <i class="fas fa-sun sun-icon"></i>
+      </button>
+
+    <!-- ===== NAVIGATION ===== -->
+    <div class="nav-wrapper-absolute">
+        <div class="navbar">
+            <div class="container">
+                <div class="nav-wrapper">
+                    <a href="index.html" class="text-h6" style="font-size: 1.5rem; color: var(--bege_light);">
+                        <em>CareerPath</em> AI
+                    </a>
+                    <div class="div-block-2" style="display: flex; gap: 4px; align-items: center;">
+                        <a href="index.html" class="text-menu color-bege_light nav-item">Home</a>
+                        <a href="courses.html" class="text-menu color-bege_light nav-item">Courses</a>
+                        <a href="career-test.html" class="text-menu color-bege_light nav-item">Career Test</a>
+                        <a href="dashboard.html" class="text-menu color-bege_light nav-item">Dashboard</a>
+                        <a href="profile.html" class="text-menu color-bege_light nav-item">Profile</a>
+                        <a href="javascript:void(0)" class="header-book-link-buttom" onclick="logout()">
+                            <div class="text-button">Logout</div>
+                            <i class="fas fa-arrow-right" style="font-size: 0.8rem;"></i>
+                        </a>
+                    </div>
+                    <div class="menu-button w-nav-button">
+                        <i class="fas fa-bars" style="color: var(--bege_light); font-size: 1.25rem;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- ===== EXAM CONTENT ===== -->
+    <main class="dashboard-section">
+        <div class="container">
+            <div class="dashboard-header">
+                <p class="editorial-eyebrow">CAREERPATH CERTIFICATION</p>
+                <h1>Final Assessment</h1>
+                <p class="text-body_small color-green_light">Part A — Technical Knowledge <span aria-hidden="true">·</span> Part B — Concept Crossword</p>
+            </div>
+
+            <div class="exam-container">
+            <!-- Back to Courses -->
+            <div style="margin-bottom: var(--space-4);">
+                <a href="courses.html" class="text-button" style="color: var(--bege_light);">&laquo; Back to Courses</a>
+            </div>
+
+            <!-- Exam Header -->
+            <div class="exam-header" id="exam-header">
+                <!-- Loading placeholder -->
+                <div class="empty-state">
+                    <div class="empty-state-icon"><i class="fas fa-spinner fa-spin"></i></div>
+                    <p>Loading exam...</p>
+                </div>
+            </div>
+
+            <!-- Progress -->
+            <div class="exam-progress" id="exam-progress">
+                <div class="progress-label">
+                    <span>Progress</span>
+                    <span id="exam-progress-percent">0%</span>
+                </div>
+                <div class="progress-bar"><div id="exam-progress-fill" style="width: 0%"></div></div>
+            </div>
+
+            <!-- Question Counter -->
+            <div id="exam-question-counter" style="text-align: center; margin-bottom: var(--space-4); font-size: 0.9rem; color: var(--text-muted);">
+                Question <span id="exam-question-number">0</span> of <span id="exam-total-questions">0</span>
+            </div>
+
+            <!-- Exam Question Area -->
+            <div class="exam-question" id="exam-question-area">
+                <!-- Question will be inserted here -->
+            </div>
+
+            <!-- Exam Actions -->
+            <div class="exam-actions" id="exam-actions">
+                <button id="btn-prev-question" class="btn-exam component-button">Previous</button>
+                <button id="btn-submit-exam" class="btn-exam component-button">Submit Exam</button>
+                <button id="btn-next-question" class="btn-exam component-button">Next</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- ===== FOOTER ===== -->
+    <div class="container footer-wrapper" style="padding-top: var(--space-16);">
+        <div style="text-align: center; margin-bottom: var(--space-8);">
+            <span class="text-h2" style="font-size: clamp(3rem, 8vw, 6rem); opacity: 0.15; color: var(--bege_light); letter-spacing: 0.2em;">CAREERPATH</span>
+        </div>
+        <footer class="footer-content">
+            <div class="footer-block">
+                <span class="text-footer color-bege_light" style="display: block; opacity: 0.6;">B.Tech Final Year Project</span>
+            </div>
+            <div class="footer-block" style="text-align: center;">
+                <div class="text-footer color-bege_light" style="opacity: 0.7;">© CareerPath AI</div>
+            </div>
+            <div class="footer-block" style="text-align: right;">
+                <span class="text-footer color-bege_light" style="opacity: 0.6;">Symbiosis Institute of Technology, Pune</span>
+            </div>
+        </footer>
+    </div>
+
+    <!-- ===== SCRIPTS ===== -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
+    <script src="auth-navigation.js"></script>
+    <script src="courses.js"></script>
+    <script src="exam.js"></script>
+    <script>
+
+        const observerOptions = { threshold: 0.1, rootMargin: '0px 0px -50px 0px' };
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) entry.target.classList.add('visible');
+            });
+        }, observerOptions);
+        document.querySelectorAll('.animate-on-scroll').forEach(el => observer.observe(el));
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const cookieBanner = document.getElementById("cookie-banner");
+            const acceptBtn = document.getElementById("accept-cookies");
+            if (cookieBanner && acceptBtn && !localStorage.getItem("cookiesAccepted")) {
+                cookieBanner.style.display = "block";
+                acceptBtn.addEventListener("click", function() {
+                    localStorage.setItem("cookiesAccepted", "true");
+                    cookieBanner.style.display = "none";
+                });
+            }
+
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="View and verify a CareerPath AI course certificate." />
+  <title>CareerPath AI Certificate</title>
+  <script src="theme.js"></script>
+  <script src="i18n.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,600;1,9..144,400&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .certificate-page { min-height: 100vh; }
+    .certificate-main { width: min(1120px, 100% - 32px); margin: 0 auto; padding: 120px 0 64px; }
+    .certificate-intro { max-width: 760px; margin: 0 auto 28px; text-align: center; }
+    .certificate-intro h1 { margin: 0 0 8px; font: 400 clamp(2rem, 5vw, 3rem)/1.1 var(--font-display); color: var(--text); }
+    .certificate-intro p { color: var(--text-secondary); }
+    .certificate-paper { position: relative; max-width: 980px; min-height: 590px; margin: 0 auto; padding: clamp(28px, 6vw, 72px); display: flex; flex-direction: column; align-items: center; justify-content: center; overflow-wrap: anywhere; text-align: center; color: #12372b; background: #f4ece6; border: 1px solid #d7b79f; outline: 1px solid #d7b79f; outline-offset: -12px; box-shadow: 0 24px 70px rgba(0,0,0,.22); }
+    .certificate-brand { margin: 0 0 42px; color: #183c30; font: 600 .82rem/1.4 "IBM Plex Sans", sans-serif; letter-spacing: .24em; text-transform: uppercase; }
+    .certificate-brand span { display: block; margin-top: 3px; color: #b16f4d; font-size: .68rem; letter-spacing: .34em; }
+    .certificate-kicker { margin: 0 0 12px; color: #9b6449; font-size: .75rem; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; }
+    .certificate-title { margin: 0; color: #17382e; font: 400 clamp(2.5rem, 7vw, 4.5rem)/1.04 var(--font-display); }
+    .certificate-recipient-label { margin: 32px 0 7px; color: #49675c; font: italic 1.1rem var(--font-display); }
+    .certificate-learner { max-width: 100%; margin: 0 0 22px; padding: 0 0 9px; color: #17382e; border-bottom: 1px solid #b16f4d; font: 400 clamp(1.8rem, 5vw, 3rem)/1.15 var(--font-display); }
+    .certificate-statement { max-width: 660px; margin: 0; color: #314d42; font-size: 1rem; line-height: 1.8; }
+    .certificate-course { display: block; margin: 8px 0; color: #17382e; font: 400 clamp(1.45rem, 4vw, 2.25rem)/1.2 var(--font-display); }
+    .certificate-meta { width: min(100%, 740px); margin-top: 48px; display: grid; grid-template-columns: 1fr 1fr; gap: 18px 36px; text-align: left; }
+    .certificate-meta div { min-width: 0; padding-top: 9px; border-top: 1px solid #c9a58d; }
+    .certificate-meta dt { color: #65796f; font-size: .68rem; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; }
+    .certificate-meta dd { margin: 5px 0 0; color: #17382e; font-size: .9rem; overflow-wrap: anywhere; }
+    .certificate-seal { position: absolute; top: 26px; right: 30px; width: 58px; height: 58px; display: grid; place-items: center; border: 1px solid #b16f4d; border-radius: 50%; color: #9b6449; font: 400 1.4rem var(--font-display); }
+    .certificate-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin: 24px auto 0; }
+    .certificate-state { max-width: 640px; margin: 0 auto; padding: 24px; border: 1px solid var(--border-light); border-radius: var(--radius-md); text-align: center; color: var(--text); background: var(--surface, rgba(255,255,255,.04)); }
+    .certificate-state[hidden], .certificate-paper[hidden], .certificate-actions[hidden] { display: none; }
+    .certificate-lookup { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 18px; }
+    .certificate-lookup input { width: min(420px, 100%); min-height: 46px; padding: 10px 14px; color: var(--text); background: var(--bg); border: 1px solid var(--border-light); border-radius: var(--radius-sm); }
+    .certificate-lookup button { min-height: 46px; }
+    @media (max-width: 600px) {
+      .certificate-main { width: min(100% - 20px, 1120px); padding-top: 98px; }
+      .certificate-paper { min-height: 0; padding: 58px 24px 34px; outline-offset: -7px; }
+      .certificate-brand { margin-bottom: 28px; }
+      .certificate-seal { top: 17px; right: 20px; width: 42px; height: 42px; font-size: 1.1rem; }
+      .certificate-meta { margin-top: 32px; grid-template-columns: 1fr; gap: 13px; }
+      .certificate-actions > * { flex: 1 1 100%; }
+    }
+    @page { size: landscape; margin: 12mm; }
+    @media print {
+      html, body { width: 100%; min-height: 0; background: #fff !important; color: #12372b !important; }
+      .nav-wrapper-absolute, .certificate-intro, .certificate-actions, .certificate-state, footer, .theme-toggle { display: none !important; }
+      .certificate-main { width: 100%; max-width: none; margin: 0; padding: 0; }
+      .certificate-paper { width: 100%; max-width: none; min-height: 175mm; padding: 20mm; box-shadow: none; break-inside: avoid; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+  </style>
+</head>
+<body class="certificate-page">
+  <div class="nav-wrapper-absolute">
+    <div class="navbar"><div class="container"><div class="nav-wrapper">
+      <a href="index.html" class="text-h6" style="font-size:1.5rem;color:var(--bege_light)"><em>CareerPath</em> AI</a>
+      <div class="div-block-2" style="display:flex;gap:4px;align-items:center">
+        <a href="index.html" class="text-menu color-bege_light nav-item">Home</a>
+        <a href="courses.html" class="text-menu color-bege_light nav-item">Courses</a>
+        <a href="career-test.html" class="text-menu color-bege_light nav-item">Career Test</a>
+        <a href="dashboard.html" class="text-menu color-bege_light nav-item">Dashboard</a>
+        <a href="profile.html" class="text-menu color-bege_light nav-item">Profile</a>
+      </div>
+      <button class="menu-button w-nav-button" type="button" aria-label="Open navigation">Menu</button>
+    </div></div></div>
+  </div>
+
+  <main class="certificate-main">
+    <header class="certificate-intro">
+      <h1 id="page-title">CareerPath AI Certificate</h1>
+      <p id="page-description">A record of learning verified by CareerPath AI.</p>
+    </header>
+
+    <section class="certificate-state" id="certificate-state" role="status" aria-live="polite">
+      <p id="certificate-state-message">Loading certificate…</p>
+      <form class="certificate-lookup" id="certificate-lookup" hidden>
+        <label class="visually-hidden" for="certificate-lookup-id">Certificate ID</label>
+        <input id="certificate-lookup-id" name="certificateId" autocomplete="off" placeholder="Enter a certificate ID" />
+        <button class="component-button" type="submit">Verify certificate</button>
+      </form>
+    </section>
+
+    <article class="certificate-paper" id="certificate-paper" aria-labelledby="certificate-title" hidden>
+      <div class="certificate-seal" aria-hidden="true">CP</div>
+      <p class="certificate-brand">CareerPath <span>Artificial Intelligence</span></p>
+      <p class="certificate-kicker" id="certificate-kicker">Certificate of Achievement</p>
+      <h2 class="certificate-title" id="certificate-title">Certificate</h2>
+      <p class="certificate-recipient-label">This certifies that</p>
+      <p class="certificate-learner" id="certificate-learner"></p>
+      <p class="certificate-statement">has successfully completed the course and passed its authoritative final assessment.</p>
+      <strong class="certificate-course" id="certificate-course"></strong>
+      <dl class="certificate-meta">
+        <div><dt>Certificate ID</dt><dd id="certificate-id"></dd></div>
+        <div><dt>Issued</dt><dd id="certificate-issued"></dd></div>
+        <div><dt>Verification</dt><dd id="certificate-verification-status"></dd></div>
+        <div><dt>Verify online</dt><dd id="certificate-verification-link"></dd></div>
+      </dl>
+    </article>
+
+    <div class="certificate-actions" id="certificate-actions" hidden>
+      <button class="component-button" id="certificate-print" type="button">Download / Print</button>
+      <a class="btn-outline" href="dashboard.html">Back to dashboard</a>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script src="auth-navigation.js"></script>
+  <script src="certificate.js"></script>
+</body>
+</html>
