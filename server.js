@@ -1608,8 +1608,8 @@ function formatCourse(course) {
     duration_weeks: course.weeks,
     category: courseCatalogConfig.courseCategories[course.id] || 'Uncategorized',
     level: level,
-    // Course classification only. There is no payment/entitlement system.
-    premium: level === 'advanced'
+    // Difficulty is not an access tier. No course entitlement system exists.
+    premium: false
   };
 }
 

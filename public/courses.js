@@ -24,8 +24,8 @@ async function fetchCourses(token) {
       badge: course.level.charAt(0).toUpperCase() + course.level.slice(1), // Capitalize first letter
       weeks: course.duration_weeks,
       level: course.level,
-      // Determine if premium based on level or other criteria
-      premium: course.level === 'advanced'
+      // The API reports access classification; difficulty alone never implies Pro.
+      premium: Boolean(course.premium)
     }));
 
     // Populate courses map for quick lookup

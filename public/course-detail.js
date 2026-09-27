@@ -1318,13 +1318,8 @@ async function fetchCompletedLessons() {
                 fetchEnrollmentForCourse(currentCourseId)
             ]);
 
-            // Check if course is premium - if so, prevent access (no entitlement system implemented)
-            if (course && course.level === 'advanced') {
-                showErrorState('This is a premium course. Please subscribe to access this content.');
-                return;
-            }
-
-            // Fetch lessons for each module
+            // Course level describes learning difficulty, not paid access.
+            // Fetch lessons for every authenticated learner and every course.
             const modulesWithLessons = await Promise.all(
                 modules.map(async (module) => {
                     const lessons = await fetchLessonsForModule(module.id);
