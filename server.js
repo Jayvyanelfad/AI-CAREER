@@ -364,10 +364,12 @@ app.get('/api/questions', authenticateToken, async (_req, res) => {
       id: q.id,
       text: q.question_text,
       category: q.category,
-      options: q.question_options.map(opt => ({
-        value: opt.option_value,
-        text: opt.option_text
-      }))
+      options: [...(q.question_options || [])]
+        .sort((a, b) => Number(a.option_value) - Number(b.option_value))
+        .map(opt => ({
+          value: opt.option_value,
+          text: opt.option_text
+        }))
     }));
 
     res.json(formattedQuestions);
