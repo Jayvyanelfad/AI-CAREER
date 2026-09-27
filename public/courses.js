@@ -4,9 +4,11 @@ let coursesMap = new Map(); // Map of courseId -> course data
 const API_BASE = window.API_BASE || '/api';
 
 // Fetch courses from backend API
-async function fetchCourses() {
+async function fetchCourses(token) {
   try {
-    const response = await fetch(`${API_BASE}/courses`);
+    const response = await fetch(`${API_BASE}/courses`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
 
     if (!response.ok) {
       throw new Error(`Failed to fetch courses: ${response.status}`);
@@ -40,11 +42,15 @@ async function fetchCourses() {
 }
 
 // Courses Page Logic - only run on the courses page
-(function() {
+(async function() {
   // Guard: only execute this logic on the courses.html page
-  if (!window.location.pathname.includes('courses.html')) {
+  if (!/\/courses(?:\.html)?\/?$/i.test(window.location.pathname)) {
     return;
   }
+
+  const token = await window.careerPathAuthReady;
+  if (!token) return;
+  await fetchCourses(token);
 
   // Remote catalog images can occasionally expire or reject a request. Keep
   // the course card intact and turn the image area into a deliberate fallback.
@@ -60,11 +66,7 @@ async function fetchCourses() {
     }, true);
   }
 
-  // API_BASE defined globally
-  fetchCourses();
-
-  const token = localStorage.getItem('token');
-  const isAuthenticated = !!token;
+  const isAuthenticated = true;
 
   // Initialize course data from backend (only if authenticated, for enrollments)
   async function loadCourseData() {

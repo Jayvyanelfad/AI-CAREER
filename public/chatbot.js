@@ -11,8 +11,8 @@ class Chatbot {
       "Career recommendations",
       "Best courses for me",
       "Resume tips",
-      "Interview prep"
-      "Interview questions"
+      "Interview prep",
+      "Interview questions",
       "What the purpose of this website?",
     ];
     this.init();

@@ -17,6 +17,12 @@
     let certificateEligible = false;
     let certificateResult = null;
 
+    async function authHeaders() {
+        const token = await window.getAuthAccessToken();
+        if (!token) throw new Error('Sign in to access course content.');
+        return { 'Authorization': `Bearer ${token}` };
+    }
+
     // DOM elements
     const courseHeaderDiv = document.getElementById('course-header');
     const courseProgressDiv = document.getElementById('course-progress');
@@ -76,7 +82,9 @@
     // Fetch course data from backend
     async function fetchCourse() {
         try {
-            const response = await fetch(`/api/courses/${currentCourseId}`);
+            const response = await fetch(`/api/courses/${currentCourseId}`, {
+                headers: await authHeaders()
+            });
 
             if (!response.ok) {
                 throw new Error(`Failed to fetch course: ${response.status}`);
@@ -94,9 +102,8 @@
     // Fetch modules for the course
     async function fetchModules() {
         try {
-            const token = localStorage.getItem('token');
             const response = await fetch(`/api/courses/${currentCourseId}/modules`, {
-                headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+                headers: await authHeaders()
             });
 
             if (!response.ok) {
@@ -120,9 +127,8 @@
                 return lessonsByModuleId.get(moduleId);
             }
 
-            const token = localStorage.getItem('token');
             const response = await fetch(`/api/modules/${moduleId}/lessons`, {
-                headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+                headers: await authHeaders()
             });
 
             if (!response.ok) {
@@ -1385,8 +1391,10 @@ async function fetchCompletedLessons() {
     }
 
     // Initialize page
-    function initCourseDetail() {
-        // Initialize course detail page (allow unauthenticated access for viewing)
+    async function initCourseDetail() {
+        const accessToken = await window.careerPathAuthReady;
+        if (!accessToken) return;
+
         backToCurriculumButton.addEventListener('click', showCurriculumView);
         loadAndRenderData();
 

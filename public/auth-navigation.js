@@ -4,6 +4,7 @@
     { href: 'index.html', label: 'Home', key: 'nav.home' },
     { href: 'career-test.html', label: 'Career Test', key: 'nav.careerTest' },
     { href: 'courses.html', label: 'Courses', key: 'nav.courses' },
+    { href: 'programming.html', label: 'Programming', key: 'nav.programming' },
     { href: 'dashboard.html', label: 'Dashboard', key: 'nav.dashboard', authenticated: true },
     { href: 'profile.html', label: 'Profile', key: 'nav.profile', authenticated: true },
     { href: 'login.html', label: 'Login', key: 'nav.login', unauthenticated: true }
@@ -310,7 +311,10 @@
   }
 
   const currentPage = window.location.pathname.split('/').pop().toLowerCase();
-  const protectedPages = new Set(['courses', 'courses.html', 'course-detail.html', 'programming', 'programming.html']);
+  const protectedPages = new Set([
+    'courses', 'courses.html', 'course-detail.html', 'programming', 'programming.html',
+    'dashboard.html', 'profile.html', 'career-test.html', 'exam.html', 'certificate.html'
+  ]);
   window.careerPathAuthReady = protectedPages.has(currentPage)
     ? requireAuthenticatedPage()
     : Promise.resolve(null);

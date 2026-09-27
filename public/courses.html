@@ -193,7 +193,7 @@
         }, observerOptions);
         document.querySelectorAll('.animate-on-scroll').forEach(el => observer.observe(el));
 
-        document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("DOMContentLoaded", async function() {
             const cookieBanner = document.getElementById("cookie-banner");
             const acceptBtn = document.getElementById("accept-cookies");
             if (!localStorage.getItem("cookiesAccepted")) {
@@ -204,21 +204,24 @@
                 cookieBanner.style.display = "none";
             });
 
+            const accessToken = await window.careerPathAuthReady;
+            if (!accessToken) return;
+
             // Initialize course filtering
             initCourseFilters();
 
             // Populate courses after data is loaded
-            populateCoursesFromAPI();
+            populateCoursesFromAPI(accessToken);
 
             // Add retry button listeners
             const freeCoursesRetry = document.getElementById('free-courses-retry');
             const premiumCoursesRetry = document.getElementById('premium-courses-retry');
 
             if (freeCoursesRetry) {
-                freeCoursesRetry.addEventListener('click', populateCoursesFromAPI);
+                freeCoursesRetry.addEventListener('click', () => populateCoursesFromAPI(accessToken));
             }
             if (premiumCoursesRetry) {
-                premiumCoursesRetry.addEventListener('click', populateCoursesFromAPI);
+                premiumCoursesRetry.addEventListener('click', () => populateCoursesFromAPI(accessToken));
             }
         });
 
@@ -310,7 +313,7 @@
                 `).join('');
         }
 
-        async function populateCoursesFromAPI() {
+        async function populateCoursesFromAPI(accessToken) {
             // Show loading states
             const freeCoursesLoading = document.getElementById('free-courses-loading');
             const freeCoursesError = document.getElementById('free-courses-error');
@@ -325,7 +328,9 @@
             try {
                 // Fetch courses directly from API
                 const API_BASE = window.API_BASE || '/api';
-                const response = await fetch(`${API_BASE}/courses`);
+                const response = await fetch(`${API_BASE}/courses`, {
+                    headers: { 'Authorization': `Bearer ${accessToken}` }
+                });
 
                 if (!response.ok) {
                     throw new Error(`Failed to fetch courses: ${response.status}`);

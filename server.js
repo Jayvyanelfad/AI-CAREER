@@ -20,6 +20,11 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static("public"));
 
+// Keep the short product routes available while the browser-side shared auth
+// helper enforces the existing Supabase session for learning pages.
+app.get('/courses', (_req, res) => res.sendFile(require('path').join(__dirname, 'public', 'courses.html')));
+app.get('/programming', (_req, res) => res.sendFile(require('path').join(__dirname, 'public', 'programming.html')));
+
 // Supabase setup (using service role key for backend operations)
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
