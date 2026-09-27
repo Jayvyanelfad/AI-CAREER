@@ -15,8 +15,21 @@ const SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 function initSupabaseClient() {
   // Check if supabase global is available (from the CDN script)
   if (window.supabase) {
+    // Keep one client per page so the verifier created during OAuth initiation
+    // is available to the callback page through the same origin storage.
+    if (window.supabase.auth) {
+      window.API_BASE = window.API_BASE || "/api";
+      return true;
+    }
+
     // Create Supabase client and attach to window for global access
-    window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: {
+        flowType: "pkce",
+        detectSessionInUrl: true,
+        persistSession: true
+      }
+    });
     console.log('✅ Supabase client initialized successfully');
 
     // Also set up the API base

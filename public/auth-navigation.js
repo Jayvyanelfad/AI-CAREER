@@ -248,6 +248,19 @@
 
   window.getAuthAccessToken = getCurrentAccessToken;
 
+  async function requireAuthenticatedPage() {
+    const token = await getCurrentAccessToken();
+    if (token) return token;
+
+    const loginUrl = new URL('login.html', window.location.href);
+    loginUrl.searchParams.set('authRequired', '1');
+    loginUrl.searchParams.set('next', `${window.location.pathname}${window.location.search}${window.location.hash}`);
+    window.location.replace(loginUrl.toString());
+    return null;
+  }
+
+  window.requireCareerPathAuthentication = requireAuthenticatedPage;
+
   async function resolveAuthenticatedSession() {
     renderNavigation(Boolean(await getCurrentAccessToken()));
   }
@@ -295,6 +308,12 @@
 
     document.addEventListener('careerpath:language-change', () => renderNavigation(currentAuthenticated));
   }
+
+  const currentPage = window.location.pathname.split('/').pop().toLowerCase();
+  const protectedPages = new Set(['courses', 'courses.html', 'course-detail.html', 'programming', 'programming.html']);
+  window.careerPathAuthReady = protectedPages.has(currentPage)
+    ? requireAuthenticatedPage()
+    : Promise.resolve(null);
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initialize, { once: true });

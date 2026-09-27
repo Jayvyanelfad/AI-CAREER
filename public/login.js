@@ -1,6 +1,20 @@
 // Use shared API base from supabase-config.js
 const API_BASE = window.API_BASE || '/api';
 
+function getSafeAuthReturnTarget() {
+    const next = new URLSearchParams(window.location.search).get('next');
+    if (!next) return null;
+
+    try {
+        const target = new URL(next, window.location.origin);
+        const allowedPath = /^\/(?:courses(?:\.html)?|course-detail\.html|programming(?:\.html)?|dashboard\.html|profile\.html|career-test\.html)$/i;
+        if (target.origin !== window.location.origin || !allowedPath.test(target.pathname)) return null;
+        return `${target.pathname}${target.search}${target.hash}`;
+    } catch (_error) {
+        return null;
+    }
+}
+
 // � ✅ Global JS error trap
 window.addEventListener("error", (e) => {
     console.error("���🔥 Global JS Error:", e.message, "at", e.filename, ":", e.lineno);
@@ -16,7 +30,7 @@ async function handleGoogleSignIn() {
         const { error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
             options: {
-              redirectTo: `${window.location.origin}/auth-callback.html`
+              redirectTo: `${window.location.origin}/auth-callback.html${getSafeAuthReturnTarget() ? `?next=${encodeURIComponent(getSafeAuthReturnTarget())}` : ''}`
             }
           });
 
@@ -36,6 +50,24 @@ document.addEventListener("DOMContentLoaded", () => {
     const loginForm = document.getElementById("login-form");
     const submitBtn = document.getElementById("submit-btn");
     const errorElement = document.getElementById("error-message");
+    const authNotice = document.getElementById('auth-required-notice');
+    const authReturnTarget = getSafeAuthReturnTarget();
+
+    if (new URLSearchParams(window.location.search).get('authRequired') === '1' && authNotice) {
+        const isProgramming = /programming(?:\.html)?$/i.test(authReturnTarget || '');
+        authNotice.querySelector('[data-auth-required-copy]').textContent = isProgramming
+            ? 'Sign in to access Programming Studio.'
+            : 'Sign in to access CareerPath AI courses.';
+        authNotice.hidden = false;
+    }
+
+    const createAccountLink = document.getElementById('create-account-link');
+    if (createAccountLink && authReturnTarget) {
+        const registerUrl = new URL('register.html', window.location.href);
+        registerUrl.searchParams.set('authRequired', '1');
+        registerUrl.searchParams.set('next', authReturnTarget);
+        createAccountLink.href = registerUrl.toString();
+    }
 
     if (!loginForm) {
         console.error("��❌ login-form not found");
@@ -100,8 +132,9 @@ document.addEventListener("DOMContentLoaded", () => {
             }
             localStorage.setItem("user", JSON.stringify(data.user));
 
-            // Redirect based on user state
-            if (data.user.careerTestCompleted) {
+            if (authReturnTarget) {
+                window.location.href = authReturnTarget;
+            } else if (data.user.careerTestCompleted) {
                 window.location.href = "dashboard.html";
             } else {
                 window.location.href = "career-test.html";

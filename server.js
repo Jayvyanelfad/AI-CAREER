@@ -35,6 +35,12 @@ function createAuthClient() {
   });
 }
 
+function getAuthCallbackUrl() {
+  const appUrl = process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`;
+  const appOrigin = new URL(appUrl).origin;
+  return `${appOrigin}/auth-callback.html`;
+}
+
 // Gemini AI setup
 const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
@@ -384,6 +390,7 @@ app.post('/api/auth/register', async (req, res) => {
       email,
       password,
       options: {
+        emailRedirectTo: getAuthCallbackUrl(),
         data: {
           // We'll store minimal data in auth.user_metadata, but our main data is in public.users
           // This is just for basic auth user info
@@ -1575,7 +1582,7 @@ function formatCourse(course) {
   };
 }
 
-app.get('/api/courses', async (_req, res) => {
+app.get('/api/courses', authenticateToken, async (_req, res) => {
   try {
     const { data, error } = await supabase
       .from('courses')
@@ -1607,7 +1614,7 @@ app.get('/api/courses', async (_req, res) => {
   }
 });
 
-app.get('/api/courses/:id', async (req, res) => {
+app.get('/api/courses/:id', authenticateToken, async (req, res) => {
   try {
     const { data, error } = await supabase
       .from('courses')
@@ -1631,7 +1638,7 @@ app.get('/api/courses/:id', async (req, res) => {
   }
 });
 
-app.get('/api/courses/:id/modules', async (req, res) => {
+app.get('/api/courses/:id/modules', authenticateToken, async (req, res) => {
   try {
     const { data, error } = await supabase
       .from('modules')
@@ -1651,7 +1658,7 @@ app.get('/api/courses/:id/modules', async (req, res) => {
   }
 });
 
-app.get('/api/modules/:id/lessons', async (req, res) => {
+app.get('/api/modules/:id/lessons', authenticateToken, async (req, res) => {
   try {
     // modules.id is a uuid column - reject malformed ids as a client error
     // instead of letting Postgres fail with 22P02.

@@ -49,6 +49,20 @@
     localStorage.setItem("user", JSON.stringify(user));
     console.log("[auth-callback] careerTestCompleted =", user.careerTestCompleted);
 
+    const next = new URLSearchParams(window.location.search).get('next');
+    if (next) {
+      try {
+        const target = new URL(next, window.location.origin);
+        const allowedPath = /^\/(?:courses(?:\.html)?|course-detail\.html|programming(?:\.html)?|dashboard\.html|profile\.html|career-test\.html)$/i;
+        if (target.origin === window.location.origin && allowedPath.test(target.pathname)) {
+          window.location.href = `${target.pathname}${target.search}${target.hash}`;
+          return;
+        }
+      } catch (_error) {
+        // Fall through to the existing career-state destination.
+      }
+    }
+
     if (user.careerTestCompleted) {
       window.location.href = "dashboard.html";
     } else {
