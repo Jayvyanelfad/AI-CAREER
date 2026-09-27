@@ -1,9 +1,11 @@
 // Shared, declarative foundation for Programming Studio language journeys.
 // Topics are planned outlines; empty activity/progress collections are intentional.
 const PROGRAMMING_PRESENTATION_FIELDS = Object.freeze([
-  'What I built', 'The problem', 'Who it helps', 'My solution', 'Technology used',
-  'How it works', 'Architecture', 'Demo', 'Challenges', 'What I learned',
-  'What I would improve'
+  'What did you build?', 'What problem were you solving?', 'Who is the user?',
+  'What technologies did you use?', 'How does the solution work?',
+  'What architecture/design did you choose?', 'What was difficult?',
+  'How did you test it?', 'What would you improve?', 'What would you build next?',
+  'Show the result/demo.'
 ]);
 
 const PROGRAMMING_PROJECT_MILESTONES = Object.freeze([

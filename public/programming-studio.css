@@ -126,3 +126,134 @@ html[data-theme="light"] body.programming-page .programming-specialization-list 
   .programming-project-milestones { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .programming-presentation-points { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* Published lessons, editable local practice, and project guides. */
+.programming-track-detail { min-width: 0; }
+.programming-stage-nav { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 1px; margin: 28px 0 12px; border: 1px solid rgba(134, 164, 142, .25); background: rgba(134, 164, 142, .2); }
+.programming-stage-nav a { display: grid; align-content: start; gap: 7px; min-width: 0; min-height: 60px; padding: 12px; background: #0b1a14; color: #f4ece6; font-size: .72rem; text-decoration: none; }
+.programming-stage-nav a span { color: #91b59b; font-size: .58rem; letter-spacing: .1em; }
+.programming-stage-nav a:hover,
+.programming-stage-nav a:focus-visible { background: rgba(134, 164, 142, .15); outline: 2px solid #a6c6aa; outline-offset: -2px; }
+.programming-modules { margin-top: 42px; scroll-margin-top: 24px; }
+.programming-subsection-heading { margin-bottom: 16px; }
+.programming-subsection-heading h3,
+.programming-challenge-board h3,
+.programming-project-brief h3,
+.programming-project-presentation h3 { margin-top: 7px; color: #ead2bf; font-family: var(--font-display); font-size: clamp(1.45rem, 2.8vw, 2.1rem); font-weight: 300; line-height: 1.2; }
+.programming-subsection-heading > p:last-child,
+.programming-challenge-board > p:not(.programming-eyebrow),
+.programming-project-presentation > div > p:not(.programming-eyebrow) { max-width: 68ch; margin-top: 9px; color: rgba(244, 236, 230, .68); font-size: .8rem; line-height: 1.7; }
+.programming-module { margin-top: 8px; border: 1px solid rgba(134, 164, 142, .25); background: rgba(134, 164, 142, .035); scroll-margin-top: 20px; }
+.programming-module > summary { display: grid; grid-template-columns: 38px minmax(0, 1fr) 24px; align-items: center; gap: 12px; min-height: 64px; padding: 12px 16px; cursor: pointer; list-style: none; }
+.programming-module > summary::-webkit-details-marker { display: none; }
+.programming-module > summary:focus-visible { outline: 2px solid #a6c6aa; outline-offset: -3px; }
+.programming-module-number { color: #91b59b; font-size: .63rem; letter-spacing: .12em; }
+.programming-module > summary strong,
+.programming-module > summary small { display: block; }
+.programming-module > summary strong { color: #f4ece6; font-size: .88rem; font-weight: 500; }
+.programming-module > summary small { margin-top: 4px; color: rgba(244, 236, 230, .55); font-size: .72rem; line-height: 1.45; }
+.programming-module-toggle { color: #a6c6aa; font-size: 1.2rem; text-align: center; transition: transform .2s ease; }
+.programming-module[open] .programming-module-toggle { transform: rotate(45deg); }
+.programming-module-body { padding: 0 16px 22px; }
+.programming-module-topics { margin: 0 0 20px 50px; color: rgba(244, 236, 230, .54); font-size: .72rem; line-height: 1.6; }
+.programming-module-topics strong { color: #a6c6aa; font-weight: 500; }
+.programming-lesson { max-width: 940px; margin: 0 auto; padding: clamp(18px, 3vw, 30px); border-left: 1px solid rgba(134, 164, 142, .42); background: rgba(6, 19, 14, .52); }
+.programming-lesson-stage { color: #91b59b; font-size: .58rem; letter-spacing: .12em; }
+.programming-lesson > h4 { margin: 8px 0 20px; color: #f4ece6; font-family: var(--font-display); font-size: clamp(1.35rem, 2.5vw, 1.8rem); font-weight: 300; line-height: 1.2; }
+.programming-lesson-section { margin-top: 18px; scroll-margin-top: 22px; }
+.programming-lesson-section h5,
+.programming-practice h5 { margin-bottom: 6px; color: #ead2bf; font-size: .76rem; font-weight: 600; letter-spacing: .04em; }
+.programming-lesson-section p,
+.programming-practice > .programming-lesson-section p { max-width: 78ch; color: rgba(244, 236, 230, .75); font-size: .8rem; line-height: 1.72; }
+.programming-objective { margin-top: 0; padding: 13px 15px; border-left: 2px solid #91b59b; background: rgba(134, 164, 142, .08); }
+.programming-code-example { margin-top: 22px; border: 1px solid rgba(134, 164, 142, .25); background: #07130f; }
+.programming-code-example > div { display: flex; justify-content: space-between; align-items: center; gap: 12px; min-height: 48px; padding: 7px 12px; border-bottom: 1px solid rgba(134, 164, 142, .2); }
+.programming-code-example > div h5 { color: #91b59b; font-size: .62rem; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; }
+.programming-copy-button { min-height: 40px; padding: 8px 12px; border: 1px solid rgba(134, 164, 142, .4); background: transparent; color: #f4ece6; font: inherit; font-size: .68rem; cursor: pointer; }
+.programming-copy-button:hover,
+.programming-copy-button:focus-visible { border-color: #a6c6aa; outline: 2px solid #a6c6aa; outline-offset: 2px; }
+.programming-code-example pre { max-width: 100%; margin: 0; padding: 16px; overflow-x: auto; color: #dce8dd; font: .76rem/1.65 "IBM Plex Mono", Consolas, monospace; tab-size: 2; }
+.programming-code-example code { white-space: pre; }
+.programming-practice { margin-top: 22px; padding: 17px; border: 1px solid rgba(234, 210, 191, .23); background: rgba(234, 210, 191, .045); scroll-margin-top: 24px; }
+.programming-practice label { display: block; margin-top: 15px; color: #ead2bf; font-size: .72rem; font-weight: 500; }
+.programming-practice-editor { display: block; width: 100%; min-height: 190px; margin-top: 8px; padding: 13px; border: 1px solid rgba(134, 164, 142, .36); border-radius: 0; background: #07130f; color: #dce8dd; font: .76rem/1.65 "IBM Plex Mono", Consolas, monospace; resize: vertical; tab-size: 2; }
+.programming-practice-editor:focus-visible { border-color: #a6c6aa; outline: 2px solid #a6c6aa; outline-offset: 2px; }
+.programming-practice-note { margin-top: 9px; color: rgba(244, 236, 230, .52); font-size: .67rem; line-height: 1.55; }
+.programming-challenge { margin-top: 20px; padding: 15px; border-top: 1px solid rgba(216, 173, 142, .42); background: rgba(216, 173, 142, .045); }
+.programming-takeaway { margin-top: 18px; padding-top: 14px; border-top: 1px solid rgba(134, 164, 142, .2); }
+.programming-challenge-board { margin-top: 48px; padding: clamp(18px, 3vw, 28px); border: 1px solid rgba(216, 173, 142, .27); scroll-margin-top: 20px; }
+.programming-challenge-board > ol { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; margin: 20px 0 0; padding: 0; background: rgba(134, 164, 142, .18); list-style: none; }
+.programming-challenge-board > ol > li { display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 12px; padding: 15px; background: #0b1a14; }
+.programming-challenge-board > ol > li > span,
+.programming-project-presentation li > span { color: #91b59b; font-size: .58rem; letter-spacing: .1em; }
+.programming-challenge-board strong { color: #ead2bf; font-size: .76rem; font-weight: 500; }
+.programming-challenge-board li p { margin-top: 7px; color: rgba(244, 236, 230, .68); font-size: .72rem; line-height: 1.6; }
+.programming-project-brief { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: clamp(20px, 4vw, 42px); margin-top: 48px; padding: clamp(20px, 3vw, 34px); border: 1px solid rgba(234, 210, 191, .28); background: linear-gradient(110deg, rgba(24, 54, 41, .66), rgba(13, 32, 24, .42)); scroll-margin-top: 20px; }
+.programming-project-summary { margin-top: 10px; color: rgba(244, 236, 230, .78); font-size: .85rem; line-height: 1.65; }
+.programming-project-context { display: grid; gap: 12px; margin-top: 22px; }
+.programming-project-context div { display: grid; grid-template-columns: 75px minmax(0, 1fr); gap: 12px; }
+.programming-project-context dt { color: #91b59b; font-size: .68rem; }
+.programming-project-context dd { margin: 0; color: rgba(244, 236, 230, .76); font-size: .73rem; line-height: 1.55; }
+.programming-project-work h4 { margin: 4px 0 10px; color: #ead2bf; font-size: .83rem; font-weight: 500; }
+.programming-project-work h4:not(:first-child) { margin-top: 22px; }
+.programming-project-requirements { display: grid; gap: 8px; padding-left: 20px; color: rgba(244, 236, 230, .76); font-size: .73rem; line-height: 1.55; }
+.programming-project-work > p { color: rgba(244, 236, 230, .7); font-size: .73rem; line-height: 1.65; }
+.programming-project-milestones { margin-top: 18px; }
+.programming-project-presentation { display: grid; grid-template-columns: minmax(0, .75fr) minmax(0, 1.25fr); gap: clamp(20px, 4vw, 42px); margin-top: 14px; padding: clamp(20px, 3vw, 34px); border: 1px solid rgba(134, 164, 142, .3); background: rgba(134, 164, 142, .06); scroll-margin-top: 20px; }
+.programming-presentation-count { display: inline-block; margin-top: 15px; color: #91b59b; font-size: .58rem; letter-spacing: .1em; }
+.programming-project-presentation > ol { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; margin: 0; padding: 0; background: rgba(134, 164, 142, .2); list-style: none; }
+.programming-project-presentation li { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 9px; align-content: start; min-height: 64px; padding: 12px; background: #0b1a14; }
+.programming-project-presentation li p { color: rgba(244, 236, 230, .83); font-size: .7rem; line-height: 1.5; }
+.programming-track .programming-progress-empty { margin-top: 14px; }
+.programming-track-error { padding: 15px; color: #f1c6a7; }
+
+html[data-theme="light"] body.programming-page .programming-stage-nav a,
+html[data-theme="light"] body.programming-page .programming-challenge-board > ol > li,
+html[data-theme="light"] body.programming-page .programming-project-presentation li { background: #f7f3ed; }
+html[data-theme="light"] body.programming-page .programming-stage-nav a,
+html[data-theme="light"] body.programming-page .programming-module > summary strong,
+html[data-theme="light"] body.programming-page .programming-lesson > h4,
+html[data-theme="light"] body.programming-page .programming-lesson-section h5,
+html[data-theme="light"] body.programming-page .programming-code-example > div h5,
+html[data-theme="light"] body.programming-page .programming-project-work h4,
+html[data-theme="light"] body.programming-page .programming-project-presentation li p { color: #20382d; }
+html[data-theme="light"] body.programming-page .programming-stage-nav a:hover,
+html[data-theme="light"] body.programming-page .programming-stage-nav a:focus-visible { background: #e4eee4; }
+html[data-theme="light"] body.programming-page .programming-module,
+html[data-theme="light"] body.programming-page .programming-lesson,
+html[data-theme="light"] body.programming-page .programming-practice,
+html[data-theme="light"] body.programming-page .programming-code-example,
+html[data-theme="light"] body.programming-page .programming-practice-editor { background: #fbf9f5; }
+html[data-theme="light"] body.programming-page .programming-module > summary small,
+html[data-theme="light"] body.programming-page .programming-module-topics,
+html[data-theme="light"] body.programming-page .programming-lesson-section p,
+html[data-theme="light"] body.programming-page .programming-practice-note,
+html[data-theme="light"] body.programming-page .programming-challenge-board li p,
+html[data-theme="light"] body.programming-page .programming-project-context dd,
+html[data-theme="light"] body.programming-page .programming-project-requirements,
+html[data-theme="light"] body.programming-page .programming-project-work > p { color: #58655c; }
+html[data-theme="light"] body.programming-page .programming-code-example pre,
+html[data-theme="light"] body.programming-page .programming-practice-editor { color: #20382d; }
+
+@media (max-width: 1024px) {
+  .programming-stage-nav { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .programming-project-brief,
+  .programming-project-presentation { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 640px) {
+  .programming-stage-nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .programming-stage-nav a { min-height: 52px; padding: 10px; }
+  .programming-module > summary { grid-template-columns: 28px minmax(0, 1fr) 22px; gap: 8px; padding: 10px; }
+  .programming-module-body { padding: 0 8px 12px; }
+  .programming-module-topics { margin: 0 8px 14px; }
+  .programming-lesson { padding: 16px 12px; }
+  .programming-code-example > div { align-items: flex-start; }
+  .programming-code-example pre { font-size: .68rem; }
+  .programming-practice { padding: 13px; }
+  .programming-challenge-board > ol,
+  .programming-project-presentation > ol { grid-template-columns: minmax(0, 1fr); }
+  .programming-project-brief,
+  .programming-project-presentation,
+  .programming-challenge-board { padding: 17px 14px; }
+  .programming-project-context div { grid-template-columns: 58px minmax(0, 1fr); gap: 8px; }
+}
