@@ -100,7 +100,7 @@
     if (next) {
       try {
         const target = new URL(next, window.location.origin);
-        const allowedPath = /^\/(?:courses(?:\.html)?|course-detail\.html|programming(?:\.html)?|dashboard\.html|profile\.html|career-test\.html)$/i;
+        const allowedPath = /^\/(?:courses(?:\.html)?|course-detail\.html|programming(?:\.html)?|dashboard\.html|profile\.html|career-test\.html|exam\.html|certificate\.html)$/i;
         if (target.origin === window.location.origin && allowedPath.test(target.pathname)) {
           window.location.href = `${target.pathname}${target.search}${target.hash}`;
           return;

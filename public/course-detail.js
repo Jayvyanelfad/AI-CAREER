@@ -1043,10 +1043,16 @@ async function fetchCompletedLessons() {
         courseModulesDiv.innerHTML = '';
 
         modules.forEach((module, moduleIndex) => {
-            const moduleEl = document.createElement('div');
+            const moduleEl = document.createElement('details');
             moduleEl.className = 'module-section';
+            moduleEl.open = moduleIndex === 0;
+            const lessonCount = (lessonsByModuleId.get(module.id) || []).length;
             moduleEl.innerHTML = `
-                <h2 class="module-title">${module.title}</h2>
+                <summary class="module-title">
+                    <span>${module.title}</span>
+                    <span class="module-lesson-count">${lessonCount} ${lessonCount === 1 ? 'lesson' : 'lessons'}</span>
+                    <span class="module-disclosure" aria-hidden="true"></span>
+                </summary>
                 <div class="lesson-list">
                     ${renderLessonsForModule(module.id, moduleIndex)}
                 </div>
@@ -1228,6 +1234,8 @@ async function fetchCompletedLessons() {
 
         currentModuleIndex = moduleIndex;
         currentLessonIndex = lessonIndex;
+        const moduleDetails = courseModulesDiv.querySelectorAll('.module-section');
+        if (moduleDetails[moduleIndex]) moduleDetails[moduleIndex].open = true;
         showLessonView();
 
         // Update URL without reloading

@@ -291,7 +291,8 @@
   // the Previous/Next row stay reachable without manual scrolling.
   function scrollToQuestion() {
     if (!questionCard) return;
-    questionCard.scrollIntoView({ block: 'start', behavior: 'smooth' });
+    const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    questionCard.scrollIntoView({ block: 'start', behavior: reduceMotion ? 'auto' : 'smooth' });
   }
 
   // Save answer

@@ -148,6 +148,11 @@
         toggle.setAttribute('aria-expanded', 'true');
         toggle.setAttribute('aria-label', 'Close navigation');
         toggle.textContent = 'Close';
+        requestAnimationFrame(() => {
+          const firstLink = [...group.querySelectorAll('a[href], button:not(:disabled)')]
+            .find(element => element.getClientRects().length > 0);
+          if (firstLink) firstLink.focus();
+        });
       };
 
       toggle.addEventListener('click', event => {
@@ -164,6 +169,11 @@
       group.addEventListener('click', event => {
         if (event.target.closest('a')) close();
       });
+      host.addEventListener('focusout', event => {
+        if (host.classList.contains('auth-mobile-open') && event.relatedTarget && !host.contains(event.relatedTarget)) {
+          close();
+        }
+      });
       document.addEventListener('click', event => {
         if (host.classList.contains('auth-mobile-open') && !host.contains(event.target)) close();
       });
@@ -176,7 +186,7 @@
     });
 
     window.addEventListener('resize', () => {
-      if (window.innerWidth > 767) {
+      if (window.innerWidth > 900) {
         document.querySelectorAll('.auth-mobile-open').forEach(element => element.classList.remove('auth-mobile-open'));
         document.querySelectorAll('.auth-nav-toggle[aria-expanded="true"]').forEach(toggle => {
           toggle.setAttribute('aria-expanded', 'false');
@@ -266,6 +276,36 @@
     renderNavigation(Boolean(await getCurrentAccessToken()));
   }
 
+  async function redirectAuthenticatedAuthPage() {
+    if (!['login.html', 'register.html'].includes(currentPage)) return;
+    const token = await getCurrentAccessToken();
+    if (!token) return;
+
+    let next = null;
+    const requested = new URLSearchParams(window.location.search).get('next');
+    if (requested) {
+      try {
+        const target = new URL(requested, window.location.origin);
+        const page = target.pathname.split('/').pop().toLowerCase();
+        if (target.origin === window.location.origin && /^\/[^/]+$/.test(target.pathname) && protectedPages.has(page)) {
+          next = `${target.pathname}${target.search}${target.hash}`;
+        }
+      } catch (_error) {
+        // Use the signed-in learner's normal destination when `next` is invalid.
+      }
+    }
+
+    if (!next) {
+      try {
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        next = user.careerTestCompleted ? 'dashboard.html' : 'career-test.html';
+      } catch (_error) {
+        next = 'career-test.html';
+      }
+    }
+    window.location.replace(next);
+  }
+
   window.logout = async function () {
     try {
       if (window.supabase && window.supabase.auth) {
@@ -290,6 +330,7 @@
   function initialize() {
     setupResponsiveNavigation();
     resolveAuthenticatedSession();
+    redirectAuthenticatedAuthPage();
 
     if (window.supabase && window.supabase.auth) {
       window.supabase.auth.onAuthStateChange((event, session) => {

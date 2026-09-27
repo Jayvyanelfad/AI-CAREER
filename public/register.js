@@ -1,6 +1,26 @@
 // Use shared API base from supabase-config.js
 const API_BASE = window.API_BASE || '/api';
 
+function getSafeAuthReturnTarget() {
+    const next = new URLSearchParams(window.location.search).get('next');
+    if (!next) return null;
+    try {
+        const target = new URL(next, window.location.origin);
+        const allowedPath = /^\/(?:courses(?:\.html)?|course-detail\.html|programming(?:\.html)?|dashboard\.html|profile\.html|career-test\.html|exam\.html|certificate\.html)$/i;
+        if (target.origin !== window.location.origin || !allowedPath.test(target.pathname)) return null;
+        return `${target.pathname}${target.search}${target.hash}`;
+    } catch (_error) {
+        return null;
+    }
+}
+
+function getAuthCallbackUrl() {
+    const callback = new URL('auth-callback.html', window.location.origin);
+    const next = getSafeAuthReturnTarget();
+    if (next) callback.searchParams.set('next', next);
+    return callback.toString();
+}
+
 window.addEventListener("error", (e) => {
     console.error("���������🔥 Global JS Error:", e.message, "at", e.filename, ":", e.lineno);
 });
@@ -15,7 +35,7 @@ async function handleGoogleSignIn() {
         const { error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
             options: {
-                redirectTo: `${window.location.origin}/auth-callback.html`
+                redirectTo: getAuthCallbackUrl()
             }
         });
 
@@ -73,7 +93,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 email,
                 password,
                 options: {
-                    emailRedirectTo: `${window.location.origin}/auth-callback.html`,
+                    emailRedirectTo: getAuthCallbackUrl(),
                     data: { full_name: name, career_goal: 'undecided' }
                 }
             });
@@ -107,7 +127,7 @@ document.addEventListener("DOMContentLoaded", () => {
             await completeProfile(data.session.access_token);
             localStorage.setItem("token", data.session.access_token);
             localStorage.setItem("user", JSON.stringify(user));
-            window.location.href = "career-test.html";
+            window.location.href = getSafeAuthReturnTarget() || "career-test.html";
         } catch (error) {
             showError(error.message || "Something went wrong. Try again.");
         } finally {
@@ -183,7 +203,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 const { error } = await supabase.auth.resend({
                     type: 'signup',
                     email: address,
-                    options: { emailRedirectTo: `${window.location.origin}/auth-callback.html` }
+                    options: { emailRedirectTo: getAuthCallbackUrl() }
                 });
                 if (error) throw error;
                 setFeedback('If this address has an unconfirmed account, a new confirmation link is on its way.', 'success');
