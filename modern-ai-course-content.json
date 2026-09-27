@@ -1,7 +1,7 @@
 {
   "prompt_engineering": {
     "title": "Prompt Engineering & LLM Workflows",
-    "description": "Design, test, and improve prompts and multi-step LLM workflows for useful, verifiable outcomes.",
+    "description": "Design, test, and improve prompts and multi-step large language model (LLM) workflows for useful, verifiable outcomes.",
     "image": "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=900&q=80",
     "badge": "Beginner",
     "difficulty": "beginner",
@@ -122,7 +122,7 @@
   },
   "generative_ai_llm": {
     "title": "Generative AI & LLM Application Development",
-    "description": "Build LLM applications using model APIs, structured outputs, embeddings, conversation state, and practical reliability controls.",
+    "description": "Build large language model (LLM) applications using model APIs, structured outputs, embeddings, conversation state, and practical reliability controls.",
     "image": "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=900&q=80",
     "badge": "Intermediate",
     "difficulty": "intermediate",
@@ -259,7 +259,7 @@
   },
   "mcp_tool_connected_ai": {
     "title": "MCP & Tool-Connected AI",
-    "description": "Connect AI applications to external capabilities using MCP concepts, server-provided tools/resources, and explicit permissions.",
+    "description": "Connect AI applications to external capabilities using the Model Context Protocol (MCP), server-provided tools/resources, and explicit permissions.",
     "image": "https://images.unsplash.com/photo-1518770660439-4636190af475?w=900&q=80",
     "badge": "Intermediate",
     "difficulty": "intermediate",
@@ -268,7 +268,7 @@
     "modules": [
       {"title":"Why Tool-Connected AI Matters","description":"Understand the boundary between model generation and external tools, data, and applications.","story":"A desktop assistant can explain a spreadsheet formula but cannot inspect the user's authorized workbook until connected to a capability.","discovery":"Identify what the model can infer and what requires an external, permissioned tool or resource.","lessons":[
         {"title":"Models Need Explicit Capabilities","objective":"Explain why a model needs an application-mediated capability to access external systems.","concept":"A language model generates outputs from provided context. Tool-connected applications expose bounded operations or resources and return results to the model; access remains controlled by the host and connected service.","example":"An assistant can summarize a file only after a host provides its content through an authorized read operation.","challenge":"List three requested assistant tasks and identify the external capability and permission each would require.","takeaway":"Connection adds capability, not automatic trust or access.","minutes":20},
-        {"title":"MCP and Adjacent Integration Patterns","objective":"Distinguish MCP from direct API calls and model function-calling schemas.","concept":"MCP is a protocol for connecting AI applications with servers that expose capabilities such as tools, resources, and prompts. A direct API is an application-specific interface; function calling is a model interaction pattern and may be used inside an MCP-enabled host.","example":"A host can discover an MCP server's tools, while a separate model call decides whether to propose one of those tools.","challenge":"Classify four integration diagrams as direct API, function calling, MCP, or combinations and explain the protocol boundary.","takeaway":"MCP standardizes a connection protocol; it is not itself a model or a generic synonym for APIs.","minutes":25}
+        {"title":"MCP and Adjacent Integration Patterns","objective":"Distinguish MCP from direct API calls and model function-calling schemas.","concept":"The Model Context Protocol (MCP) is a protocol for connecting AI applications with servers that expose capabilities such as tools, resources, and prompts. A direct API is an application-specific interface; function calling is a model interaction pattern and may be used inside an MCP-enabled host.","example":"A host can discover an MCP server's tools, while a separate model call decides whether to propose one of those tools.","challenge":"Classify four integration diagrams as direct API, function calling, MCP, or combinations and explain the protocol boundary.","takeaway":"MCP standardizes a connection protocol; it is not itself a model or a generic synonym for APIs.","minutes":25}
       ]},
       {"title":"MCP Concepts","description":"Learn host, client, server, capability discovery, and request-response concepts accurately.","story":"A team connects one desktop host to a local server and asks which component owns each decision.","discovery":"Trace the connection lifecycle and identify where discovery ends and authorization begins.","lessons":[
         {"title":"Hosts, Clients, and Servers","objective":"Describe the roles of an MCP host, client connection, and MCP server.","concept":"The host is the AI application, its MCP client manages a server connection, and the server exposes capabilities. The host coordinates model interaction and user experience; server behavior is bounded by its implementation and permissions.","example":"A host opens a client connection to a calendar server and presents discovered calendar tools for possible use.","challenge":"Draw the three roles for a sample desktop assistant and label which component prompts the user and which implements the operation.","takeaway":"Keep protocol roles distinct from the model's decision-making role.","minutes":25},
