@@ -521,6 +521,30 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
+// Create or repair the application's profile row after browser-side signup or
+// email confirmation. The authenticated Supabase user is the source of truth.
+app.post('/api/auth/complete-registration', authenticateToken, async (req, res) => {
+  try {
+    const { error } = await supabase
+      .from('users')
+      .upsert({
+        id: req.user.id,
+        full_name: req.user.name,
+        career_goal: req.user.careerGoal || 'undecided'
+      }, { onConflict: 'id', ignoreDuplicates: true });
+
+    if (error) {
+      console.error('Error completing registration profile:', error);
+      return res.status(500).json({ error: 'Could not complete account setup' });
+    }
+
+    return res.status(204).end();
+  } catch (error) {
+    console.error('Error completing registration profile:', error);
+    return res.status(500).json({ error: 'Could not complete account setup' });
+  }
+});
+
 app.get('/api/auth/me', authenticateToken, async (req, res) => {
   try {
     // public.users has NO email column - email comes from the authenticated Supabase user.

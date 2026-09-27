@@ -6,7 +6,7 @@
 
   <script src="theme.js"></script>
   <script src="i18n.js"></script>
-<title>Signing you in... - CareerPath AI</title>
+  <title>Confirming your account... - CareerPath AI</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -20,8 +20,12 @@
 
   <main class="dashboard-container" style="max-width: 400px; margin: 0 auto; padding: var(--space-4); min-height: calc(100vh - 120px); display: flex; align-items: center; justify-content: center; flex-direction: column;">
     <div class="dashboard-card" style="text-align: center; padding: var(--space-8);">
-      <div class="spinner" style="font-size: 3rem; margin-bottom: var(--space-4); color: var(--bege);"></div>
-      <p id="status-message" style="color: var(--bege_light); font-size: 1.25rem;">Signing you in...</p>
+      <div id="callback-spinner" class="spinner" style="font-size: 3rem; margin-bottom: var(--space-4); color: var(--bege);"></div>
+      <p id="status-message" role="status" aria-live="polite" style="color: var(--bege_light); font-size: 1.25rem;">Confirming your account and signing you in...</p>
+      <div id="callback-actions" hidden style="margin-top:1rem;">
+        <a class="btn-primary" href="login.html">Go to Login</a>
+        <a style="display:inline-block;margin-top:0.75rem;" href="register.html">Create Account</a>
+      </div>
     </div>
   </main>
 

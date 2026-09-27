@@ -1,6 +1,6 @@
 // auth-callback.js
-// After Google sign-in, Supabase redirects here with the session baked into
-// the URL. supabase-js automatically picks it up — we just need to read it.
+// Supabase OAuth and email confirmations both return here. In PKCE mode the
+// client detects ?code=... and exchanges it using the verifier stored at signup.
 //
 // Routing rule (unchanged, same as login.js):
 //   careerTestCompleted truthy -> dashboard.html
@@ -13,20 +13,67 @@
   const statusEl = document.getElementById("status-message");
   const ME_TIMEOUT_MS = 10000;
 
-  function fail(reason, err) {
-    console.error("[auth-callback] " + reason, err || "");
-    if (statusEl) statusEl.textContent = "Sign-in failed. Redirecting to login...";
-    setTimeout(() => (window.location.href = "login.html"), 1500);
+  function callbackParameters() {
+    return new URLSearchParams(`${window.location.search.slice(1)}&${window.location.hash.slice(1)}`);
+  }
+
+  function showFailure(message, err) {
+    console.error("[auth-callback] " + message, err || "");
+    const spinner = document.getElementById('callback-spinner');
+    const actions = document.getElementById('callback-actions');
+    if (spinner) spinner.hidden = true;
+    if (statusEl) statusEl.textContent = message;
+    if (actions) actions.hidden = false;
   }
 
   try {
+    const params = callbackParameters();
+    const errorCode = (params.get('error_code') || params.get('error') || '').toLowerCase();
+    if (errorCode) {
+      const expired = errorCode === 'otp_expired' || errorCode === 'access_denied' && /expired|invalid/i.test(params.get('error_description') || '');
+      const verifierMissing = errorCode === 'bad_code_verifier' || /code verifier/i.test(params.get('error_description') || '');
+      showFailure(expired
+        ? 'This confirmation link has expired or is invalid. Return to registration to request a new confirmation email.'
+        : verifierMissing
+          ? 'This confirmation link cannot be verified in this browser. Return to registration, request a new link, and open it in the same browser.'
+          : 'We could not complete sign-in. Return to Login or create an account to try again.');
+      return;
+    }
+
+    // Supabase JS initializes automatically; awaiting the same initialization
+    // promise ensures a PKCE code or supported token-fragment response has
+    // finished processing before we read the persisted session.
+    const { error: callbackError } = await supabase.auth.initialize();
+    if (callbackError) {
+      const code = String(callbackError.code || callbackError.name || '').toLowerCase();
+      const expired = code.includes('otp_expired') || /expired|invalid.*link/i.test(callbackError.message || '');
+      const verifierMissing = code.includes('bad_code_verifier') || /code verifier/i.test(callbackError.message || '');
+      showFailure(expired
+        ? 'This confirmation link has expired or is invalid. Return to registration to request a new confirmation email.'
+        : verifierMissing
+          ? 'This confirmation link cannot be verified in this browser. Return to registration, request a new link, and open it in the same browser.'
+          : 'We could not complete sign-in. Return to Login or create an account to try again.', callbackError);
+      return;
+    }
+
     const { data, error } = await supabase.auth.getSession();
 
     if (error || !data || !data.session) {
-      return fail("No Supabase session after OAuth redirect", error);
+      const fragmentError = params.get('error_description');
+      const expired = /expired|invalid.*link/i.test(fragmentError || '');
+      showFailure(expired
+        ? 'This confirmation link has expired or is invalid. Return to registration to request a new confirmation email.'
+        : 'No authenticated session was returned. Return to Login or create an account to try again.', error);
+      return;
     }
 
     const token = data.session.access_token;
+    const profileResponse = await fetch(`${API_BASE}/auth/complete-registration`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (!profileResponse.ok) throw new Error('Could not finish setting up the account profile.');
+
     localStorage.setItem("token", token);
 
     // Abort if the server never answers, instead of hanging on this page forever.
@@ -69,6 +116,6 @@
       window.location.href = "career-test.html";
     }
   } catch (err) {
-    fail("Sign-in flow failed", err);
+    showFailure('We could not finish confirming your account. Return to Login or create an account to try again.', err);
   }
 })();
