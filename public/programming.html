@@ -22,14 +22,14 @@
         <div class="nav-wrapper">
           <a href="index.html" class="home-brand" aria-label="CareerPath AI home"><span><em>CareerPath</em> AI</span></a>
           <div class="div-block-2 home-nav-links">
-            <a href="index.html" class="text-menu color-bege_light nav-item">Home</a>
-            <a href="career-test.html" class="text-menu color-bege_light nav-item">Career Test</a>
-            <a href="courses.html" class="text-menu color-bege_light nav-item">Courses</a>
-            <a href="programming.html" class="text-menu color-bege_light nav-item w--current" aria-current="page">Programming</a>
-            <a href="dashboard.html" class="text-menu color-bege_light nav-item">Dashboard</a>
+            <a href="index.html" class="text-menu color-bege_light nav-item" data-i18n="nav.home" data-i18n-fallback="Home">Home</a>
+            <a href="career-test.html" class="text-menu color-bege_light nav-item" data-i18n="nav.careerTest" data-i18n-fallback="Career Test">Career Test</a>
+            <a href="courses.html" class="text-menu color-bege_light nav-item" data-i18n="nav.courses" data-i18n-fallback="Courses">Courses</a>
+            <a href="programming.html" class="text-menu color-bege_light nav-item w--current" aria-current="page" data-i18n="nav.programming" data-i18n-fallback="Programming">Programming</a>
+            <a href="dashboard.html" class="text-menu color-bege_light nav-item" data-i18n="nav.dashboard" data-i18n-fallback="Dashboard">Dashboard</a>
           </div>
-          <button class="menu-button w-nav-button" type="button" aria-label="Open navigation"><i class="fas fa-bars" aria-hidden="true"></i></button>
-          <a href="login.html" class="header-book-link-buttom"><span class="text-button">Login</span><i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+          <button class="menu-button w-nav-button" type="button" aria-label="Open navigation" data-i18n-aria-label="page.openNavigation"><i class="fas fa-bars" aria-hidden="true"></i></button>
+          <a href="login.html" class="header-book-link-buttom"><span class="text-button" data-i18n="nav.login" data-i18n-fallback="Login">Login</span><i class="fas fa-arrow-right" aria-hidden="true"></i></a>
         </div>
       </div>
     </nav>
@@ -66,12 +66,12 @@
     <section class="programming-journey" aria-label="The Programming Studio learning journey">
       <div class="programming-section-kicker"><span>01</span><span>A METHOD THAT MOVES</span></div>
       <div class="programming-journey-steps">
-        <div><span>01</span><h2>Learn</h2><p>Meet the language and its building blocks.</p></div>
-        <div><span>02</span><h2>Understand</h2><p>See how those ideas shape a program.</p></div>
-        <div><span>03</span><h2>Practice</h2><p>Try a small task right after a concept.</p></div>
-        <div><span>04</span><h2>Solve</h2><p>Combine ideas in a challenge.</p></div>
-        <div><span>05</span><h2>Build</h2><p>Plan, test, and improve a useful project.</p></div>
-        <div><span>06</span><h2>Present</h2><p>Explain the problem, choices, and result.</p></div>
+        <div><span>01</span><h2 data-i18n="ui.learn" data-i18n-fallback="Learn">Learn</h2><p>Meet the language and its building blocks.</p></div>
+        <div><span>02</span><h2 data-i18n="ui.understand" data-i18n-fallback="Understand">Understand</h2><p>See how those ideas shape a program.</p></div>
+        <div><span>03</span><h2 data-i18n="common.practice" data-i18n-fallback="Practice">Practice</h2><p>Try a small task right after a concept.</p></div>
+        <div><span>04</span><h2 data-i18n="ui.solve" data-i18n-fallback="Solve">Solve</h2><p>Combine ideas in a challenge.</p></div>
+        <div><span>05</span><h2 data-i18n="ui.build" data-i18n-fallback="Build">Build</h2><p>Plan, test, and improve a useful project.</p></div>
+        <div><span>06</span><h2 data-i18n="ui.present" data-i18n-fallback="Present">Present</h2><p>Explain the problem, choices, and result.</p></div>
       </div>
     </section>
 
@@ -85,7 +85,7 @@
         <div class="programming-project-note">
           <span class="project-note-mark" aria-hidden="true">↗</span>
           <p>Each language track points toward a useful project. These are example directions for the learning architecture—not completed courses or projects.</p>
-          <a href="#language-tracks" class="programming-text-link">Find a direction <span aria-hidden="true">→</span></a>
+          <a href="#language-tracks" class="programming-text-link" data-i18n="programming.findDirection" data-i18n-fallback="Find a direction →">Find a direction <span aria-hidden="true">→</span></a>
         </div>
       </div>
       <div class="programming-project-example">
@@ -99,10 +99,10 @@
       <div class="programming-section-kicker"><span>03</span><span>CHOOSE YOUR MATERIAL</span></div>
       <div class="programming-tracks-heading">
         <div><p class="programming-eyebrow">THIRTEEN WAYS TO START</p><h2 id="tracks-title">Choose your<br />starting point</h2></div>
-        <p>Open a language to study a focused lesson, edit its code example, solve a challenge, and plan a project. The Studio explains and organizes practice; use a local language runtime to execute your code.</p>
+        <p data-i18n="ui.languageTrack" data-i18n-fallback="Open a language to study a focused lesson, edit its code example, solve a challenge, and plan a project. The Studio explains and organizes practice; use a local language runtime to execute your code.">Open a language to study a focused lesson, edit its code example, solve a challenge, and plan a project. The Studio explains and organizes practice; use a local language runtime to execute your code.</p>
       </div>
       <div class="programming-track-list" id="programming-track-list" aria-live="polite">
-        <p class="programming-track-loading">Preparing the studio…</p>
+        <p class="programming-track-loading" data-i18n="common.loading" data-i18n-fallback="Preparing the studio…">Preparing the studio…</p>
       </div>
     </section>
 

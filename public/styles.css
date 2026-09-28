@@ -1060,7 +1060,7 @@ button {
     width: 100%;
     min-height: 44px;
     padding: 12px !important;
-    text-align: left;
+    text-align: start;
   }
 
   .nav-wrapper.auth-nav-responsive .auth-responsive-nav > .auth-theme-toggle {
@@ -1133,7 +1133,7 @@ button {
     width: 100%;
     min-height: 44px;
     padding: 12px !important;
-    text-align: left;
+    text-align: start;
     box-sizing: border-box;
   }
 
@@ -3595,7 +3595,7 @@ body:has(#free-courses) .course-image { height: 150px; margin: 0; }
 body:has(#free-courses) .course-image img { width: 100%; height: 100%; object-fit: cover; color: transparent; font-size: 0; background: linear-gradient(135deg, #315146, #101d18 78%); }
 .course-card-content { display: flex; flex: 1; flex-direction: column; align-items: flex-start; padding: 18px; }
 .course-card-level { margin: 0 0 7px !important; color: var(--accent) !important; font-size: .7rem !important; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
-body:has(#free-courses) .course-card h3 { margin: 0 0 8px; color: var(--text); font: 400 1.3rem/1.2 var(--font-display); text-align: left; }
+body:has(#free-courses) .course-card h3 { margin: 0 0 8px; color: var(--text); font: 400 1.3rem/1.2 var(--font-display); text-align: start; }
 .course-title-link { color: inherit; text-decoration: none; }
 .course-title-link:hover { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
 body:has(#free-courses) .course-card-content > p:not(.course-card-level) { margin: 0 0 16px; color: var(--text-secondary); font-size: .88rem; line-height: 1.55; }
@@ -3610,7 +3610,7 @@ body:has(#free-courses) .cta-section { background: var(--surface); }
 .course-detail-container { max-width: 1120px !important; padding: 120px 28px 52px !important; }
 .course-detail-container > div:first-child { margin-bottom: 20px !important; }
 .course-detail-container > div:first-child a { color: var(--text-secondary) !important; text-decoration: none; }
-.course-detail-header { display: grid; grid-template-columns: minmax(240px, .72fr) minmax(0, 1.28fr); grid-template-rows: auto auto 1fr auto; align-items: end; gap: 8px 34px; margin: 0 0 24px !important; text-align: left !important; }
+.course-detail-header { display: grid; grid-template-columns: minmax(240px, .72fr) minmax(0, 1.28fr); grid-template-rows: auto auto 1fr auto; align-items: end; gap: 8px 34px; margin: 0 0 24px !important; text-align: start !important; }
 .course-detail-container .course-detail-image { grid-column: 1; grid-row: 1 / span 4; width: 100%; height: 250px !important; margin: 0 !important; border-radius: 10px !important; object-fit: cover; }
 .course-detail-container .course-detail-title { grid-column: 2; align-self: end; margin: 0 !important; font-size: clamp(2rem, 4vw, 3.25rem) !important; line-height: 1.04; }
 .course-detail-container .course-detail-description { grid-column: 2; max-width: 680px; margin: 0 !important; font-size: 1rem !important; line-height: 1.6; }
@@ -3716,7 +3716,7 @@ body:not(.home-page) .auth-box {
 }
 
 body:not(.home-page) .auth-box h1 {
-  text-align: left;
+  text-align: start;
   font-size: clamp(2rem, 5vw, 2.65rem);
   line-height: 1.08;
 }
@@ -4529,7 +4529,7 @@ html[data-theme="light"] body:has(#free-courses) .section-hero .component-button
 body:has(#free-courses) .section-hero .background-video img { color: transparent; font-size: 0; background: linear-gradient(135deg, #315146, #101d18 78%); }
 .home-hero-photo img { background: linear-gradient(135deg, #172720, #101d18 78%); color: transparent; font-size: 0; }
 body:has(#free-courses) .course-card button.course-btn { cursor: pointer; }
-.course-detail-container button.lesson-item { display: flex; width: 100%; font-family: var(--font-body); text-align: left; }
+.course-detail-container button.lesson-item { display: flex; width: 100%; font-family: var(--font-body); text-align: start; }
 .profile-page .profile-settings-section.profile-account-section { display: block; }
 .profile-page .profile-settings-section .profile-section-heading { margin-bottom: 16px; }
 .profile-page .profile-settings-section .profile-preference-grid { max-width: 640px; }
@@ -4869,7 +4869,7 @@ body:has(.course-detail-container) .course-detail-header {
 }
 body:has(.course-detail-container) .course-detail-header::after { position: absolute; z-index: -1; inset: 0; content: ""; background: linear-gradient(90deg, rgba(7, 8, 9, .9), rgba(7, 8, 9, .48) 62%, rgba(7, 8, 9, .15)), linear-gradient(0deg, rgba(7, 8, 9, .7), transparent 76%); }
 body:has(.course-detail-container) .course-detail-image { position: absolute; z-index: -2; inset: 0; width: 100%; height: 100% !important; min-height: 0 !important; object-fit: cover; object-position: center; opacity: .84; }
-body:has(.course-detail-container) .course-detail-title { width: 100%; max-width: 950px; align-self: flex-start; margin: 0; color: #f4eee7; font: 400 clamp(3rem, 7vw, 6.2rem)/.98 var(--font-display); text-align: left; }
+body:has(.course-detail-container) .course-detail-title { width: 100%; max-width: 950px; align-self: flex-start; margin: 0; color: #f4eee7; font: 400 clamp(3rem, 7vw, 6.2rem)/.98 var(--font-display); text-align: start; }
 body:has(.course-detail-container) .course-detail-description { max-width: 700px; color: rgba(244, 238, 231, .85); font-size: clamp(1rem, 1.5vw, 1.2rem); line-height: 1.65; }
 body:has(.course-detail-container) .course-detail-meta { width: 100%; justify-content: flex-start; color: #e3b99d; }
 body:has(.course-detail-container) :is(#course-progress, #exam-button-container, #course-modules, #lesson-content, #btn-back-to-curriculum) { width: min(1100px, calc(100% - 40px)); margin-right: auto; margin-left: auto; }
@@ -5226,8 +5226,8 @@ body:has(.profile-page) > header .logo a { color: #f4eee7 !important; }
 .programming-track-number { color: #91b59b; font-size: .65rem; }
 .programming-track-name { color: #f4ece6; font-family: var(--font-display); font-size: clamp(1.45rem, 2.4vw, 2rem); font-weight: 300; }
 .programming-track-description { color: rgba(244, 236, 230, .58); font-size: .79rem; line-height: 1.55; }
-.programming-track-level { color: #d8ad8e; font-size: .55rem; text-align: right; }
-.programming-track-toggle { color: #a6c6aa; font-size: 1.2rem; text-align: right; transition: transform .2s ease; }
+.programming-track-level { color: #d8ad8e; font-size: .55rem; text-align: end; }
+.programming-track-toggle { color: #a6c6aa; font-size: 1.2rem; text-align: end; transition: transform .2s ease; }
 .programming-track[open] .programming-track-toggle { transform: rotate(45deg); }
 .programming-track summary:focus-visible { outline: 2px solid #a6c6aa; outline-offset: 3px; }
 .programming-track-detail { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(260px, .75fr); gap: 48px; padding: 0 0 32px 69px; }
@@ -5294,7 +5294,7 @@ html[data-theme="light"] body.programming-page .programming-footer a { color: #2
   .programming-hero-grid { grid-template-columns: minmax(0, 1fr) minmax(270px, .8fr); gap: 36px; }
   .programming-journey-steps > div { padding: 0 12px; }
   .programming-track summary { grid-template-columns: 40px minmax(100px, .4fr) minmax(150px, 1fr) 24px; gap: 12px; }
-  .programming-track-level { grid-column: 2 / 4; grid-row: 2; text-align: left; }
+  .programming-track-level { grid-column: 2 / 4; grid-row: 2; text-align: start; }
   .programming-track-toggle { grid-column: 4; grid-row: 1 / 3; }
   .programming-track-detail { padding-left: 52px; grid-template-columns: minmax(0, 1fr); gap: 20px; }
 }
@@ -5312,7 +5312,7 @@ html[data-theme="light"] body.programming-page .programming-footer a { color: #2
   .code-line { gap: 9px; }
   .code-plate-top, .code-plate-footer { padding: 13px 12px; font-size: .48rem; }
   .programming-hero-foot { margin-top: 62px; font-size: .5rem; }
-  .programming-hero-foot span:last-child { text-align: right; }
+  .programming-hero-foot span:last-child { text-align: end; }
   .programming-journey, .programming-project-feature, .programming-tracks, .programming-presentation { width: calc(100% - 40px); }
   .programming-journey { padding: 58px 0 62px; }
   .programming-journey-steps { grid-template-columns: 1fr; gap: 0; margin-top: 22px; }
@@ -5335,7 +5335,7 @@ html[data-theme="light"] body.programming-page .programming-footer a { color: #2
   .programming-track-number { grid-row: 1 / 3; align-self: start; padding-top: 8px; }
   .programming-track-name { grid-column: 2; grid-row: 1; font-size: 1.55rem; }
   .programming-track-description { grid-column: 2; grid-row: 2; font-size: .74rem; }
-  .programming-track-level { grid-column: 2; grid-row: 3; text-align: left; font-size: .5rem; }
+  .programming-track-level { grid-column: 2; grid-row: 3; text-align: start; font-size: .5rem; }
   .programming-track-toggle { grid-column: 3; grid-row: 1 / 4; }
   .programming-track-detail { padding: 0 0 25px 39px; }
   .programming-track-path { grid-template-columns: 1fr; gap: 0; }
@@ -5750,4 +5750,87 @@ html[data-theme="light"] {
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   body:not(.home-page) .auth-mobile-open > .auth-responsive-nav { animation: none; }
+}
+
+/* ==========================================================================
+   Wave-1A: RTL + bidirectional text support
+   Physical text alignment was converted to logical (start/end) above.
+   The rules below only apply when document direction is rtl (Arabic).
+   LTR rendering is unchanged.
+   ========================================================================== */
+
+/* Code, commands, URLs and technical snippets always read left-to-right,
+   including inside Arabic sentences. */
+[dir="rtl"] code,
+[dir="rtl"] pre,
+[dir="rtl"] kbd,
+[dir="rtl"] samp,
+[dir="rtl"] .code-line,
+[dir="rtl"] .code-plate-body,
+[dir="rtl"] .programming-code-plate,
+[dir="rtl"] .code-plate-top,
+[dir="rtl"] .code-plate-footer {
+  direction: ltr;
+  unicode-bidi: isolate;
+  text-align: left;
+}
+
+/* Utility for wrapping a Latin technical term inside RTL prose. */
+.ltr {
+  direction: ltr;
+  unicode-bidi: isolate;
+  display: inline-block;
+}
+
+/* Form controls follow the document direction; option text stays readable. */
+[dir="rtl"] input,
+[dir="rtl"] select,
+[dir="rtl"] textarea {
+  text-align: start;
+}
+
+/* Longer translated labels (French/Arabic) may wrap: allow nav + buttons to
+   grow instead of clipping. */
+.nav-language-selector {
+  max-width: 100%;
+}
+.component-button,
+.btn-primary,
+.btn-outline,
+.home-button {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+/* Mirror decorative side-accent borders in RTL. */
+[dir="rtl"] .home-method-preview {
+  border-left: 0;
+  border-right: 2px solid var(--bege);
+}
+[dir="rtl"] body.home-page .home-method-preview {
+  border-right-color: #83b5a0;
+}
+[dir="rtl"] .programming-journey-steps > div {
+  border-left: 0;
+  border-right: 1px solid rgba(134, 164, 142, .2);
+}
+[dir="rtl"] .programming-journey-steps > div:first-child {
+  border-right: 0;
+}
+[dir="rtl"] .programming-project-note {
+  padding-left: 0;
+  padding-right: 26px;
+  border-left: 0;
+  border-right: 1px solid rgba(134, 164, 142, .45);
+}
+[dir="rtl"] .programming-track-project {
+  border-left: 0;
+  border-right: 1px solid rgba(234, 210, 191, .45);
+}
+[dir="rtl"] body:has(#stats-grid) .stat-card {
+  border-left: 0;
+  border-right: 1px solid var(--border);
+}
+[dir="rtl"] body:has(#stats-grid) .stat-card:first-child {
+  border-right: 0;
 }

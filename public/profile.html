@@ -18,42 +18,42 @@
       <a href="index.html" class="text-h6" style="font-size: 1.5rem; color: var(--bege_light);"><em>CareerPath</em> AI</a>
     </div>
     <nav aria-label="Main navigation">
-      <a href="index.html" class="text-menu color-bege_light nav-item">Home</a>
-      <a href="career-test.html" class="text-menu color-bege_light nav-item">Career Test</a>
-      <a href="courses.html" class="text-menu color-bege_light nav-item">Courses</a>
-      <a href="dashboard.html" class="text-menu color-bege_light nav-item">Dashboard</a>
-      <a href="profile.html" class="text-menu color-bege_light nav-item w--current">Profile</a>
+      <a href="index.html" class="text-menu color-bege_light nav-item" data-i18n="nav.home" data-i18n-fallback="Home">Home</a>
+      <a href="career-test.html" class="text-menu color-bege_light nav-item" data-i18n="nav.careerTest" data-i18n-fallback="Career Test">Career Test</a>
+      <a href="courses.html" class="text-menu color-bege_light nav-item" data-i18n="nav.courses" data-i18n-fallback="Courses">Courses</a>
+      <a href="dashboard.html" class="text-menu color-bege_light nav-item" data-i18n="nav.dashboard" data-i18n-fallback="Dashboard">Dashboard</a>
+      <a href="profile.html" class="text-menu color-bege_light nav-item w--current" data-i18n="nav.profile" data-i18n-fallback="Profile">Profile</a>
     </nav>
   </header>
 
   <main class="dashboard-section profile-page">
     <div class="container">
-      <div class="dashboard-header profile-page-header"><p class="profile-eyebrow">CAREER + LEARNING HUB</p><h1>Profile</h1><p>Your career profile, learning path, and achievements in one place.</p></div>
+      <div class="dashboard-header profile-page-header"><p class="profile-eyebrow" data-i18n="ui.profileHub" data-i18n-fallback="CAREER + LEARNING HUB">CAREER + LEARNING HUB</p><h1 data-i18n="profile.title" data-i18n-fallback="Profile">Profile</h1><p data-i18n="page.profileDescription" data-i18n-fallback="Your career profile, learning path, and achievements in one place.">Your career profile, learning path, and achievements in one place.</p></div>
       <div id="profile-message" role="status" style="display:none; margin-bottom: var(--space-4);"></div>
 
       <section class="dashboard-card profile-section profile-personal-section" aria-labelledby="personal-information-title">
-        <div class="profile-section-heading"><div><p class="profile-eyebrow">WHO AM I?</p><h2 id="personal-information-title">Personal</h2></div></div>
+        <div class="profile-section-heading"><div><p class="profile-eyebrow" data-i18n="ui.whoAmI" data-i18n-fallback="WHO AM I?">WHO AM I?</p><h2 id="personal-information-title" data-i18n="ui.personal" data-i18n-fallback="Personal">Personal</h2></div></div>
         <p id="profile-personal-error" class="profile-error" role="alert" hidden></p>
         <div id="profile-content" class="profile-personal-details">
-          <p><strong>Full name</strong><span id="profile-name-display">Loading...</span></p>
+          <p><strong data-i18n="ui.fullName" data-i18n-fallback="Full name">Full name</strong><span id="profile-name-display">Loading...</span></p>
           <p><strong>Email</strong><span id="profile-email-display">Loading...</span></p>
-          <p><strong>Career goal</strong><span id="profile-career-display">Loading...</span></p>
-          <button id="edit-profile-btn" type="button" class="btn-outline">Edit Profile</button>
+          <p><strong data-i18n="page.careerGoal" data-i18n-fallback="Career goal">Career goal</strong><span id="profile-career-display">Loading...</span></p>
+          <button id="edit-profile-btn" type="button" class="btn-outline" data-i18n="ui.editProfile" data-i18n-fallback="Edit Profile">Edit Profile</button>
         </div>
         <form id="profile-edit-form" class="profile-edit-form" hidden>
           <div class="form-group">
             <label for="profile-email">Email</label>
             <input type="email" id="profile-email" disabled />
-            <small>Email can't be changed here.</small>
+            <small data-i18n="page.emailCannotChange" data-i18n-fallback="Email can't be changed here.">Email can't be changed here.</small>
           </div>
           <div class="form-group">
-            <label for="profile-name">Full Name</label>
+            <label for="profile-name" data-i18n="ui.fullName" data-i18n-fallback="Full Name">Full Name</label>
             <input type="text" id="profile-name" required />
           </div>
           <div class="form-group">
-            <label for="profile-careerGoal">Career Goal</label>
+            <label for="profile-careerGoal" data-i18n="page.careerGoal" data-i18n-fallback="Career Goal">Career Goal</label>
             <select id="profile-careerGoal">
-              <option value="undecided">Still exploring</option>
+              <option value="undecided" data-i18n="page.stillExploring" data-i18n-fallback="Still exploring">Still exploring</option>
               <option value="AI/ML Engineer">AI/ML Engineer</option>
               <option value="Data Scientist">Data Scientist</option>
               <option value="Software Developer">Software Developer</option>
@@ -73,65 +73,65 @@
               <option value="cybersecurity">Cybersecurity (registration goal)</option>
             </select>
           </div>
-          <button type="submit" class="btn-primary component-button" id="save-btn">Save Changes</button>
-          <button type="button" class="btn-outline" id="cancel-edit-btn">Cancel</button>
+          <button type="submit" class="btn-primary component-button" id="save-btn" data-i18n="ui.saveChanges" data-i18n-fallback="Save Changes">Save Changes</button>
+          <button type="button" class="btn-outline" id="cancel-edit-btn" data-i18n="ui.cancel" data-i18n-fallback="Cancel">Cancel</button>
         </form>
       </section>
 
       <section class="dashboard-card profile-section profile-career-hero" aria-labelledby="career-profile-title">
-        <div class="profile-section-heading"><div><p class="profile-eyebrow">YOUR RESULTS</p><h2 id="career-profile-title">Career Profile</h2></div><a id="career-assessment-action" class="btn-outline profile-retake-link" href="career-test.html">Retake Assessment</a></div>
-        <p id="career-assessment-status" class="profile-status" role="status">Loading assessment status...</p>
-        <button id="career-profile-retry" type="button" class="btn-outline profile-retry" hidden>Retry loading Career Profile</button>
+        <div class="profile-section-heading"><div><p class="profile-eyebrow">YOUR RESULTS</p><h2 id="career-profile-title" data-i18n="career.profile" data-i18n-fallback="Career Profile">Career Profile</h2></div><a id="career-assessment-action" class="btn-outline profile-retake-link" href="career-test.html" data-i18n="page.retakeAssessment" data-i18n-fallback="Retake Assessment">Retake Assessment</a>
+        <p id="career-assessment-status" class="profile-status" role="status" data-i18n="page.loadingAssessment" data-i18n-fallback="Loading assessment status...">Loading assessment status...</p>
+        <button id="career-profile-retry" type="button" class="btn-outline profile-retry" hidden data-i18n="page.retryCareerProfile" data-i18n-fallback="Retry loading Career Profile">Retry loading Career Profile</button>
         <p id="assessment-version" class="text-body_small color-green_light profile-version"></p>
-        <h3 id="career-directions-title" class="profile-subheading">Top Career Directions</h3>
+        <h3 id="career-directions-title" class="profile-subheading" data-i18n="career.topDirections" data-i18n-fallback="Top Career Directions">Top Career Directions</h3>
         <h3 id="career-alignment-title" class="profile-visually-hidden" hidden>Career Alignment</h3>
         <div id="career-directions" class="career-directions"></div>
-        <h3 id="career-strengths-title" class="profile-subheading" hidden>Your Strengths</h3>
+        <h3 id="career-strengths-title" class="profile-subheading" hidden data-i18n="page.yourStrengths" data-i18n-fallback="Your Strengths">Your Strengths</h3>
         <ul id="career-strengths" class="profile-strengths" hidden></ul>
-        <h3 id="career-interests-title" class="profile-subheading">Career-interest dimensions</h3>
+        <h3 id="career-interests-title" class="profile-subheading" data-i18n="page.careerDimensions" data-i18n-fallback="Career-interest dimensions">Career-interest dimensions</h3>
         <div id="career-dimensions" class="profile-dimensions"></div>
       </section>
 
       <section id="career-recommendations-section" class="dashboard-card profile-section profile-recommendations" aria-labelledby="career-recommendations-title" hidden>
-        <div class="profile-section-heading"><div><p class="profile-eyebrow">CAREER → LEARNING</p><h2 id="career-recommendations-title">Recommended for Your Career Profile</h2></div></div>
-        <p class="profile-section-intro">Based on your career directions.</p>
+        <div class="profile-section-heading"><div><p class="profile-eyebrow">CAREER → LEARNING</p><h2 id="career-recommendations-title" data-i18n="page.recommendedForProfile" data-i18n-fallback="Recommended for Your Career Profile">Recommended for Your Career Profile</h2></div></div>
+        <p class="profile-section-intro" data-i18n="page.basedOnDirections" data-i18n-fallback="Based on your career directions.">Based on your career directions.</p>
         <p id="career-recommendations-status" class="text-body_small color-green_light" role="status"></p>
         <div id="career-recommendations" class="profile-recommendation-grid"></div>
       </section>
 
       <section id="profile-whats-next" class="dashboard-card profile-section profile-whats-next" aria-labelledby="profile-whats-next-title" aria-live="polite">
-        <div><p class="profile-eyebrow">YOUR NEXT STEP</p><h2 id="profile-whats-next-title">What's Next</h2><p id="profile-whats-next-copy" class="text-body_small color-green_light">Finding a next step from your profile...</p></div>
-        <a id="profile-whats-next-action" class="btn-primary" href="courses.html" hidden>Continue</a>
+        <div><p class="profile-eyebrow">YOUR NEXT STEP</p><h2 id="profile-whats-next-title" data-i18n="page.whatsNext" data-i18n-fallback="What's Next">What's Next</h2><p id="profile-whats-next-copy" class="text-body_small color-green_light" data-i18n="page.findingNextStep" data-i18n-fallback="Finding a next step from your profile...">Finding a next step from your profile...</p></div>
+        <a id="profile-whats-next-action" class="btn-primary" href="courses.html" hidden data-i18n="common.continue" data-i18n-fallback="Continue">Continue</a>
       </section>
 
       <section class="dashboard-card profile-section profile-learning-section" aria-labelledby="profile-learning-title">
-        <div class="profile-section-heading"><div><p class="profile-eyebrow">YOUR COURSES</p><h2 id="profile-learning-title">My Learning</h2></div><a class="btn-outline" href="courses.html">Explore Courses</a></div>
+        <div class="profile-section-heading"><div><p class="profile-eyebrow" data-i18n="page.yourCourses" data-i18n-fallback="YOUR COURSES">YOUR COURSES</p><h2 id="profile-learning-title" data-i18n="page.myLearning" data-i18n-fallback="My Learning">My Learning</h2></div><a class="btn-outline" href="courses.html" data-i18n="ui.exploreCourses" data-i18n-fallback="Explore Courses">Explore Courses</a></div>
         <div id="profile-enrollments" class="profile-enrollments">
           <p class="text-body_small color-green_light">Loading enrolled courses...</p>
         </div>
       </section>
 
       <section class="dashboard-card profile-section profile-achievement-section" aria-labelledby="profile-achievements-title">
-        <div class="profile-section-heading"><div><p class="profile-eyebrow">EARNED</p><h2 id="profile-achievements-title">Achievements</h2></div></div>
+        <div class="profile-section-heading"><div><p class="profile-eyebrow" data-i18n="page.earned" data-i18n-fallback="EARNED">EARNED</p><h2 id="profile-achievements-title" data-i18n="page.achievements" data-i18n-fallback="Achievements">Achievements</h2></div></div>
         <div id="profile-certificates">
-          <p class="text-body_small color-green_light">Loading certificates...</p>
+          <p class="text-body_small color-green_light" data-i18n="page.loadingCertificates" data-i18n-fallback="Loading certificates...">Loading certificates...</p>
         </div>
       </section>
 
       <section class="dashboard-card profile-section profile-upload-section" aria-labelledby="profile-uploads-title">
-        <div class="profile-section-heading"><div><p class="profile-eyebrow">EXTERNAL LEARNING</p><h2 id="profile-uploads-title">Uploaded Certificates</h2></div></div>
+        <div class="profile-section-heading"><div><p class="profile-eyebrow" data-i18n="page.externalLearning" data-i18n-fallback="EXTERNAL LEARNING">EXTERNAL LEARNING</p><h2 id="profile-uploads-title">Uploaded Certificates</h2></div></div>
         <form id="external-certificate-form" class="external-certificate-form">
-          <div class="form-group"><label for="external-certificate-title">Certificate title</label><input id="external-certificate-title" name="title" type="text" maxlength="120" required /></div>
-          <div class="form-group"><label for="external-certificate-file">Certificate file (PDF, PNG, or JPEG; up to 10 MB)</label><input id="external-certificate-file" name="file" type="file" accept="application/pdf,image/png,image/jpeg" required /></div>
-          <button class="btn-outline" type="submit">Upload External Certificate</button>
+          <div class="form-group"><label for="external-certificate-title" data-i18n="page.certificateTitle" data-i18n-fallback="Certificate title">Certificate title</label><input id="external-certificate-title" name="title" type="text" maxlength="120" required /></div>
+          <div class="form-group"><label for="external-certificate-file" data-i18n="page.certificateFile" data-i18n-fallback="Certificate file (PDF, PNG, or JPEG; up to 10 MB)">Certificate file (PDF, PNG, or JPEG; up to 10 MB)</label><input id="external-certificate-file" name="file" type="file" accept="application/pdf,image/png,image/jpeg" required /></div>
+          <button class="btn-outline" type="submit" data-i18n="page.uploadExternal" data-i18n-fallback="Upload External Certificate">Upload External Certificate</button>
         </form>
         <p id="external-certificate-status" role="status" aria-live="polite"></p>
-        <div id="uploaded-certificates" class="profile-upload-list"><p class="text-body_small color-green_light">Upload certificates you've earned elsewhere to keep them in one place.</p></div>
+        <div id="uploaded-certificates" class="profile-upload-list"><p class="text-body_small color-green_light" data-i18n="page.uploadCertificatesHint" data-i18n-fallback="Upload certificates you've earned elsewhere to keep them in one place.">Upload certificates you've earned elsewhere to keep them in one place.</p></div>
       </section>
 
       <section class="dashboard-card profile-section profile-settings-section profile-account-section" aria-labelledby="profile-account-title">
-        <div class="profile-section-heading"><div><p class="profile-eyebrow">ACCOUNT</p><h2 id="profile-account-title">Account</h2></div></div>
-        <h3 id="profile-settings-title" class="profile-subheading">Settings</h3>
+        <div class="profile-section-heading"><div><p class="profile-eyebrow">ACCOUNT</p><h2 id="profile-account-title" data-i18n="ui.account" data-i18n-fallback="Account">Account</h2></div></div>
+        <h3 id="profile-settings-title" class="profile-subheading" data-i18n="ui.settings" data-i18n-fallback="Settings">Settings</h3>
         <div class="profile-preference-grid">
           <div class="form-group">
             <label for="theme-preference">Theme</label>
@@ -142,12 +142,14 @@
             </select>
           </div>
           <div class="form-group">
-            <label for="language-preference">Language</label>
+            <label for="language-preference" data-i18n="ui.language" data-i18n-fallback="Language">Language</label>
             <select id="language-preference" data-language-preference>
               <option value="en">English</option>
               <option value="fr">Français</option>
               <option value="hinglish">Hinglish</option>
-              <option value="fon">Fon</option>
+              <option value="sw">Kiswahili</option>
+              <option value="ar">العربية</option>
+              <option value="fon" disabled>Fon (coming soon)</option>
             </select>
           </div>
         </div>
@@ -168,7 +170,7 @@
       <div class="footer-block" style="text-align: center;">
         <div class="text-footer color-bege_light" style="opacity: 0.7;">© CareerPath AI</div>
       </div>
-      <div class="footer-block" style="text-align: right;">
+      <div class="footer-block" style="text-align: end;">
         <span class="text-footer color-bege_light" style="display: block; opacity: 0.6;">Symbiosis Institute of Technology, Pune</span>
       </div>
     </footer>

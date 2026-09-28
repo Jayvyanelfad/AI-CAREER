@@ -167,10 +167,10 @@
       <a href="index.html" class="text-h6">CareerPath AI</a>
     </div>
     <nav>
-      <a href="index.html" class="text-menu color-bege_light nav-item">Home</a>
-      <a href="courses.html" class="text-menu color-bege_light nav-item">Career Courses</a>
-      <a href="career-test.html" class="text-menu color-bege_light nav-item w--current">Career Test</a>
-      <a href="dashboard.html" class="text-menu color-bege_light nav-item">Dashboard</a>
+      <a href="index.html" class="text-menu color-bege_light nav-item" data-i18n="nav.home" data-i18n-fallback="Home">Home</a>
+      <a href="courses.html" class="text-menu color-bege_light nav-item" data-i18n="nav.courses" data-i18n-fallback="Career Courses">Career Courses</a>
+      <a href="career-test.html" class="text-menu color-bege_light nav-item w--current" data-i18n="nav.careerTest" data-i18n-fallback="Career Test">Career Test</a>
+      <a href="dashboard.html" class="text-menu color-bege_light nav-item" data-i18n="nav.dashboard" data-i18n-fallback="Dashboard">Dashboard</a>
       <div id="profile-nav"></div>
       <div id="auth-action-nav"></div>
     </nav>
@@ -181,9 +181,9 @@
       <div id="quiz-container">
       <!-- Header -->
       <div class="dashboard-header">
-        <p class="editorial-eyebrow">CAREER ASSESSMENT</p>
-        <h1>Discover where your strengths could take you.</h1>
-        <p class="text-body_small color-green_light">Explore your interests and find technology career directions to consider.</p>
+        <p class="editorial-eyebrow" data-i18n="ui.careerEyebrow" data-i18n-fallback="CAREER ASSESSMENT">CAREER ASSESSMENT</p>
+        <h1 data-i18n="ui.assessmentHero" data-i18n-fallback="Discover where your strengths could take you.">Discover where your strengths could take you.</h1>
+        <p class="text-body_small color-green_light" data-i18n="ui.careerAssessmentDescription" data-i18n-fallback="Explore your interests and find technology career directions to consider.">Explore your interests and find technology career directions to consider.</p>
       </div>
 
       <!-- Progress Section -->
@@ -205,15 +205,15 @@
 
       <!-- Navigation -->
       <div class="navigation-container" style="display: flex; justify-content: space-between; margin-top: var(--space-4); flex-wrap: wrap; gap: var(--space-2);">
-        <button class="btn-outline" id="prev-btn" disabled style="background: transparent; border: 1px solid var(--border); border-radius: 50px; color: var(--bege_light); font-family: var(--font-display); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; transition: var(--transition); padding: var(--space-3) var(--space-4); display: flex; justify-content: center; align-items: center; gap: var(--space-2); cursor: pointer;" onmouseover="this.style.background='var(--accent-light)'; this.style.borderColor='var(--bege)'; this.style.color='var(--bege)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.background='transparent'; this.style.borderColor='var(--border)'; this.style.color='var(--bege_light)'; this.style.transform='translateY(0)';">Previous</button>
-        <button class="btn-primary component-button" id="next-btn">Next</button>
-        <button class="btn-primary component-button" id="submit-btn" style="display:none;">Submit Test</button>
+        <button class="btn-outline" id="prev-btn" disabled style="background: transparent; border: 1px solid var(--border); border-radius: 50px; color: var(--bege_light); font-family: var(--font-display); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; transition: var(--transition); padding: var(--space-3) var(--space-4); display: flex; justify-content: center; align-items: center; gap: var(--space-2); cursor: pointer;" data-i18n="ui.previous" data-i18n-fallback="Previous" onmouseover="this.style.background='var(--accent-light)'; this.style.borderColor='var(--bege)'; this.style.color='var(--bege)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.background='transparent'; this.style.borderColor='var(--border)'; this.style.color='var(--bege_light)'; this.style.transform='translateY(0)';">Previous</button>
+        <button class="btn-primary component-button" id="next-btn" data-i18n="ui.next" data-i18n-fallback="Next">Next</button>
+        <button class="btn-primary component-button" id="submit-btn" style="display:none;" data-i18n="ui.submitTest" data-i18n-fallback="Submit Test">Submit Test</button>
       </div>
 
       <!-- Loading Spinner -->
       <div id="loading-spinner" style="display:none; text-align:center; padding: var(--space-8);">
         <div class="spinner"></div>
-        <p class="text-body_small color-bege_light">Calculating your career path...</p>
+        <p class="text-body_small color-bege_light" data-i18n="ui.calculatingPath" data-i18n-fallback="Calculating your career path...">Calculating your career path...</p>
       </div>
     </div>
 
@@ -222,7 +222,7 @@
       <!-- Results Header -->
       <div class="dashboard-header" style="margin-bottom: var(--space-6);">
         <h1><i class="fas fa-bullseye"></i> Your Career Profile</h1>
-        <p class="text-body_small color-green_light">Career alignment across the defined career directions, based on your assessment answers.</p>
+        <p class="text-body_small color-green_light" data-i18n="ui.assessmentDescription" data-i18n-fallback="Career alignment across the defined career directions, based on your assessment answers.">Career alignment across the defined career directions, based on your assessment answers.</p>
       </div>
 
       <!-- Results Content -->
@@ -236,9 +236,9 @@
 
       <!-- Action Buttons -->
       <div class="action-buttons" style="display: flex; gap: var(--space-4); flex-wrap: wrap; justify-content: center; margin-top: var(--space-6);">
-        <a href="courses.html" class="btn-primary">Explore Recommended Courses</a>
+        <a href="courses.html" class="btn-primary" data-i18n="ui.recommendedCourses" data-i18n-fallback="Explore Recommended Courses">Explore Recommended Courses</a>
         <a href="dashboard.html" class="btn-outline" style="background: transparent; border: 1px solid var(--border); border-radius: 50px; color: var(--bege_light); font-family: var(--font-display); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; transition: var(--transition); padding: var(--space-3) var(--space-4); display: flex; justify-content: center; align-items: center; gap: var(--space-2); cursor: pointer;" onmouseover="this.style.background='var(--accent-light)'; this.style.borderColor='var(--bege)'; this.style.color='var(--bege)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.background='transparent'; this.style.borderColor='var(--border)'; this.style.color='var(--bege_light)'; this.style.transform='translateY(0)';">Go to Dashboard</a>
-        <button class="btn-outline" id="retake-btn" style="background: transparent; border: 1px solid var(--border); border-radius: 50px; color: var(--bege_light); font-family: var(--font-display); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; transition: var(--transition); padding: var(--space-3) var(--space-4); display: flex; justify-content: center; align-items: center; gap: var(--space-2); cursor: pointer;" onmouseover="this.style.background='var(--accent-light)'; this.style.borderColor='var(--bege)'; this.style.color='var(--bege)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.background='transparent'; this.style.borderColor='var(--border)'; this.style.color='var(--bege_light)'; this.style.transform='translateY(0)';">Retake Test</button>
+        <button class="btn-outline" id="retake-btn" style="background: transparent; border: 1px solid var(--border); border-radius: 50px; color: var(--bege_light); font-family: var(--font-display); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; transition: var(--transition); padding: var(--space-3) var(--space-4); display: flex; justify-content: center; align-items: center; gap: var(--space-2); cursor: pointer;" data-i18n="ui.retakeTest" data-i18n-fallback="Retake Test" onmouseover="this.style.background='var(--accent-light)'; this.style.borderColor='var(--bege)'; this.style.color='var(--bege)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.background='transparent'; this.style.borderColor='var(--border)'; this.style.color='var(--bege_light)'; this.style.transform='translateY(0)';">Retake Test</button>
       </div>
     </div>
   </main>

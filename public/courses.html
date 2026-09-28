@@ -58,17 +58,17 @@
                         </span>
                     </a>
                     <div class="div-block-2" style="display: flex; gap: 4px; align-items: center;">
-                        <a href="index.html" class="text-menu color-bege_light nav-item w--current">Home</a>
-                        <a href="career-test.html" class="text-menu color-bege_light nav-item">Career Test</a>
-                        <a href="courses.html" class="text-menu color-bege_light nav-item">Courses</a>
-                        <a href="dashboard.html" class="text-menu color-bege_light nav-item">Dashboard</a>
+                        <a href="index.html" class="text-menu color-bege_light nav-item w--current" data-i18n="nav.home" data-i18n-fallback="Home">Home</a>
+                        <a href="career-test.html" class="text-menu color-bege_light nav-item" data-i18n="nav.careerTest" data-i18n-fallback="Career Test">Career Test</a>
+                        <a href="courses.html" class="text-menu color-bege_light nav-item" data-i18n="nav.courses" data-i18n-fallback="Courses">Courses</a>
+                        <a href="dashboard.html" class="text-menu color-bege_light nav-item" data-i18n="nav.dashboard" data-i18n-fallback="Dashboard">Dashboard</a>
                         <a href="index.html#about" class="text-menu color-bege_light nav-item">About</a>
                     </div>
                     <div class="menu-button w-nav-button">
                         <i class="fas fa-bars" style="color: var(--bege_light); font-size: 1.25rem;"></i>
                     </div>
                     <a href="login.html" class="header-book-link-buttom">
-                        <div class="text-button">Login</div>
+                        <div class="text-button" data-i18n="nav.login" data-i18n-fallback="Login">Login</div>
                         <i class="fas fa-arrow-right" style="font-size: 0.8rem;"></i>
                     </a>
                 </div>
@@ -85,12 +85,12 @@
         <div class="hero-video-shadow"></div>
         <div class="hero-content-wrapper">
             <div class="container">
-                <p class="home-eyebrow">COURSE EXPLORATION</p>
+                <p class="home-eyebrow" data-i18n="ui.courseExploration" data-i18n-fallback="COURSE EXPLORATION">COURSE EXPLORATION</p>
                 <h1 class="text-h1 color-bege_light">Explore the<br/><em>technical worlds</em><br/>you can enter.</h1>
-                <p class="courses-hero-copy">Explore the technical worlds connected to today’s technology careers, from modern AI to software, data and product design.</p>
+                <p class="courses-hero-copy" data-i18n="ui.currentCatalog" data-i18n-fallback="Explore the technical worlds connected to today’s technology careers, from modern AI to software, data and product design.">Explore the technical worlds connected to today’s technology careers, from modern AI to software, data and product design.</p>
                 <div style="margin-top: 40px; display: flex; gap: 20px; flex-wrap: wrap;">
-                    <a href="#free-courses" class="component-button">Explore Courses</a>
-                    <a href="career-test.html" class="component-button" style="background: transparent; border: 1px solid var(--bege_light); color: var(--bege_light);">Take the Career Assessment</a>
+                    <a href="#free-courses" class="component-button" data-i18n="ui.exploreCourses" data-i18n-fallback="Explore Courses">Explore Courses</a>
+                    <a href="career-test.html" class="component-button" style="background: transparent; border: 1px solid var(--bege_light); color: var(--bege_light);" data-i18n="ui.takeAssessment" data-i18n-fallback="Take the Career Assessment">Take the Career Assessment</a>
                 </div>
             </div>
         </div>
@@ -100,15 +100,15 @@
     <section class="section" id="free-courses">
         <div class="container">
             <p class="home-eyebrow">LEARNING PATHS</p>
-            <h2 class="courses-section-title">Courses connected to today’s technology careers.</h2>
-            <p class="courses-section-intro">Browse the current catalog by field. Open a course to see its curriculum, lesson sequence and access details.</p>
+            <h2 class="courses-section-title" data-i18n="ui.coursesConnected" data-i18n-fallback="Courses connected to today’s technology careers.">Courses connected to today’s technology careers.</h2>
+            <p class="courses-section-intro" data-i18n="ui.browseCatalog" data-i18n-fallback="Browse the current catalog by field. Open a course to see its curriculum, lesson sequence and access details.">Browse the current catalog by field. Open a course to see its curriculum, lesson sequence and access details.</p>
 
             <div class="course-filters">
                 <div style="display: flex; gap: var(--space-4); flex-wrap: wrap; justify-content: center; margin-bottom: var(--space-8);">
-                    <button class="filter-btn active" data-filter="all">All Courses</button>
-                    <button class="filter-btn" data-filter="beginner">Beginner</button>
-                    <button class="filter-btn" data-filter="intermediate">Intermediate</button>
-                    <button class="filter-btn" data-filter="advanced">Advanced</button>
+                    <button class="filter-btn active" data-filter="all" data-i18n="ui.allCourses" data-i18n-fallback="All Courses">All Courses</button>
+                    <button class="filter-btn" data-filter="beginner" data-i18n="ui.beginner" data-i18n-fallback="Beginner">Beginner</button>
+                    <button class="filter-btn" data-filter="intermediate" data-i18n="ui.intermediate" data-i18n-fallback="Intermediate">Intermediate</button>
+                    <button class="filter-btn" data-filter="advanced" data-i18n="ui.advanced" data-i18n-fallback="Advanced">Advanced</button>
                 </div>
             </div>
 
@@ -116,12 +116,12 @@
             <div class="courses-grid" id="course-list">
                 <div id="free-courses-loading" class="loading-state">
                     <div class="loading-spinner"><i class="fas fa-spinner fa-spin"></i></div>
-                    <p>Loading courses...</p>
+                    <p data-i18n="ui.loadingCourses" data-i18n-fallback="Loading courses...">Loading courses...</p>
                 </div>
                 <div id="free-courses-error" class="error-state" style="display: none;">
                     <div class="error-icon"><i class="fas fa-exclamation-triangle"></i></div>
-                    <p>Could not load the course catalog. Please try again.</p>
-                    <button class="component-button" id="free-courses-retry">Retry</button>
+                    <p data-i18n="ui.somethingWrong" data-i18n-fallback="Could not load the course catalog. Please try again.">Could not load the course catalog. Please try again.</p>
+                    <button class="component-button" id="free-courses-retry" data-i18n="common.tryAgain" data-i18n-fallback="Retry">Retry</button>
                 </div>
             </div>
 
@@ -161,7 +161,7 @@
             <div class="footer-block" style="text-align: center;">
                 <div class="text-footer color-bege_light" style="opacity: 0.7;">© CareerPath AI</div>
             </div>
-            <div class="footer-block" style="text-align: right;">
+            <div class="footer-block" style="text-align: end;">
                 <span class="text-footer color-bege_light" style="opacity: 0.6;">Symbiosis Institute of Technology, Pune</span>
             </div>
         </footer>
@@ -172,7 +172,7 @@
         <div style="display: flex; justify-content: space-between; align-items: center; gap: 24px; flex-wrap: wrap;">
             <div class="text-body_small">This website uses browser storage to remember your preferences.</div>
             <div style="display: flex; align-items: center; gap: 12px;">
-                <button class="button text-button" id="accept-cookies" style="background: var(--bege_light); color: var(--green); padding: 10px 24px; border-radius: 60px; font-family: var(--font-display); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; border: none; cursor: pointer;">Continue</button>
+                <button class="button text-button" id="accept-cookies" style="background: var(--bege_light); color: var(--green); padding: 10px 24px; border-radius: 60px; font-family: var(--font-display); font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; border: none; cursor: pointer;" data-i18n="common.continue" data-i18n-fallback="Continue">Continue</button>
                 <i class="fas fa-arrow-right" style="color: var(--bege); font-size: 0.8rem;"></i>
             </div>
         </div>
@@ -418,7 +418,7 @@
             <p>Are you sure you want to enroll in <span id="modal-course-name"></span>?</p>
         </div>
         <div class="modal-footer">
-            <button id="cancel-enroll" class="course-btn">Cancel</button>
+            <button id="cancel-enroll" class="course-btn" data-i18n="common.cancel" data-i18n-fallback="Cancel">Cancel</button>
             <button id="confirm-enroll" class="course-btn">Enroll</button>
         </div>
     </div>

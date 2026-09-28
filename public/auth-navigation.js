@@ -12,7 +12,8 @@
   let currentAuthenticated = false;
 
   function translatedLinkLabel(definition) {
-    // Keep the shared shell in English until every destination has complete UI translations.
+    // Wave-1A: shared nav labels follow the selected language (English fallback).
+    if (typeof window.t === 'function') return window.t(definition.key, definition.label);
     return definition.label;
   }
 
@@ -37,6 +38,8 @@
 
     if (existing) {
       existing.textContent = translatedLinkLabel(definition);
+      existing.setAttribute('data-i18n', definition.key);
+      existing.setAttribute('data-i18n-fallback', definition.label);
       existing.removeAttribute('onclick');
       if (normalizedHref(existing) === window.location.pathname.split('/').pop().toLowerCase()) {
         existing.classList.add('w--current');
@@ -51,6 +54,8 @@
     const anchor = document.createElement('a');
     anchor.href = definition.href;
     anchor.textContent = translatedLinkLabel(definition);
+    anchor.setAttribute('data-i18n', definition.key);
+    anchor.setAttribute('data-i18n-fallback', definition.label);
     anchor.className = 'text-menu color-bege_light nav-item';
     if (normalizedHref(anchor) === window.location.pathname.split('/').pop().toLowerCase()) {
       anchor.classList.add('w--current');
@@ -80,8 +85,12 @@
       desktopLogin.removeAttribute('onclick');
       desktopLogin.classList.add('auth-external-login', 'nav-item');
       const label = desktopLogin.querySelector('.text-button');
-      if (label) label.textContent = 'Login';
-      else desktopLogin.textContent = 'Login';
+      const loginText = typeof window.t === 'function' ? window.t('nav.login', 'Login') : 'Login';
+      if (label) {
+        label.textContent = loginText;
+        label.setAttribute('data-i18n', 'nav.login');
+        label.setAttribute('data-i18n-fallback', 'Login');
+      } else desktopLogin.textContent = loginText;
       desktopLogin.hidden = authenticated;
     }
 

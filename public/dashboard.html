@@ -26,11 +26,11 @@
       </a>
     </div>
     <nav>
-      <a href="index.html" class="text-menu color-bege_light nav-item">Home</a>
-      <a href="courses.html" class="text-menu color-bege_light nav-item">Career Courses</a>
-      <a href="career-test.html" class="text-menu color-bege_light nav-item">Career Test</a>
-      <a href="dashboard.html" class="text-menu color-bege_light nav-item w--current">Dashboard</a>
-      <a href="profile.html" class="text-menu color-bege_light nav-item">Profile</a>
+      <a href="index.html" class="text-menu color-bege_light nav-item" data-i18n="nav.home" data-i18n-fallback="Home">Home</a>
+      <a href="courses.html" class="text-menu color-bege_light nav-item" data-i18n="nav.courses" data-i18n-fallback="Career Courses">Career Courses</a>
+      <a href="career-test.html" class="text-menu color-bege_light nav-item" data-i18n="nav.careerTest" data-i18n-fallback="Career Test">Career Test</a>
+      <a href="dashboard.html" class="text-menu color-bege_light nav-item w--current" data-i18n="nav.dashboard" data-i18n-fallback="Dashboard">Dashboard</a>
+      <a href="profile.html" class="text-menu color-bege_light nav-item" data-i18n="nav.profile" data-i18n-fallback="Profile">Profile</a>
     </nav>
   </header>
 
@@ -38,14 +38,14 @@
     <div class="container">
     <!-- Greeting Section -->
     <section class="greeting-section">
-      <p class="editorial-eyebrow">YOUR CAREER + LEARNING JOURNEY</p>
+      <p class="editorial-eyebrow" data-i18n="page.dashboardEyebrow" data-i18n-fallback="YOUR CAREER + LEARNING JOURNEY">YOUR CAREER + LEARNING JOURNEY</p>
       <h1>Welcome back, <span id="user-name">Learner</span>!</h1>
       <p id="career-goal" class="dashboard-career-goal"></p>
       <p id="dashboard-message" style="color: var(--text-muted); margin-bottom: var(--space-4);"></p>
       <div class="quick-actions" style="display: flex; gap: var(--space-4); margin-top: var(--space-6); flex-wrap: wrap;">
-        <button class="quick-action-btn component-button" id="take-career-test-btn">Take Career Test</button>
-        <button class="quick-action-btn component-button" id="explore-courses-btn">Explore Courses</button>
-        <button class="quick-action-btn component-button" id="view-profile-btn">View Profile</button>
+        <button class="quick-action-btn component-button" id="take-career-test-btn" data-i18n="ui.takeCareerTest" data-i18n-fallback="Take Career Test">Take Career Test</button>
+        <button class="quick-action-btn component-button" id="explore-courses-btn" data-i18n="ui.exploreCourses" data-i18n-fallback="Explore Courses">Explore Courses</button>
+        <button class="quick-action-btn component-button" id="view-profile-btn" data-i18n="nav.profile" data-i18n-fallback="View Profile">View Profile</button>
       </div>
     </section>
 
@@ -73,7 +73,7 @@
     <section class="courses-section" id="certificates-section">
       <h3><i class="fas fa-award"></i> My Certificates</h3>
       <div id="certificates-grid" class="certificates-grid" aria-live="polite">
-        <p class="text-muted">Loading certificates...</p>
+        <p class="text-muted" data-i18n="page.loadingCertificates" data-i18n-fallback="Loading certificates...">Loading certificates...</p>
       </div>
     </section>
 

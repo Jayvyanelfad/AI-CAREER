@@ -16,7 +16,7 @@
     <style>
         /* Inline fallback for any overrides */
         .course-detail-container { max-width: 1200px; margin: 0 auto; padding: var(--space-6); }
-        .course-detail-header { text-align: left; margin-bottom: var(--space-6); }
+        .course-detail-header { text-align: start; margin-bottom: var(--space-6); }
         .course-detail-image { width: 100%; height: 300px; object-fit: cover; border-radius: var(--radius-md); margin-bottom: var(--space-8); }
         .course-detail-title { font-family: var(--font-display); font-size: clamp(2.5rem, 6vw, 3.5rem); font-weight: 100; color: var(--bege_light); margin-bottom: var(--space-4); }
         .course-detail-description { color: var(--green_light); font-size: 1.125rem; line-height: 1.6; margin-bottom: var(--space-8); }
@@ -34,7 +34,7 @@
         .lesson-item.completed .lesson-text { text-decoration: line-through; }
         .lesson-number { flex: 0 0 40px; font-size: 0.9rem; color: var(--green_light); }
         .lesson-text { flex: 1; font-size: 1rem; color: var(--bege_light); }
-        .lesson-status { flex: 0 0 30px; text-align: right; font-size: 0.8rem; }
+        .lesson-status { flex: 0 0 30px; text-align: end; font-size: 0.8rem; }
         .lesson-status.completed { color: var(--success); }
         .lesson-status.incomplete { color: var(--danger); }
         .lesson-content-area { margin-top: var(--space-8); padding: var(--space-6); background: rgba(13, 43, 33, 0.3); border-radius: var(--radius-md); border: 1px solid var(--border-light); }
@@ -64,17 +64,17 @@
                         </span>
                     </a>
                     <div class="div-block-2" style="display: flex; gap: 4px; align-items: center;">
-                        <a href="index.html" class="text-menu color-bege_light nav-item w--current">Home</a>
-                        <a href="career-test.html" class="text-menu color-bege_light nav-item">Career Test</a>
-                        <a href="courses.html" class="text-menu color-bege_light nav-item">Courses</a>
-                        <a href="dashboard.html" class="text-menu color-bege_light nav-item">Dashboard</a>
+                        <a href="index.html" class="text-menu color-bege_light nav-item w--current" data-i18n="nav.home" data-i18n-fallback="Home">Home</a>
+                        <a href="career-test.html" class="text-menu color-bege_light nav-item" data-i18n="nav.careerTest" data-i18n-fallback="Career Test">Career Test</a>
+                        <a href="courses.html" class="text-menu color-bege_light nav-item" data-i18n="nav.courses" data-i18n-fallback="Courses">Courses</a>
+                        <a href="dashboard.html" class="text-menu color-bege_light nav-item" data-i18n="nav.dashboard" data-i18n-fallback="Dashboard">Dashboard</a>
                         <a href="index.html#about" class="text-menu color-bege_light nav-item">About</a>
                     </div>
                     <div class="menu-button w-nav-button">
                         <i class="fas fa-bars" style="color: var(--bege_light); font-size: 1.25rem;"></i>
                     </div>
                     <a href="login.html" class="header-book-link-buttom">
-                        <div class="text-button">Login</div>
+                        <div class="text-button" data-i18n="nav.login" data-i18n-fallback="Login">Login</div>
                         <i class="fas fa-arrow-right" style="font-size: 0.8rem;"></i>
                     </a>
                 </div>
@@ -86,7 +86,7 @@
         <div class="course-detail-container container">
             <!-- Back to Courses -->
             <div style="margin-bottom: var(--space-4);">
-                <a href="courses.html" class="text-button" style="color: var(--bege_light);">&laquo; Back to Courses</a>
+                <a href="courses.html" class="text-button" style="color: var(--bege_light);" data-i18n="ui.backCourses" data-i18n-fallback="« Back to Courses">&laquo; Back to Courses</a>
             </div>
 
             <!-- Course Header -->
@@ -94,14 +94,14 @@
                 <!-- Loading placeholder -->
                 <div class="empty-state">
                     <div class="empty-state-icon"><i class="fas fa-spinner fa-spin"></i></div>
-                    <p>Loading course...</p>
+                    <p data-i18n="common.loading" data-i18n-fallback="Loading course...">Loading course...</p>
                 </div>
             </div>
 
             <!-- Progress -->
             <div class="course-detail-progress" id="course-progress">
                 <div class="progress-label">
-                    <span>Progress</span>
+                    <span data-i18n="learning.progress" data-i18n-fallback="Progress">Progress</span>
                     <span id="progress-percent">0%</span>
                 </div>
                 <div class="progress-bar"><div id="progress-fill" style="width: 0%"></div></div>
@@ -129,9 +129,9 @@
 
             <!-- Lesson Navigation & Actions -->
             <div class="lesson-actions hidden" id="lesson-actions">
-                <button id="btn-prev-lesson" class="btn-lesson component-button">Previous Lesson</button>
-                <button id="btn-mark-complete" class="btn-lesson component-button">Mark as Complete</button>
-                <button id="btn-next-lesson" class="btn-lesson component-button">Next Lesson</button>
+                <button id="btn-prev-lesson" class="btn-lesson component-button" data-i18n="common.previous" data-i18n-fallback="Previous Lesson">Previous Lesson</button>
+                <button id="btn-mark-complete" class="btn-lesson component-button" data-i18n="common.complete" data-i18n-fallback="Mark as Complete">Mark as Complete</button>
+                <button id="btn-next-lesson" class="btn-lesson component-button" data-i18n="common.next" data-i18n-fallback="Next Lesson">Next Lesson</button>
             </div>
         </div>
     </section>
@@ -148,7 +148,7 @@
             <div class="footer-block" style="text-align: center;">
                 <div class="text-footer color-bege_light" style="opacity: 0.7;">© CareerPath AI</div>
             </div>
-            <div class="footer-block" style="text-align: right;">
+            <div class="footer-block" style="text-align: end;">
                 <span class="text-footer color-bege_light" style="opacity: 0.6;">Symbiosis Institute of Technology, Pune</span>
             </div>
         </footer>

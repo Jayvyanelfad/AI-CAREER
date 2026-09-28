@@ -24,16 +24,16 @@
                         <span><em>CareerPath</em> AI</span>
                     </a>
                     <div class="div-block-2 home-nav-links">
-                        <a href="index.html" class="text-menu color-bege_light nav-item w--current" aria-current="page">Home</a>
-                        <a href="career-test.html" class="text-menu color-bege_light nav-item">Career Test</a>
-                        <a href="courses.html" class="text-menu color-bege_light nav-item">Courses</a>
-                        <a href="dashboard.html" class="text-menu color-bege_light nav-item">Dashboard</a>
+                        <a href="index.html" class="text-menu color-bege_light nav-item w--current" aria-current="page" data-i18n="nav.home" data-i18n-fallback="Home">Home</a>
+                        <a href="career-test.html" class="text-menu color-bege_light nav-item" data-i18n="nav.careerTest" data-i18n-fallback="Career Test">Career Test</a>
+                        <a href="courses.html" class="text-menu color-bege_light nav-item" data-i18n="nav.courses" data-i18n-fallback="Courses">Courses</a>
+                        <a href="dashboard.html" class="text-menu color-bege_light nav-item" data-i18n="nav.dashboard" data-i18n-fallback="Dashboard">Dashboard</a>
                     </div>
-                    <button class="menu-button w-nav-button" type="button" aria-label="Open navigation">
+                    <button class="menu-button w-nav-button" type="button" aria-label="Open navigation" data-i18n-aria-label="page.openNavigation">
                         <i class="fas fa-bars" aria-hidden="true"></i>
                     </button>
                     <a href="login.html" class="header-book-link-buttom">
-                        <span class="text-button">Login</span>
+                        <span class="text-button" data-i18n="nav.login" data-i18n-fallback="Login">Login</span>
                         <i class="fas fa-arrow-right" aria-hidden="true"></i>
                     </a>
                 </div>
@@ -54,18 +54,18 @@
                     <p class="home-hero-description">Explore technology directions, then learn the skills behind them through short stories, clear explanations, examples, and hands-on challenges.</p>
                     <div class="home-hero-actions">
                         <a class="home-button home-button-primary" href="career-test.html">Discover My Career Path <span aria-hidden="true">→</span></a>
-                        <a class="home-button home-button-secondary" href="courses.html">Explore Courses</a>
+                        <a class="home-button home-button-secondary" href="courses.html" data-i18n="ui.exploreCourses" data-i18n-fallback="Explore Courses">Explore Courses</a>
                     </div>
                     <p class="home-hero-note">Discover a direction <span aria-hidden="true">→</span> learn connected skills <span aria-hidden="true">→</span> practice through lesson challenges <span aria-hidden="true">→</span> track lesson progress</p>
                 </div>
             </div>
-            <a class="home-scroll-cue" href="#career-discovery"><span>Explore the journey</span><span aria-hidden="true">↓</span></a>
+            <a class="home-scroll-cue" href="#career-discovery"><span data-i18n="ui.exploreJourney" data-i18n-fallback="Explore the journey">Explore the journey</span><span aria-hidden="true">↓</span></a>
         </section>
 
         <section class="home-section home-practice home-method" aria-labelledby="practice-title">
             <div class="home-container home-practice-layout">
                 <div class="home-section-intro">
-                    <p class="home-eyebrow">HOW LEARNING WORKS</p>
+                    <p class="home-eyebrow" data-i18n="ui.howLearningWorks" data-i18n-fallback="HOW LEARNING WORKS">HOW LEARNING WORKS</p>
                     <h2 id="practice-title">Learning shouldn’t feel<br />like reading a manual.</h2>
                     <p>Lessons move through a repeatable story-driven sequence: meet a situation, understand the problem, learn the concept, see an example, try a challenge, and take away a useful idea.</p>
                     <p class="home-caveat">Course activities vary; the six-stage sequence is shown in the Introduction to AI &amp; ML learning experience.</p>
@@ -137,7 +137,7 @@
         <section class="home-section home-skills" id="modern-skills" aria-labelledby="skills-title">
             <div class="home-container">
                 <div class="home-section-heading">
-                    <div><p class="home-eyebrow">04 / EXPLORE TECHNICAL SKILLS</p><h2 id="skills-title">Explore the technical worlds you can enter.</h2></div>
+                    <div><p class="home-eyebrow">04 / EXPLORE TECHNICAL SKILLS</p><h2 id="skills-title" data-i18n="ui.exploreSkills" data-i18n-fallback="Explore the technical worlds you can enter.">Explore the technical worlds you can enter.</h2></div>
                     <p>Explore modern AI, software, data, cloud, cybersecurity, and product and design courses, including LLMs, RAG, AI agents, automation, and evaluation.</p>
                 </div>
                 <div class="home-skills-layout">
@@ -161,11 +161,11 @@
         <section class="home-section home-courses" id="featured-courses" aria-labelledby="courses-title">
             <div class="home-container">
                 <div class="home-section-heading home-courses-heading">
-                    <div><p class="home-eyebrow">05 / EXPLORE COURSES</p><h2 id="courses-title">Explore the learning paths.</h2></div>
+                    <div><p class="home-eyebrow">05 / EXPLORE COURSES</p><h2 id="courses-title" data-i18n="ui.learningPaths" data-i18n-fallback="Explore the learning paths.">Explore the learning paths.</h2></div>
                     <p>Start with a few courses from the current catalog. Each opens its existing course page.</p>
                 </div>
                 <div id="home-course-grid" class="home-course-grid" aria-live="polite" aria-busy="true">
-                    <p class="home-course-status">Loading courses…</p>
+                    <p class="home-course-status" data-i18n="ui.loadingCourses" data-i18n-fallback="Loading courses...">Loading courses…</p>
                 </div>
                 <a class="home-text-link home-all-courses-link" href="courses.html">Explore all courses <span aria-hidden="true">→</span></a>
             </div>
@@ -173,7 +173,7 @@
 
         <section class="home-journey" aria-labelledby="journey-title">
             <div class="home-container">
-                <div class="home-section-heading"><div><p class="home-eyebrow">06 / KEEP MOVING</p><h2 id="journey-title">One connected journey.</h2></div><p>From exploring a direction to seeing your course progress, the next step stays clear.</p></div>
+                <div class="home-section-heading"><div><p class="home-eyebrow">06 / KEEP MOVING</p><h2 id="journey-title" data-i18n="ui.oneJourney" data-i18n-fallback="One connected journey.">One connected journey.</h2></div><p>From exploring a direction to seeing your course progress, the next step stays clear.</p></div>
                 <ol class="home-journey-steps">
                     <li><span>01</span><h3>Discover your direction</h3><p>Take the Career Assessment and explore your Career Profile.</p></li>
                     <li><span>02</span><h3>Find connected learning</h3><p>Explore courses linked to directions in your Career Profile.</p></li>
@@ -232,7 +232,7 @@
 
     <aside class="home-cookie-note home-container" id="cookie-banner" hidden aria-label="Cookie notice">
         <p>This website uses local storage to remember your preference.</p>
-        <button type="button" id="accept-cookies" class="home-cookie-button">Continue</button>
+        <button type="button" id="accept-cookies" class="home-cookie-button" data-i18n="common.continue" data-i18n-fallback="Continue">Continue</button>
     </aside>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
