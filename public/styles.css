@@ -3827,6 +3827,42 @@ body:not(.home-page) .auth-mobile-open > .auth-responsive-nav {
   animation: auth-nav-enter 140ms ease-out both;
 }
 
+/* Compact, readable language control shared by the responsive navigation. */
+.nav-language-selector {
+  min-height: 40px;
+  max-width: 148px;
+  margin: 4px 8px;
+  padding: 7px 28px 7px 10px;
+  border: 1px solid currentColor;
+  border-radius: 8px;
+  background: var(--nav-menu-bg, rgba(18, 31, 25, .92));
+  color: var(--nav-color, #f4eee7);
+  font: inherit;
+  line-height: 1.25;
+  cursor: pointer;
+}
+
+.nav-language-selector:focus-visible {
+  outline: 3px solid var(--nav-hover, #e3b99d);
+  outline-offset: 3px;
+}
+
+html[data-theme="light"] .nav-language-selector {
+  --nav-color: #20382d;
+  --nav-menu-bg: #f4f0e9;
+  --nav-hover: #80563e;
+}
+
+@media (max-width: 900px) {
+  :is(.nav-wrapper, header).auth-nav-responsive > .auth-responsive-nav > .nav-language-selector {
+    width: min(100%, 260px);
+    min-height: 44px;
+    max-width: none;
+    margin: 4px 0;
+    font-size: 1rem;
+  }
+}
+
 body:not(.home-page) .auth-google-button {
   width: 100%;
   min-height: 48px;
