@@ -485,6 +485,10 @@ app.post('/api/auth/login', async (req, res) => {
     });
 
     if (error) {
+      const message = String(error.message || '');
+      if (/email not confirmed|not confirmed|confirm/i.test(message)) {
+        return res.status(400).json({ error: 'Email not confirmed. Check your email to confirm your account before signing in.' });
+      }
       return res.status(400).json({ error: 'Invalid credentials' });
     }
 
