@@ -40,6 +40,22 @@
     if (actions) actions.hidden = false;
   }
 
+  // Remove single-use callback parameters (code, token_hash, error_*) after
+  // the session is established so a refresh cannot reprocess a consumed
+  // token. Only ?next= is preserved for routing. Never throws.
+  function cleanCallbackUrl() {
+    try {
+      const url = new URL(window.location.href);
+      const next = url.searchParams.get('next');
+      url.search = '';
+      url.hash = '';
+      if (next) url.searchParams.set('next', next);
+      window.history.replaceState(null, '', url.toString());
+    } catch (_error) {
+      // URL cleanup must never break sign-in.
+    }
+  }
+
   function isExpiredError(err) {
     if (!err) return false;
     const code = String(err.code || err.name || err.status || '').toLowerCase();
@@ -70,6 +86,23 @@
 
   try {
     const supabaseClient = await waitForSupabaseClient();
+
+    // A usable persisted session is the source of truth. It covers refresh
+    // after a successful confirmation and links consumed elsewhere (e.g. a
+    // prefetched single-use link): never show an expired-link dead end when
+    // the user is already signed in.
+    try {
+      const { data: existing } = await supabaseClient.auth.getSession();
+      if (existing && existing.session) {
+        cleanCallbackUrl();
+        await finishSignIn(existing.session);
+        return;
+      }
+    } catch (_sessionError) {
+      // Fall through to normal callback handling when the stored session
+      // cannot be read.
+    }
+
     const params = callbackParameters();
     const errorCode = (params.get('error_code') || params.get('error') || '').toLowerCase();
     const errorDescription = params.get('error_description') || '';
@@ -143,6 +176,9 @@
   }
 
   async function finishSignIn(session) {
+    // Strip single-use parameters now that the session is established, so a
+    // refresh during profile finalization cannot reprocess a consumed token.
+    cleanCallbackUrl();
     const token = session.access_token;
     const profileResponse = await fetch(`${API_BASE}/auth/complete-registration`, {
       method: 'POST',

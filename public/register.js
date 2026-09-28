@@ -103,6 +103,9 @@ document.addEventListener("DOMContentLoaded", () => {
                     showAccountExists();
                     return;
                 }
+                if (/rate limit|too many requests|over.*limit/.test(message)) {
+                    throw new Error('Too many attempts right now. Please wait a little while and try again.');
+                }
                 if (/password/.test(message)) throw new Error('Choose a stronger password and try again.');
                 if (/email/.test(message)) throw new Error('Check the email address and try again.');
                 throw new Error('We could not create your account. Please try again.');
