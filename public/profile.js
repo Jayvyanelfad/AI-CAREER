@@ -112,12 +112,12 @@
   function renderWhatsNext() {
     whatsNextAction.hidden = true;
     if (careerProfileState === 'loading') {
-      whatsNextCopy.textContent = 'Finding a next step from your profile...';
+      whatsNextCopy.textContent = t('coverage.findingNextStep', 'Finding a next step from your profile...');
       return;
     }
     if (careerProfileState === 'none') {
-      whatsNextCopy.textContent = 'Complete your Career Assessment to discover your career profile.';
-      whatsNextAction.textContent = 'Complete Career Assessment';
+      whatsNextCopy.textContent = t('coverage.completeAssessmentForProfile', 'Complete your Career Assessment to discover your career profile.');
+      whatsNextAction.textContent = t('coverage.completeAssessmentAction', 'Complete Career Assessment');
       whatsNextAction.href = 'career-test.html';
       whatsNextAction.hidden = false;
       return;
@@ -131,9 +131,9 @@
       if (nextEnrollment) {
         const hasCourseId = typeof nextEnrollment.courseId === 'string' && nextEnrollment.courseId.trim();
         whatsNextCopy.textContent = hasCourseId
-          ? 'Pick up where you left off in your learning.'
-          : 'Open the course catalog to continue your learning.';
-        whatsNextAction.textContent = hasCourseId ? 'Continue Learning' : 'Explore Courses';
+          ? t('coverage.pickUpLearning', 'Pick up where you left off in your learning.')
+          : t('coverage.openCatalogContinue', 'Open the course catalog to continue your learning.');
+        whatsNextAction.textContent = hasCourseId ? t('coverage.continueLearningButton', 'Continue Learning') : t('ui.exploreCourses', 'Explore Courses');
         whatsNextAction.href = hasCourseId
           ? `course-detail.html?id=${encodeURIComponent(nextEnrollment.courseId)}`
           : 'courses.html';
@@ -143,9 +143,9 @@
       if (enrolledCourses.every(enrollment => enrollmentProgress(enrollment).available && enrollmentProgress(enrollment).value >= 100)) {
         const nextRecommendation = getMappedCourses().find(item => !item.enrolled);
         whatsNextCopy.textContent = nextRecommendation
-          ? 'Your enrolled courses are complete. Explore another course for your career profile.'
-          : 'Your enrolled courses are complete. Explore the course catalog for your next course.';
-        whatsNextAction.textContent = 'Explore Your Next Course';
+          ? t('coverage.coursesCompleteExplore', 'Your enrolled courses are complete. Explore another course for your career profile.')
+          : t('coverage.coursesCompleteCatalog', 'Your enrolled courses are complete. Explore the course catalog for your next course.');
+        whatsNextAction.textContent = t('coverage.exploreNextCourse', 'Explore Your Next Course');
         whatsNextAction.href = nextRecommendation
           ? `course-detail.html?id=${encodeURIComponent(nextRecommendation.course.id)}`
           : 'courses.html';
@@ -155,30 +155,30 @@
     }
 
     if (enrolledCourses === null && !learningLoadFailed) {
-      whatsNextCopy.textContent = 'Checking your learning status...';
+      whatsNextCopy.textContent = t('coverage.checkingLearningStatus', 'Checking your learning status...');
       return;
     }
     if (learningLoadFailed) {
-      whatsNextCopy.textContent = 'Your next step will appear when your learning status is available.';
+      whatsNextCopy.textContent = t('coverage.nextStepUnavailable', 'Your next step will appear when your learning status is available.');
       return;
     }
     if (careerProfileState === 'error') {
-      whatsNextCopy.textContent = 'Your next step could not be determined because your Career Profile is unavailable.';
+      whatsNextCopy.textContent = t('coverage.careerProfileUnavailableNext', 'Your next step could not be determined because your Career Profile is unavailable.');
       return;
     }
     if (courseCatalogLoaded) {
       const nextRecommendation = getMappedCourses().find(item => !item.enrolled);
       whatsNextCopy.textContent = nextRecommendation
-        ? 'Start learning with a course connected to your Career Profile.'
-        : 'Browse the course catalog to choose what to learn next.';
-      whatsNextAction.textContent = nextRecommendation ? 'Start Learning' : 'Explore Courses';
+        ? t('coverage.startCareerCourse', 'Start learning with a course connected to your Career Profile.')
+        : t('coverage.browseCatalogNext', 'Browse the course catalog to choose what to learn next.');
+      whatsNextAction.textContent = nextRecommendation ? t('coverage.startLearningStep', 'Start Learning') : t('ui.exploreCourses', 'Explore Courses');
       whatsNextAction.href = nextRecommendation
         ? `course-detail.html?id=${encodeURIComponent(nextRecommendation.course.id)}`
         : 'courses.html';
       whatsNextAction.hidden = false;
     } else {
-      whatsNextCopy.textContent = 'Your Career Profile is ready. Browse courses to start learning.';
-      whatsNextAction.textContent = 'Explore Courses';
+      whatsNextCopy.textContent = t('coverage.profileReadyBrowse', 'Your Career Profile is ready. Browse courses to start learning.');
+      whatsNextAction.textContent = t('ui.exploreCourses', 'Explore Courses');
       whatsNextAction.href = 'courses.html';
       whatsNextAction.hidden = false;
     }
@@ -226,7 +226,7 @@
       const goal = profile.career_goal || profile.careerGoal || 'undecided';
       profileName.textContent = name;
       profileEmail.textContent = profile.email || '';
-      profileCareer.textContent = goal === 'undecided' ? 'Not set' : goal;
+      profileCareer.textContent = goal === 'undecided' ? t('coverage.notSet', 'Not set') : (profileCareerInput.selectedOptions[0]?.textContent || goal);
       profileNameInput.value = name === 'User' ? '' : name;
       profileEmailInput.value = profile.email || '';
       personalError.hidden = true;
@@ -242,11 +242,11 @@
       profileCareerInput.value = goal;
     } catch (error) {
       if (error.status === 401 || error.message === 'Authentication required') return;
-      [profileName, profileEmail, profileCareer].forEach(field => { field.textContent = 'Unavailable'; });
+      [profileName, profileEmail, profileCareer].forEach(field => { field.textContent = t('coverage.profileInfoUnavailable', 'Unavailable'); });
       profileNameInput.value = '';
       profileEmailInput.value = '';
       document.getElementById('edit-profile-btn').disabled = true;
-      personalError.textContent = 'Personal information could not be loaded. Please try again later.';
+      personalError.textContent = t('coverage.profilePersonalError', 'Personal information could not be loaded. Please try again later.');
       personalError.hidden = false;
       console.error('Personal information load failed:', error);
     }
@@ -255,9 +255,9 @@
   function showNoCareerProfile() {
     careerProfileState = 'none';
     careerProfileResult = null;
-    assessmentStatus.textContent = 'Complete the Career Assessment to build your career profile.';
+    assessmentStatus.textContent = t('coverage.assessmentProfileBuild', 'Complete the Career Assessment to build your career profile.');
     assessmentVersion.textContent = '';
-    careerAction.textContent = 'Start Career Assessment';
+    careerAction.textContent = t('coverage.startAssessment', 'Start Career Assessment');
     careerAction.hidden = true;
     careerRetry.hidden = true;
     dimensionsContainer.replaceChildren();
@@ -275,7 +275,7 @@
   function showCareerProfileError() {
     careerProfileState = 'error';
     careerProfileResult = null;
-    assessmentStatus.textContent = 'Your career profile could not be displayed right now.';
+    assessmentStatus.textContent = t('coverage.careerProfileError', 'Your career profile could not be displayed right now.');
     assessmentVersion.textContent = '';
     careerAction.hidden = true;
     careerRetry.hidden = false;
@@ -301,14 +301,14 @@
 
     careerProfileState = 'completed';
     careerProfileResult = result;
-    assessmentStatus.textContent = 'Assessment completed';
+    assessmentStatus.textContent = t('coverage.assessmentCompleted', 'Assessment completed');
     careerAction.hidden = false;
-    careerAction.textContent = 'Retake Assessment';
+    careerAction.textContent = t('coverage.retakeAssessment', 'Retake Assessment');
     careerRetry.hidden = true;
     document.getElementById('career-directions-title').hidden = false;
     document.getElementById('career-alignment-title').hidden = false;
     document.getElementById('career-interests-title').hidden = false;
-    assessmentVersion.textContent = `Assessment version: ${result.assessment_version}`;
+    assessmentVersion.textContent = t('coverage.assessmentVersion', 'Assessment version: {version}', { version: result.assessment_version });
     dimensionsContainer.replaceChildren();
     Object.entries(scores).filter(([dimension]) => CAREER_DIMENSIONS.includes(dimension)).forEach(([dimension, rawScore]) => {
       const score = Math.max(0, Math.min(100, Math.round(rawScore * 100)));
@@ -318,11 +318,11 @@
       const progress = document.createElement('progress');
       progress.max = 100;
       progress.value = score;
-      progress.setAttribute('aria-label', `${dimension} career profile score`);
+      progress.setAttribute('aria-label', t('coverage.profileScoreAria', '{dimension} career profile score', { dimension }));
       const value = addText(row, 'span', `${score}%`, 'text-body_small color-green_light');
       row.insertBefore(progress, value);
       dimensionsContainer.appendChild(row);
-      label.title = `${dimension}: ${score}%`;
+      label.title = t('coverage.profileScoreAria', '{dimension} career profile score', { dimension });
     });
 
     careersContainer.replaceChildren();
@@ -330,11 +330,11 @@
       const row = document.createElement('div');
       row.className = 'career-alignment-row';
       addText(row, 'strong', item.career, 'text-h4 color-bege_light');
-      addText(row, 'span', `${item.score}% Career Alignment`, 'career-alignment-score');
+      addText(row, 'span', t('coverage.careerAlignmentPercent', '{percent}% Career Alignment', { percent: item.score }), 'career-alignment-score');
       const alignment = document.createElement('progress');
       alignment.max = 100;
       alignment.value = item.score;
-      alignment.setAttribute('aria-label', `${item.career} Career Alignment`);
+      alignment.setAttribute('aria-label', t('coverage.careerAlignmentAria', '{career} Career Alignment', { career: item.career }));
       alignment.className = 'career-alignment-indicator';
       row.appendChild(alignment);
       careersContainer.appendChild(row);
@@ -377,16 +377,16 @@
       return;
     }
     if (!courseCatalogLoaded) {
-      recommendationStatus.textContent = 'Loading career-aligned courses...';
+      recommendationStatus.textContent = t('coverage.careerAlignedLoading', 'Loading career-aligned courses...');
       return;
     }
     if (!courseCatalog) {
-      recommendationStatus.textContent = 'Career-aligned courses could not be loaded right now.';
+      recommendationStatus.textContent = t('coverage.careerAlignedUnavailable', 'Career-aligned courses could not be loaded right now.');
       return;
     }
     if (enrolledCourses === null) {
       recommendationStatus.textContent = learningLoadFailed
-        ? 'Career-aligned courses could not be displayed because enrollment status is unavailable.'
+        ? t('coverage.careerAlignedEnrollMissing', 'Career-aligned courses could not be displayed because enrollment status is unavailable.')
         : 'Loading career-aligned courses...';
       return;
     }
@@ -395,8 +395,8 @@
     const availableCourses = mappedCourses.filter(item => !item.enrolled).slice(0, 3);
     if (availableCourses.length === 0) {
       recommendationStatus.textContent = mappedCourses.length > 0
-        ? 'You are already learning the courses currently mapped to your top career directions.'
-        : 'No mapped courses are currently available in the course catalog.';
+        ? t('coverage.alreadyLearningMapped', 'You are already learning the courses currently mapped to your top career directions.')
+        : t('coverage.noMappedCourses', 'No mapped courses are currently available in the course catalog.');
       return;
     }
 
@@ -404,18 +404,18 @@
     availableCourses.forEach(({ course, career }) => {
       const card = document.createElement('article');
       card.className = 'profile-recommendation-card';
-      addText(card, 'p', `For ${career}`, 'profile-recommendation-career');
-      addText(card, 'h3', course.title, 'text-h4 color-bege_light');
+      addText(card, 'p', t('coverage.forCareer', 'For {career}', { career }), 'profile-recommendation-career');
+      addText(card, 'h3', t(`courseMetadata.${course.id}.title`, course.title), 'text-h4 color-bege_light');
       if (typeof course.category === 'string' && course.category.trim() && course.category !== 'Uncategorized') {
         addText(card, 'p', course.category, 'profile-recommendation-category');
       }
       if (typeof course.description === 'string' && course.description.trim()) {
-        addText(card, 'p', course.description.trim(), 'profile-recommendation-description');
+        addText(card, 'p', t(`courseMetadata.${course.id}.description`, course.description.trim()), 'profile-recommendation-description');
       }
       const link = document.createElement('a');
       link.href = `course-detail.html?id=${encodeURIComponent(course.id)}`;
       link.className = 'btn-outline';
-      link.textContent = 'Explore Course';
+      link.textContent = t('coverage.shortlistCourse', 'Explore Course');
       card.appendChild(link);
       recommendationContainer.appendChild(card);
     });
@@ -443,11 +443,11 @@
     if (enrollments.length === 0) {
       const empty = document.createElement('p');
       empty.className = 'text-body_small color-green_light';
-      empty.append('Your learning journey starts here. ');
+      empty.append(t('coverage.journeyStartsHere', 'Your learning journey starts here. '));
       const link = document.createElement('a');
       link.href = 'courses.html';
       link.className = 'btn-outline profile-empty-action';
-      link.textContent = 'Explore Courses';
+      link.textContent = t('ui.exploreCourses', 'Explore Courses');
       empty.appendChild(link);
       enrollmentContainer.appendChild(empty);
       return;
@@ -461,29 +461,29 @@
       const progress = progressState.value;
       addText(card, 'h3', enrollment.courseName || 'Course', 'text-h4 color-bege_light');
       if (progressAvailable) {
-        addText(card, 'p', `${progress}% complete`, 'text-body_small color-green_light');
+        addText(card, 'p', t('coverage.profileCourseComplete', '{percent}% complete', { percent: progress }), 'text-body_small color-green_light');
         const bar = document.createElement('progress');
         bar.max = 100;
         bar.value = progress;
-        bar.setAttribute('aria-label', `${enrollment.courseName || 'Course'} progress`);
+        bar.setAttribute('aria-label', t('coverage.courseProgressAria', '{course} progress', { course: enrollment.courseName || 'Course' }));
         card.appendChild(bar);
       } else {
-        addText(card, 'p', 'Progress unavailable', 'text-body_small color-green_light');
+        addText(card, 'p', t('coverage.progressUnavailable', 'Progress unavailable'), 'text-body_small color-green_light');
       }
       const completed = progressAvailable && progress >= 100;
       if (completed) {
-        addText(card, 'p', 'Course completed', 'text-body_small color-green_light');
+        addText(card, 'p', t('coverage.courseCompleted', 'Course completed'), 'text-body_small color-green_light');
       } else {
         const nextLessonTitle = typeof enrollment.nextLessonTitle === 'string' ? enrollment.nextLessonTitle.trim() : '';
         if (nextLessonTitle && nextLessonTitle.toLowerCase() !== 'next lesson') {
-          addText(card, 'p', `Continue with: ${nextLessonTitle}`, 'text-body_small color-green_light');
+          addText(card, 'p', t('coverage.continueWithLesson', 'Continue with: {lesson}', { lesson: nextLessonTitle }), 'text-body_small color-green_light');
         }
       }
       const link = document.createElement('a');
       const hasCourseId = typeof enrollment.courseId === 'string' && enrollment.courseId.trim();
       link.href = hasCourseId ? `course-detail.html?id=${encodeURIComponent(enrollment.courseId)}` : 'courses.html';
       link.className = 'btn-primary profile-course-action';
-      link.textContent = hasCourseId ? (completed ? 'View course' : 'Continue learning') : 'Explore courses';
+      link.textContent = hasCourseId ? (completed ? t('coverage.viewCourseLower', 'View course') : t('coverage.continueLearning', 'Continue learning')) : t('coverage.exploreCoursesLower', 'Explore courses');
       card.appendChild(link);
       enrollmentContainer.appendChild(card);
     });
@@ -492,11 +492,11 @@
   function renderCertificates(certificates) {
     certificatesContainer.replaceChildren();
     if (!Array.isArray(certificates) || certificates.length === 0) {
-      addText(certificatesContainer, 'p', 'No certificates yet.', 'text-body_small color-green_light');
+      addText(certificatesContainer, 'p', t('coverage.noCertificates', 'No certificates yet.'), 'text-body_small color-green_light');
       const link = document.createElement('a');
       link.href = 'courses.html';
       link.className = 'btn-outline profile-empty-action';
-      link.textContent = 'Explore Courses';
+      link.textContent = t('ui.exploreCourses', 'Explore Courses');
       certificatesContainer.appendChild(link);
       return;
     }
@@ -507,14 +507,14 @@
       if (certificate.earned_at) {
         const earnedAt = new Date(certificate.earned_at);
         if (Number.isFinite(earnedAt.getTime())) {
-          addText(item, 'p', `Earned ${earnedAt.toLocaleDateString()}`, 'text-body_small color-green_light');
+          addText(item, 'p', t('coverage.earnedDate', 'Earned {date}', { date: new Intl.DateTimeFormat(document.documentElement.lang).format(earnedAt) }), 'text-body_small color-green_light');
         }
       }
       if (typeof certificate.id === 'string' && certificate.id.trim()) {
         const link = document.createElement('a');
         link.href = `certificate.html?certificateId=${encodeURIComponent(certificate.id)}`;
         link.className = 'btn-outline';
-        link.textContent = 'View Certificate';
+        link.textContent = t('coverage.viewCertificate', 'View Certificate');
         item.appendChild(link);
       }
       certificatesContainer.appendChild(item);
@@ -569,7 +569,7 @@
       });
       profileName.textContent = data.full_name || data.name || profileNameInput.value.trim();
       const goal = data.career_goal || data.careerGoal || profileCareerInput.value;
-      profileCareer.textContent = goal === 'undecided' ? 'Not set' : goal;
+      profileCareer.textContent = goal === 'undecided' ? t('coverage.notSet', 'Not set') : (profileCareerInput.querySelector(`option[value="${CSS.escape(goal)}"]`)?.textContent || goal);
       const stored = JSON.parse(localStorage.getItem('user') || '{}');
       stored.name = profileName.textContent;
       stored.email = profileEmail.textContent;

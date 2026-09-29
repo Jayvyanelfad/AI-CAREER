@@ -210,7 +210,7 @@
             const seconds = Math.ceil(remaining / 1000);
             const minutesLabel = String(Math.floor(seconds / 60)).padStart(2, '0');
             const secondsLabel = String(seconds % 60).padStart(2, '0');
-            timer.textContent = `Time remaining: ${minutesLabel}:${secondsLabel}`;
+            timer.textContent = t('coverage.examTimeRemaining', 'Time remaining: {time}', { time: `${minutesLabel}:${secondsLabel}` });
             if (remaining <= 0) {
                 stopTimer();
                 submitAttempt(true);
@@ -228,11 +228,11 @@
             <div class="exam-course">${escapeHtml(exam.description || '')}</div>
             <div class="results-score ${result.passed ? 'results-pass' : 'results-fail'}">${Number(result.final_score ?? result.score) || 0}%</div>
             <div class="results-details" role="status">
-                ${expired ? 'Time expired. ' : ''}Final score: ${Number(result.final_score ?? result.score) || 0}% (Passing: ${Number(result.passing_score ?? exam.passing_score) || 0}%)<br>
-                ${result.mcq ? `Part A: ${Number(result.mcq.percentage ?? result.mcq.score) || 0}% (${Number(result.mcq.correct) || 0}/${Number(result.mcq.total) || 0})<br>` : ''}
-                ${result.crossword ? `Part B: ${Number(result.crossword.percentage ?? result.crossword.score) || 0}% (${Number(result.crossword.correct) || 0}/${Number(result.crossword.total) || 0})<br>` : ''}
-                Status: ${result.passed ? 'PASS' : 'FAIL'}<br>
-                Answered: ${Number(result.answered_questions) || 0} / ${Number(result.total_questions) || 0} MCQs
+                ${expired ? `${t('coverage.examTimeExpired', 'Time expired.')} ` : ''}${t('coverage.examFinalScore', 'Final score: {score}% (Passing: {passing}%)', { score: Number(result.final_score ?? result.score) || 0, passing: Number(result.passing_score ?? exam.passing_score) || 0 })}<br>
+                ${result.mcq ? `${t('coverage.examPartAResult', 'Part A: {score}% ({correct}/{total})', { score: Number(result.mcq.percentage ?? result.mcq.score) || 0, correct: Number(result.mcq.correct) || 0, total: Number(result.mcq.total) || 0 })}<br>` : ''}
+                ${result.crossword ? `${t('coverage.examPartBResult', 'Part B: {score}% ({correct}/{total})', { score: Number(result.crossword.percentage ?? result.crossword.score) || 0, correct: Number(result.crossword.correct) || 0, total: Number(result.crossword.total) || 0 })}<br>` : ''}
+                ${t('coverage.examStatusLabel', 'Status:')} ${t(result.passed ? 'coverage.examPassed' : 'coverage.examFailed', result.passed ? 'PASS' : 'FAIL')}<br>
+                ${t('coverage.examAnswered', 'Answered: {answered} / {total} MCQs', { answered: Number(result.answered_questions) || 0, total: Number(result.total_questions) || 0 })}
             </div>
         `;
         examProgressDiv.style.display = 'none';
@@ -353,7 +353,7 @@
         for (let row = 0; row < rows; row++) for (let col = 0; col < cols; col++) {
             const key = `${row},${col}`;
             if (!occupied.has(key)) grid += '<span class="crossword-cell crossword-block" aria-hidden="true"></span>';
-            else grid += `<label class="crossword-cell"><span class="crossword-number">${escapeHtml(starts.get(key) || '')}</span><input class="crossword-letter" data-cell="${key}" maxlength="1" autocomplete="off" autocapitalize="characters" aria-label="Row ${row + 1}, column ${col + 1}" value="${escapeHtml(crosswordLetters.get(key) || '')}"></label>`;
+            else grid += `<label class="crossword-cell"><span class="crossword-number">${escapeHtml(starts.get(key) || '')}</span><input class="crossword-letter" data-cell="${key}" maxlength="1" autocomplete="off" autocapitalize="characters" aria-label="${escapeHtml(t('coverage.examGridCell', 'Row {row}, column {column}', { row: row + 1, column: col + 1 }))}" value="${escapeHtml(crosswordLetters.get(key) || '')}"></label>`;
         }
         const across = (crossword.clues || []).filter(clue => clue.direction === 'across');
         const down = (crossword.clues || []).filter(clue => clue.direction === 'down');
@@ -372,11 +372,11 @@
             if (first) examQuestionAreaDiv.querySelector(`[data-cell="${first[0]},${first[1]}"]`)?.focus();
         }));
         document.getElementById('btn-submit-crossword').addEventListener('click', async () => {
-            if (!window.confirm('Submit Part B and finish this final exam?')) return;
+            if (!window.confirm(t('coverage.examConfirmCrossword', 'Submit Part B and finish this final exam?'))) return;
             const button = document.getElementById('btn-submit-crossword');
             button.disabled = true;
             try { await flushCrosswordSaves(); renderResults(await submitCrossword(exam.id, attemptId)); }
-            catch (error) { showAnswerSaveError(error.message || 'Could not submit the crossword.'); button.disabled = false; }
+            catch (error) { showAnswerSaveError(t('coverage.examCrosswordError', 'Could not submit the crossword.')); button.disabled = false; }
         });
         document.getElementById('btn-return-course').addEventListener('click', () => { window.location.href = `course-detail.html?id=${encodeURIComponent(exam.course_id)}`; });
     }

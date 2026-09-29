@@ -23,7 +23,7 @@ window.addEventListener("error", (e) => {
 // Google Sign-In Handler using Supabase
 async function handleGoogleSignIn() {
     const message = document.getElementById('google-signin-message');
-    message.textContent = 'Signing in with Google...';
+    message.textContent = t('coverage.signingInGoogle', 'Signing in with Google...');
     message.style.color = 'var(--primary)';
 
     try {
@@ -39,7 +39,7 @@ async function handleGoogleSignIn() {
         // No need to handle session here.
     } catch (err) {
         console.error('Google Sign-In Error:', err);
-        message.textContent = 'Google sign-in could not be started. Please try again.';
+        message.textContent = t('coverage.googleStartFailed', 'Google sign-in could not be started. Please try again.');
         message.style.color = 'var(--danger)';
     }
 }
@@ -158,9 +158,9 @@ document.addEventListener("DOMContentLoaded", () => {
             e.preventDefault();
             const isVisible = passwordInput.type === "text";
             passwordInput.type = isVisible ? "password" : "text";
-            passwordToggle.textContent = isVisible ? "Show" : "Hide";
+            passwordToggle.textContent = t(isVisible ? 'coverage.showLabel' : 'coverage.hideLabel', isVisible ? 'Show' : 'Hide');
             passwordToggle.setAttribute("aria-pressed", String(!isVisible));
-            passwordToggle.setAttribute("aria-label", isVisible ? "Show password" : "Hide password");
+            passwordToggle.setAttribute('aria-label', t(isVisible ? 'coverage.showPasswordAria' : 'coverage.hidePasswordAria', isVisible ? 'Show password' : 'Hide password'));
         });
     }
 
@@ -187,21 +187,21 @@ document.addEventListener("DOMContentLoaded", () => {
             const email = emailInput.value.trim();
             resetMessage.hidden = false;
             if (!email || !emailInput.checkValidity()) {
-                resetMessage.textContent = 'Enter a valid email address above, then request a reset link.';
+                resetMessage.textContent = t('coverage.resetValidEmail', 'Enter a valid email address above, then request a reset link.');
                 emailInput.focus();
                 return;
             }
 
             forgotPasswordButton.disabled = true;
-            resetMessage.textContent = 'Sending a password reset link…';
+            resetMessage.textContent = t('coverage.sendingResetLink', 'Sending a password reset link…');
             try {
                 const { error } = await supabase.auth.resetPasswordForEmail(email, {
                     redirectTo: `${window.location.origin}/reset-password.html`
                 });
                 if (error) throw error;
-                resetMessage.textContent = 'If an account uses this address, a password reset link is on its way.';
+                resetMessage.textContent = t('coverage.resetLinkSent', 'If an account uses this address, a password reset link is on its way.');
             } catch (_error) {
-                resetMessage.textContent = 'We could not send a reset link right now. Please try again later.';
+                resetMessage.textContent = t('coverage.resetSendFailed', 'We could not send a reset link right now. Please try again later.');
             } finally {
                 forgotPasswordButton.disabled = false;
             }

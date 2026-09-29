@@ -10,10 +10,10 @@
     try {
       const { data, error } = await supabase.auth.getSession();
       if (error || !data.session) throw new Error('No active recovery session');
-      status.textContent = 'Enter and confirm your new password.';
+      status.textContent = t('coverage.resetEnterBoth', 'Enter and confirm your new password.');
       form.hidden = false;
     } catch (_error) {
-      status.textContent = 'This password reset link is invalid or has expired. Request a new one from the login page.';
+      status.textContent = t('coverage.resetLinkInvalid', 'This password reset link is invalid or has expired. Request a new one from the login page.');
       loginLink.hidden = false;
     }
 
@@ -22,24 +22,24 @@
       const password = document.getElementById('new-password').value;
       const confirmation = document.getElementById('confirm-new-password').value;
       if (password.length < 6) {
-        status.textContent = 'Use a password with at least 6 characters.';
+        status.textContent = t('coverage.resetShortPassword', 'Use a password with at least 6 characters.');
         return;
       }
       if (password !== confirmation) {
-        status.textContent = 'The passwords do not match.';
+        status.textContent = t('coverage.passwordMismatch', 'The passwords do not match.');
         return;
       }
 
       submit.disabled = true;
-      status.textContent = 'Updating your password…';
+      status.textContent = t('coverage.updatingPassword', 'Updating your password…');
       try {
         const { error } = await supabase.auth.updateUser({ password });
         if (error) throw error;
         form.hidden = true;
-        status.textContent = 'Your password has been updated. You can now sign in.';
+        status.textContent = t('coverage.passwordUpdated', 'Your password has been updated. You can now sign in.');
         loginLink.hidden = false;
       } catch (_error) {
-        status.textContent = 'We could not update your password. Request a new reset link and try again.';
+        status.textContent = t('coverage.passwordUpdateFailed', 'We could not update your password. Request a new reset link and try again.');
       } finally {
         submit.disabled = false;
       }

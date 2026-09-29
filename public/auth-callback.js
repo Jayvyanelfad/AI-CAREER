@@ -20,12 +20,11 @@
   const statusEl = document.getElementById("status-message");
   const ME_TIMEOUT_MS = 10000;
 
-  const EXPIRED_MESSAGE =
-    'This confirmation link has already been used or has expired. Your account is usually confirmed by now — please try logging in. If login asks for confirmation, request a new confirmation email from the registration page.';
+  const EXPIRED_MESSAGE = t('coverage.callbackExpired', 'This confirmation link has already been used or has expired. Your account is usually confirmed by now — please try logging in. If login asks for confirmation, request a new confirmation email from the registration page.');
   const VERIFIER_MESSAGE =
-    'This confirmation link cannot be verified in this browser. Return to registration, request a new link, and open it in the same browser.';
+    t('coverage.callbackVerifier', 'This confirmation link cannot be verified in this browser. Return to registration, request a new link, and open it in the same browser.');
   const GENERIC_MESSAGE =
-    'We could not complete sign-in. Return to Login or create an account to try again.';
+    t('coverage.callbackFailed', 'We could not complete sign-in. Return to Login or create an account to try again.');
 
   function callbackParameters() {
     return new URLSearchParams(`${window.location.search.slice(1)}&${window.location.hash.slice(1)}`);
@@ -184,7 +183,7 @@
       method: 'POST',
       headers: { Authorization: `Bearer ${token}` }
     });
-    if (!profileResponse.ok) throw new Error('Could not finish setting up the account profile.');
+    if (!profileResponse.ok) throw new Error(t('coverage.callbackSetupFail', 'Could not finish setting up the account profile.'));
 
     localStorage.setItem("token", token);
 

@@ -6,6 +6,8 @@
 ];
 
 function createCourseCard(course) {
+  const localizedTitle = t(`courseMetadata.${course.id}.title`, course.title);
+  const localizedDescription = t(`courseMetadata.${course.id}.description`, course.description || '');
   const card = document.createElement('article');
   card.className = course.id === 'generative_ai_llm'
     ? 'home-course-card home-course-card-featured'
@@ -38,11 +40,11 @@ function createCourseCard(course) {
   category.textContent = course.category || 'Career learning';
 
   const title = document.createElement('h3');
-  title.textContent = course.title;
+  title.textContent = localizedTitle;
 
   const description = document.createElement('p');
   description.className = 'home-course-description';
-  description.textContent = course.description || '';
+  description.textContent = localizedDescription;
 
   const meta = document.createElement('p');
   meta.className = 'home-course-meta';
@@ -50,13 +52,13 @@ function createCourseCard(course) {
     ? course.level.charAt(0).toUpperCase() + course.level.slice(1)
     : '';
   const duration = Number(course.duration_weeks);
-  meta.textContent = [level, duration > 0 ? `${duration} weeks` : ''].filter(Boolean).join(' · ');
+  meta.textContent = [level, duration > 0 ? `${t("coverage.weekDuration", "{count} weeks", { count: duration })}` : ''].filter(Boolean).join(' · ');
 
   const action = document.createElement('a');
   action.className = 'home-course-link';
   action.href = `course-detail.html?id=${encodeURIComponent(course.id)}`;
-  action.textContent = 'View course';
-  action.setAttribute('aria-label', `View course: ${course.title}`);
+  action.textContent = t('coverage.viewCourseLower', 'View course');
+  action.setAttribute('aria-label', t('coverage.courseLinkAria', 'View course: {title}', { title: localizedTitle }));
   const arrow = document.createElement('span');
   arrow.setAttribute('aria-hidden', 'true');
   arrow.textContent = ' →';
@@ -88,7 +90,7 @@ async function renderFeaturedCourses() {
     if (!featured.length) {
       const message = document.createElement('p');
       message.className = 'home-course-status';
-      message.textContent = 'Course highlights are unavailable right now. Explore the full catalog instead.';
+      message.textContent = t('coverage.courseHighlightsUnavailable', 'Course highlights are unavailable right now. Explore the full catalog instead.');
       grid.appendChild(message);
     } else {
       featured.forEach(course => grid.appendChild(createCourseCard(course)));
@@ -97,7 +99,7 @@ async function renderFeaturedCourses() {
     console.error('Homepage course highlights could not be loaded:', error);
     const message = document.createElement('p');
     message.className = 'home-course-status';
-    message.textContent = 'Course highlights are unavailable right now. Explore the full catalog instead.';
+    message.textContent = t('coverage.courseHighlightsUnavailable', 'Course highlights are unavailable right now. Explore the full catalog instead.');
     grid.replaceChildren(message);
   } finally {
     grid.setAttribute('aria-busy', 'false');

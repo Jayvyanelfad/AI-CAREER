@@ -89,7 +89,7 @@ async function fetchCourses(token) {
         if (courseCard) {
           const enrollBtn = courseCard.querySelector('.enroll-btn');
           if (enrollBtn) {
-            enrollBtn.textContent = 'Enrolled';
+            enrollBtn.textContent = t('coverage.enrolled', 'Enrolled');
             enrollBtn.classList.add('enrolled');
             enrollBtn.disabled = true;
           }
@@ -121,10 +121,10 @@ async function fetchCourses(token) {
       const btn = e.target.closest('.enroll-btn');
       if (!btn) return;
       const courseCard = btn.closest('.course-card');
-      const courseName = courseCard.querySelector('h3').textContent;
       const courseId = courseCard.dataset.courseId;
+      const courseName = courseCard.dataset.courseName || courseCard.querySelector('h3').textContent;
 
-      modalCourseName.textContent = courseName;
+      modalCourseName.textContent = t(`courseMetadata.${courseId}.title`, courseName);
       confirmEnroll.dataset.courseId = courseId;
       confirmEnroll.dataset.courseName = courseName;
 
@@ -162,7 +162,7 @@ async function fetchCourses(token) {
         const courseName = confirmEnroll.dataset.courseName;
 
         if (!courseId || !courseName) {
-          alert('Course information missing');
+          alert(t('coverage.courseInfoMissing', 'Course information missing'));
           return;
         }
 
@@ -183,7 +183,7 @@ async function fetchCourses(token) {
           const data = await response.json();
 
           if (!response.ok) {
-            throw new Error(data.error || 'Enrollment failed');
+            throw new Error(data.error || t('coverage.enrollmentFailedAlert', 'Enrollment failed'));
           }
 
           // Update UI - change button state
@@ -191,18 +191,20 @@ async function fetchCourses(token) {
           if (courseCard) {
             const enrollBtn = courseCard.querySelector('.enroll-btn');
             if (enrollBtn) {
-              enrollBtn.textContent = 'Enrolled';
+              enrollBtn.textContent = t('coverage.enrolled', 'Enrolled');
               enrollBtn.classList.add('enrolled');
               enrollBtn.disabled = true;
             }
           }
 
           closeEnrollmentModal();
-          alert(`Successfully enrolled in ${courseName}!`);
+          alert(t('coverage.enrollmentSuccess', 'Successfully enrolled in {course}!', {
+            course: t(`courseMetadata.${courseId}.title`, courseName)
+          }));
 
         } catch (error) {
           console.error('Enrollment error:', error);
-          alert('Error: ' + error.message);
+          alert(t('coverage.enrollmentError', 'We could not enroll you right now. Please try again.'));
         }
       });
     }

@@ -28,7 +28,7 @@ window.addEventListener("error", (e) => {
 // Google Sign-In Handler using Supabase
 async function handleGoogleSignIn() {
     const message = document.getElementById('google-signin-message');
-    message.textContent = 'Signing in with Google...';
+    message.textContent = t('coverage.signingInGoogle', 'Signing in with Google...');
     message.style.color = 'var(--primary)';
 
     try {
@@ -44,7 +44,7 @@ async function handleGoogleSignIn() {
         // No need to handle session here.
     } catch (err) {
         console.error('Google Sign-In Error:', err);
-        message.textContent = 'Google sign-in could not be started. Please try again.';
+        message.textContent = t('coverage.googleStartFailed', 'Google sign-in could not be started. Please try again.');
         message.style.color = 'var(--danger)';
     }
 }
@@ -71,7 +71,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const confirmPassword = document.getElementById("confirmPassword").value;
 
         if (!name || !email || !password || !confirmPassword) {
-            return showError("Please fill in all fields.");
+            return showError(t('coverage.fillAllFields', 'Please fill in all fields.'));
         }
 
         if (!emailInput.checkValidity()) {
@@ -148,9 +148,9 @@ document.addEventListener("DOMContentLoaded", () => {
             const isVisible = input.type === "text";
             const fieldName = input.id === "confirmPassword" ? "confirm password" : "password";
             input.type = isVisible ? "password" : "text";
-            toggle.textContent = isVisible ? "Show" : "Hide";
+            toggle.textContent = t(isVisible ? 'coverage.showLabel' : 'coverage.hideLabel', isVisible ? 'Show' : 'Hide');
             toggle.setAttribute("aria-pressed", String(!isVisible));
-            toggle.setAttribute("aria-label", `${isVisible ? "Show" : "Hide"} ${fieldName}`);
+            toggle.setAttribute('aria-label', t(isVisible ? 'coverage.showConfirmPassword' : 'coverage.hideConfirmPassword', isVisible ? 'Show confirm password' : 'Hide confirm password'));
         });
     });
 

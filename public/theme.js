@@ -28,9 +28,11 @@
     });
     document.querySelectorAll('.theme-toggle').forEach(button => {
       const next = resolved === 'dark' ? 'light' : 'dark';
-      button.textContent = next[0].toUpperCase() + next.slice(1);
-      button.setAttribute('aria-label', `Switch to ${next} theme`);
-      button.setAttribute('title', `Switch to ${next} theme (current: ${value})`);
+      const nextLabel = window.t ? window.t(`coverage.${next}Theme`, next) : next[0].toUpperCase() + next.slice(1);
+      const currentLabel = window.t ? window.t(`coverage.${resolved}Theme`, resolved) : resolved;
+      button.textContent = nextLabel;
+      button.setAttribute('aria-label', window.t ? window.t('coverage.switchTheme', 'Switch to {theme} theme', { theme: nextLabel }) : `Switch to ${next} theme`);
+      button.setAttribute('title', window.t ? window.t('coverage.switchThemeTitle', 'Switch to {theme} theme (current: {current})', { theme: nextLabel, current: currentLabel }) : `Switch to ${next} theme (current: ${value})`);
       button.dataset.themePreference = value;
     });
   }
@@ -47,6 +49,7 @@
 
   applyTheme(getPreference());
   window.refreshCareerPathTheme = () => applyTheme(getPreference());
+  document.addEventListener('careerpath:language-change', () => applyTheme(getPreference()));
 
   if (media) {
     const updateSystemTheme = () => {

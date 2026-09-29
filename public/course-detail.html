@@ -101,7 +101,7 @@
             <!-- Progress -->
             <div class="course-detail-progress" id="course-progress">
                 <div class="progress-label">
-                    <span data-i18n="learning.progress" data-i18n-fallback="Progress">Progress</span>
+                    <span data-i18n="coverage.courseProgress">Progress</span>
                     <span id="progress-percent">0%</span>
                 </div>
                 <div class="progress-bar"><div id="progress-fill" style="width: 0%"></div></div>
@@ -115,15 +115,15 @@
                 <!-- Modules will be inserted here -->
             </div>
 
-            <button type="button" class="component-button hidden" id="btn-back-to-curriculum" aria-label="Back to course curriculum">
-                &larr; Back to Curriculum
+            <button type="button" class="component-button hidden" id="btn-back-to-curriculum" aria-label="Back to course curriculum" data-i18n-aria-label="coverage.backCurriculum">
+                &larr; <span data-i18n="coverage.backCurriculum">Back to Curriculum</span>
             </button>
 
             <!-- Lesson Content Area -->
             <div class="lesson-content-area hidden" id="lesson-content">
                 <div class="empty-state">
                     <div class="empty-state-icon"><i class="fas fa-book-open"></i></div>
-                    <p>Select a lesson to view its content.</p>
+                    <p data-i18n="coverage.noLessonSelected">Select a lesson to view its content.</p>
                 </div>
             </div>
 

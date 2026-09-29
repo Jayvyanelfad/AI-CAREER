@@ -120,7 +120,7 @@
                 </div>
                 <div id="free-courses-error" class="error-state" style="display: none;">
                     <div class="error-icon"><i class="fas fa-exclamation-triangle"></i></div>
-                    <p data-i18n="ui.somethingWrong" data-i18n-fallback="Could not load the course catalog. Please try again.">Could not load the course catalog. Please try again.</p>
+                    <p data-i18n="coverage.courseCatalogError">Could not load the course catalog. Please try again.</p>
                     <button class="component-button" id="free-courses-retry" data-i18n="common.tryAgain" data-i18n-fallback="Retry">Retry</button>
                 </div>
             </div>
@@ -285,14 +285,14 @@
             const cardMarkup = (course, isPremium) => `
                 <div class="course-card animate-on-scroll" data-level="${course.level}" data-course-id="${course.id}" data-course-name="${course.title}" onclick="location.href='course-detail.html?id=${encodeURIComponent(course.id)}'">
                     <div class="course-image">
-                        <img src="${course.image}" alt="${course.title}">
+                        <img src="${course.image}" alt="${t(`courseMetadata.${course.id}.title`, course.title)}">
                     </div>
                     <div class="course-card-content">
                     <p class="course-card-level">${course.badge}${isPremium ? ' · Pro' : ''}</p>
-                    <h3><a class="course-title-link" href="course-detail.html?id=${encodeURIComponent(course.id)}" onclick="event.stopPropagation()">${course.title}</a></h3>
-                    <p>${course.description}</p>
+                    <h3><a class="course-title-link" href="course-detail.html?id=${encodeURIComponent(course.id)}" onclick="event.stopPropagation()">${t(`courseMetadata.${course.id}.title`, course.title)}</a></h3>
+                    <p>${t(`courseMetadata.${course.id}.description`, course.description || '')}</p>
                     <div class="course-meta">
-                        <span>${course.weeks} weeks</span>
+                        <span>${t("coverage.weekDuration", "{count} weeks", { count: course.weeks })}</span>
                     </div>
                     ${isPremium
                         ? '<a class="course-btn" href="course-detail.html?id=' + encodeURIComponent(course.id) + '" onclick="event.stopPropagation()">Explore Course</a>'
@@ -415,11 +415,11 @@
             <button class="close-modal">&times;</button>
         </div>
         <div class="modal-body">
-            <p>Are you sure you want to enroll in <span id="modal-course-name"></span>?</p>
+            <p id="modal-enroll-prompt"></p>
         </div>
         <div class="modal-footer">
             <button id="cancel-enroll" class="course-btn" data-i18n="common.cancel" data-i18n-fallback="Cancel">Cancel</button>
-            <button id="confirm-enroll" class="course-btn">Enroll</button>
+            <button id="confirm-enroll" class="course-btn" data-i18n="coverage.enrollButton">Enroll</button>
         </div>
     </div>
 </div>

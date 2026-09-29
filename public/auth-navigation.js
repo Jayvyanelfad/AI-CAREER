@@ -128,7 +128,7 @@
         toggle = document.createElement('button');
         toggle.type = 'button';
         toggle.className = 'auth-nav-toggle';
-        toggle.textContent = 'Menu';
+        toggle.textContent = window.t ? window.t('coverage.menuLabel', 'Menu') : 'Menu';
         if (brandedWrapper) {
           brandedWrapper.insertBefore(toggle, group.nextSibling);
         } else {
@@ -137,8 +137,9 @@
       }
 
       toggle.classList.add('auth-nav-toggle');
-      toggle.textContent = 'Menu';
-      toggle.setAttribute('aria-label', 'Open navigation');
+      toggle.textContent = window.t ? window.t('coverage.menuLabel', 'Menu') : 'Menu';
+      toggle.setAttribute('data-i18n-aria-label', 'page.openNavigation');
+      toggle.setAttribute('aria-label', window.t ? window.t('page.openNavigation', 'Open navigation') : 'Open navigation');
       toggle.setAttribute('aria-controls', group.id);
       toggle.setAttribute('aria-expanded', 'false');
       if (toggle.tagName.toLowerCase() !== 'button') {
@@ -149,14 +150,16 @@
       const close = () => {
         host.classList.remove('auth-mobile-open');
         toggle.setAttribute('aria-expanded', 'false');
-        toggle.setAttribute('aria-label', 'Open navigation');
-        toggle.textContent = 'Menu';
+        toggle.setAttribute('data-i18n-aria-label', 'page.openNavigation');
+        toggle.setAttribute('aria-label', window.t ? window.t('page.openNavigation', 'Open navigation') : 'Open navigation');
+        toggle.textContent = window.t ? window.t('coverage.menuLabel', 'Menu') : 'Menu';
       };
       const open = () => {
         host.classList.add('auth-mobile-open');
         toggle.setAttribute('aria-expanded', 'true');
-        toggle.setAttribute('aria-label', 'Close navigation');
-        toggle.textContent = 'Close';
+        toggle.setAttribute('data-i18n-aria-label', 'page.closeNavigation');
+        toggle.setAttribute('aria-label', window.t ? window.t('page.closeNavigation', 'Close navigation') : 'Close navigation');
+        toggle.textContent = window.t ? window.t('coverage.closeLabel', 'Close') : 'Close';
         requestAnimationFrame(() => {
           const firstLink = [...group.querySelectorAll('a[href], button:not(:disabled)')]
             .find(element => element.getClientRects().length > 0);
@@ -199,12 +202,22 @@
         document.querySelectorAll('.auth-mobile-open').forEach(element => element.classList.remove('auth-mobile-open'));
         document.querySelectorAll('.auth-nav-toggle[aria-expanded="true"]').forEach(toggle => {
           toggle.setAttribute('aria-expanded', 'false');
-          toggle.setAttribute('aria-label', 'Open navigation');
-          toggle.textContent = 'Menu';
+          toggle.setAttribute('data-i18n-aria-label', 'page.openNavigation');
+          toggle.setAttribute('aria-label', window.t ? window.t('page.openNavigation', 'Open navigation') : 'Open navigation');
+          toggle.textContent = window.t ? window.t('coverage.menuLabel', 'Menu') : 'Menu';
         });
       }
     });
   }
+
+  document.addEventListener('careerpath:language-change', () => {
+    document.querySelectorAll('.auth-nav-toggle').forEach(toggle => {
+      const isOpen = toggle.getAttribute('aria-expanded') === 'true';
+      toggle.textContent = window.t(isOpen ? 'coverage.closeLabel' : 'coverage.menuLabel', isOpen ? 'Close' : 'Menu');
+      toggle.setAttribute('data-i18n-aria-label', isOpen ? 'page.closeNavigation' : 'page.openNavigation');
+      toggle.setAttribute('aria-label', window.t(isOpen ? 'page.closeNavigation' : 'page.openNavigation', isOpen ? 'Close navigation' : 'Open navigation'));
+    });
+  });
 
   function renderNavigation(authenticated) {
     currentAuthenticated = Boolean(authenticated);

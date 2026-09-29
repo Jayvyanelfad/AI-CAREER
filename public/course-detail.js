@@ -54,13 +54,13 @@
             <div class="empty-state">
                 <div class="empty-state-icon"><i class="fas fa-exclamation-triangle"></i></div>
                 <p>${message}</p>
-                <a href="courses.html" class="component-button" style="margin-top: var(--space-4);">Return to Courses</a>
+                <a href="courses.html" class="component-button" style="margin-top: var(--space-4);">${t("coverage.returnCourses", "Return to Courses")}</a>
             </div>
         `;
         courseProgressDiv.style.display = 'none';
         examButtonContainer.style.display = 'none';
         courseModulesDiv.style.display = 'none';
-        lessonContentDiv.innerHTML = '<p>Select a lesson to view its content.</p>';
+        lessonContentDiv.innerHTML = `<p>${t('coverage.lessonSelect', 'Select a lesson to view its content.')}</p>`;
         lessonActionsDiv.style.display = 'none';
     }
 
@@ -69,13 +69,13 @@
         courseHeaderDiv.innerHTML = `
             <div class="empty-state">
                 <div class="empty-state-icon"><i class="fas fa-spinner fa-spin"></i></div>
-                <p>Loading course...</p>
+                <p>${t("coverage.courseLoading", "Loading course...")}</p>
             </div>
         `;
         courseProgressDiv.style.display = 'none';
         examButtonContainer.style.display = 'none';
         courseModulesDiv.style.display = 'none';
-        lessonContentDiv.innerHTML = '<p>Select a lesson to view its content.</p>';
+        lessonContentDiv.innerHTML = `<p>${t('coverage.lessonSelect', 'Select a lesson to view its content.')}</p>`;
         lessonActionsDiv.style.display = 'none';
     }
 
@@ -798,9 +798,9 @@ async function fetchCompletedLessons() {
                 answeredCount() < challengeStage.scenarios.length;
 
             nextBtn.disabled = challengeIncomplete;
-            nextBtn.title = challengeIncomplete ? 'Answer every scenario to continue' : '';
+            nextBtn.title = challengeIncomplete ? t('coverage.assessmentAnswerAll', 'Answer every scenario to continue') : '';
 
-            counterEl.textContent = `Stage ${currentStage + 1} of ${stages.length}`;
+            counterEl.textContent = t('coverage.lessonStage', 'Stage {current} of {total}', { current: currentStage + 1, total: stages.length });
             progressFill.style.width = `${((currentStage + 1) / stages.length) * 100}%`;
             saveLxpStage(currentStage);
         }
@@ -853,7 +853,7 @@ async function fetchCompletedLessons() {
                     feedbackEl.innerHTML = `
                         <span class="lxp-feedback-verdict ${isCorrect ? 'ok' : 'no'}">
                             <i class="fas ${isCorrect ? 'fa-circle-check' : 'fa-circle-xmark'}"></i>
-                            ${isCorrect ? 'Correct' : 'Not quite'}
+                            ${isCorrect ? t('coverage.correct', 'Correct') : t('coverage.notQuite', 'Not quite')}
                         </span>
                         <span class="lxp-feedback-text">${scenario.explanation}</span>
                     `;
@@ -867,12 +867,12 @@ async function fetchCompletedLessons() {
         // Completion: reuses the existing endpoint + existing frontend progress state.
         if (!enrollment) {
             completeBtn.disabled = true;
-            completeBtn.title = 'Please enroll in the course to complete lessons';
-            noteEl.textContent = 'Enroll in this course to mark the lesson complete.';
+            completeBtn.title = t('coverage.lessonEnrollNotice', 'Enroll in this course to mark the lesson complete.');
+            noteEl.textContent = t('coverage.lessonEnrollNotice', 'Enroll in this course to mark the lesson complete.');
             noteEl.hidden = false;
         } else if (alreadyCompleted) {
             completeBtn.disabled = true;
-            completeBtn.innerHTML = '<i class="fas fa-check"></i> Lesson Completed';
+            completeBtn.innerHTML = `<i class="fas fa-check"></i> ${t('coverage.lessonCompleted', 'Lesson Completed')}`;
         }
 
         completeBtn.addEventListener('click', async () => {
@@ -880,7 +880,7 @@ async function fetchCompletedLessons() {
 
             const originalHtml = completeBtn.innerHTML;
             completeBtn.disabled = true;
-            completeBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            completeBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${t('coverage.saving', 'Saving...')}`;
 
             try {
                 await markLessonComplete(lesson.id);
@@ -890,7 +890,7 @@ async function fetchCompletedLessons() {
                 console.error('Error completing lesson:', error);
                 completeBtn.disabled = false;
                 completeBtn.innerHTML = originalHtml;
-                alert('Failed to complete lesson: ' + error.message);
+                alert(t('coverage.failedComplete', 'Could not mark this lesson complete. Please try again.'));
             }
         });
 
@@ -904,12 +904,15 @@ async function fetchCompletedLessons() {
             return;
         }
 
+        const courseTitle = t(`courseMetadata.${course.id}.title`, course.title);
+        const courseDescription = t(`courseMetadata.${course.id}.description`, course.description || '');
+
         courseHeaderDiv.innerHTML = `
-            <img src="${course.image_url}" alt="${course.title}" class="course-detail-image">
-            <h1 class="course-detail-title">${course.title}</h1>
-            <p class="course-detail-description">${course.description}</p>
+            <img src="${course.image_url}" alt="${courseTitle}" class="course-detail-image">
+            <h1 class="course-detail-title">${courseTitle}</h1>
+            <p class="course-detail-description">${courseDescription}</p>
             <div class="course-detail-meta">
-                <span><i class="fas fa-clock"></i> ${course.duration_weeks} weeks</span>
+                <span><i class="fas fa-clock"></i> ${t('coverage.weekDuration', '{count} weeks', { count: course.duration_weeks })}</span>
                 <span><i class="fas fa-signal"></i> ${course.level.charAt(0).toUpperCase() + course.level.slice(1)}</span>
             </div>
         `;
@@ -921,13 +924,13 @@ async function fetchCompletedLessons() {
         const token = localStorage.getItem('token');
 
         if (!token) {
-            statusMessage.textContent = 'Please sign in to enroll in this course.';
+            statusMessage.textContent = t('coverage.signInEnroll', 'Please sign in to enroll in this course.');
             statusMessage.hidden = false;
             return;
         }
 
         enrollButton.disabled = true;
-        enrollButton.textContent = 'Enrolling...';
+        enrollButton.textContent = t('coverage.enrolling', 'Enrolling...');
         statusMessage.hidden = true;
 
         try {
@@ -968,8 +971,8 @@ async function fetchCompletedLessons() {
         } catch (error) {
             console.error('Error enrolling in course:', error);
             enrollButton.disabled = false;
-            enrollButton.textContent = 'Enroll Free';
-            statusMessage.textContent = error.message || 'Enrollment failed. Please try again.';
+            enrollButton.textContent = t('common.enrollFree', 'Enroll Free');
+            statusMessage.textContent = error.message || t('coverage.enrollmentFailed', 'Enrollment failed. Please try again.');
             statusMessage.hidden = false;
         }
     }
@@ -979,33 +982,33 @@ async function fetchCompletedLessons() {
         examButtonContainer.innerHTML = '';
 
         if (enrollmentUnavailable) {
-            examButtonContainer.innerHTML = '<p role="status">Enrollment status could not be verified. Please refresh and try again.</p>';
+            examButtonContainer.innerHTML = `<p role="status">${t('coverage.verifyEnrollmentError', 'Enrollment status could not be verified. Please refresh and try again.')}</p>`;
             return;
         }
 
         if (!enrollment) {
             examButtonContainer.innerHTML = `
-                <p>Please enroll in the course to access the exam.</p>
-                <button type="button" class="component-button" id="btn-enroll-free">Enroll Free</button>
+                <p>${t("coverage.enrollExam", "Please enroll in the course to access the exam.")}</p>
+                <button type="button" class="component-button" id="btn-enroll-free">${t("common.enrollFree", "Enroll Free")}</button>
                 <p id="enrollment-status-message" role="alert" hidden></p>
             `;
             document.getElementById('btn-enroll-free').addEventListener('click', handleCourseEnrollment);
             return;
         }
 
-        const enrollmentNotice = '<p role="status">You are enrolled in this course.</p>';
+        const enrollmentNotice = `<p role="status">${t('coverage.youAreEnrolled', 'You are enrolled in this course.')}</p>`;
         if (lessonProgressUnavailable) {
-            examButtonContainer.innerHTML = enrollmentNotice + '<p role="status">Lesson progress could not be loaded. Please refresh to try again.</p>';
+            examButtonContainer.innerHTML = enrollmentNotice + `<p role="status">${t('coverage.progressLoadError', 'Lesson progress could not be loaded. Please refresh to try again.')}</p>`;
             return;
         }
 
         if (totalLessons === 0) {
-            examButtonContainer.innerHTML = enrollmentNotice + '<p>No lessons available for this course.</p>';
+            examButtonContainer.innerHTML = enrollmentNotice + `<p>${t('coverage.noLessonsAvailable', 'No lessons available for this course.')}</p>`;
             return;
         }
 
         if (completedLessonsCount < totalLessons) {
-            examButtonContainer.innerHTML = enrollmentNotice + `<p>Complete all lessons (${completedLessonsCount}/${totalLessons}) to unlock the exam.</p>`;
+            examButtonContainer.innerHTML = enrollmentNotice + `<p>${t("coverage.unlockExam", "Complete all lessons ({completed}/{total}) to unlock the exam.", { completed: completedLessonsCount, total: totalLessons })}</p>`;
             return;
         }
 
@@ -1014,20 +1017,20 @@ async function fetchCompletedLessons() {
 
         if (currentExam) {
             // Show exam button to take the exam
-            html += `<a href="exam.html?id=${currentExam.id}" class="component-button">Start Exam</a>`;
+            html += `<a href="exam.html?id=${currentExam.id}" class="component-button">${t("coverage.startExam", "Start Exam")}</a>`;
         }
 
         // If eligible for certificate, show certificate button
         if (certificateEligible) {
             if (certificateResult?.certificateId) {
-                html += `<a href="certificate.html?certificateId=${encodeURIComponent(certificateResult.certificateId)}" class="component-button">View Certificate</a>`;
+                html += `<a href="certificate.html?certificateId=${encodeURIComponent(certificateResult.certificateId)}" class="component-button">${t("coverage.viewCertificate", "View Certificate")}</a>`;
             }
         }
 
         if (html === '') {
             // This should not happen because we have completed all lessons and are enrolled.
             // But if there is no exam and not eligible for certificate (shouldn't happen), show a message.
-            examButtonContainer.innerHTML = enrollmentNotice + '<p>No exam available and not eligible for certificate.</p>';
+            examButtonContainer.innerHTML = enrollmentNotice + `<p>${t('coverage.noExam', 'No exam available and not eligible for certificate.')}</p>`;
         } else {
             examButtonContainer.innerHTML = enrollmentNotice + html;
         }
@@ -1036,7 +1039,7 @@ async function fetchCompletedLessons() {
     // Render the modules list
     function renderModules() {
         if (!modules || modules.length === 0) {
-            courseModulesDiv.innerHTML = '<p>No modules available for this course.</p>';
+            courseModulesDiv.innerHTML = `<p>${t('coverage.noModules', 'No modules available for this course.')}</p>`;
             return;
         }
 
@@ -1103,7 +1106,7 @@ async function fetchCompletedLessons() {
         const lesson = lessons[currentLessonIndex];
 
         if (!lesson) {
-            lessonContentDiv.innerHTML = '<p>Lesson not available.</p>';
+            lessonContentDiv.innerHTML = `<p>${t('coverage.lessonUnavailable', 'Lesson not available.')}</p>`;
             lessonActionsDiv.style.display = 'none';
             return;
         }
@@ -1124,9 +1127,9 @@ async function fetchCompletedLessons() {
             // Render the lesson content as usual for other lessons
             lessonContentDiv.innerHTML = `
                 <h2 class="lesson-content-title">${lesson.title}</h2>
-                <p class="lesson-content-module">Module ${currentModuleIndex + 1}: ${module.title}</p>
+                <p class="lesson-content-module">${t('coverage.moduleNumber', 'Module {current}:', { current: currentModuleIndex + 1 })} ${module.title}</p>
                 <div class="lesson-content-text">
-                    ${lesson.content || (lesson.description ? `<p>${lesson.description}</p>` : '<p>No lesson content available.</p>')}
+                    ${lesson.content || (lesson.description ? `<p>${lesson.description}</p>` : `<p>${t('coverage.lessonContentEmpty', 'No lesson content available.')}</p>`)}
                     ${lesson.video_url ? `<div class="video-container"><iframe src="${lesson.video_url}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>` : ''}
                 </div>
             `;
@@ -1174,7 +1177,7 @@ async function fetchCompletedLessons() {
         }
 
         // Mark complete button - always show "Mark as Complete" since undo is not supported by backend
-        completeBtn.textContent = 'Mark as Complete';
+        completeBtn.textContent = t('coverage.markingComplete', 'Mark as Complete');
 
         // The learning experience owns completion at the end of its final stage, so the
         // generic bar button is hidden while it is active to avoid two competing controls.
@@ -1196,7 +1199,7 @@ async function fetchCompletedLessons() {
                 } catch (error) {
                     // Show error to user
                     console.error('Error completing lesson:', error);
-                    alert('Failed to complete lesson: ' + error.message);
+                    alert(t('coverage.failedComplete', 'Could not mark this lesson complete. Please try again.'));
                 }
             };
         }
@@ -1254,7 +1257,7 @@ async function fetchCompletedLessons() {
     // Update progress bar and percentage
     function updateProgressUI() {
         if (lessonProgressUnavailable) {
-            progressPercentSpan.textContent = 'Unavailable';
+            progressPercentSpan.textContent = t('coverage.unavailableLabel', 'Unavailable');
             progressFillDiv.style.width = '0%';
             return;
         }

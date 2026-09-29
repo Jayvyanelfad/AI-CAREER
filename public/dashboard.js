@@ -58,9 +58,9 @@
       }
       if (data.user && data.user.careerGoal) {
         careerGoal.textContent = ` - ${data.user.careerGoal}`;
-        dashboardMessage.textContent = `Keep going, ${data.user.name}! You're on your way to becoming a ${data.user.careerGoal}.`;
+        dashboardMessage.textContent = t('coverage.greetingKeepGoing', "Keep going, {name}! You're on your way to becoming a {goal}.", { name: data.user.name, goal: data.user.careerGoal });
       } else {
-        dashboardMessage.textContent = `Take the career test to discover your ideal tech career path.`;
+        dashboardMessage.textContent = t('coverage.takeTestDiscover', 'Take the career test to discover your ideal tech career path.');
       }
 
       // Stats Cards
@@ -75,7 +75,7 @@
             <span class="stat-label">Overall Progress</span>
           </div>
           <div class="stat-card">
-            <span class="stat-number">${data.stats.streak === null || data.stats.streak === undefined ? 'Not tracked' : data.stats.streak}</span>
+            <span class="stat-number">${data.stats.streak === null || data.stats.streak === undefined ? t('coverage.notTracked', 'Not tracked') : data.stats.streak}</span>
             <span class="stat-label">Day Streak</span>
           </div>
           <div class="stat-card">
@@ -109,7 +109,7 @@
                 ` : ''}
                 ${strengths.length > 0 ? `
                   <div class="career-strengths">
-                    Strengths: ${strengths.join(', ')}
+                    ${t('coverage.strengthsLabel', 'Strengths:')} ${strengths.join(', ')}
                   </div>
                 ` : ''}
               </div>
@@ -118,14 +118,14 @@
           </div>
           ${data.careerTest.learningPath ? `
             <p style="margin-top: var(--space-3); color: var(--text-muted); font-style: italic;">
-              Learning path: ${data.careerTest.learningPath}
+              ${t('coverage.learningPathLabel', 'Learning path:')} ${data.careerTest.learningPath}
             </p>
           ` : ''}
         `;
       } else {
         careerSummary.innerHTML = `
           <p style="color: var(--text-muted); text-align: center;">
-            Career Profile not completed yet. <a href="career-test.html">Complete the Career Assessment</a> to build it.
+            ${t('coverage.profileIncomplete', 'Career Profile not completed yet.')} <a href="career-test.html">${t('coverage.completeCareerTestLink', 'Complete the Career Assessment')}</a> ${t('coverage.assessmentProfileBuild', 'Complete the Career Assessment to build your career profile.')}
           </p>
         `;
       }
@@ -151,11 +151,11 @@
 
         coursesGrid.innerHTML = data.enrollments.map(enrollment => `
           <div class="course-card"${courseImageById.has(enrollment.courseId) ? ` data-course-image="${courseImageById.get(enrollment.courseId)}"` : ''}>
-            ${courseImageById.has(enrollment.courseId) ? `<div class="dashboard-course-image"><img src="${courseImageById.get(enrollment.courseId)}" alt="${enrollment.courseName}" loading="lazy"></div>` : ''}
+            ${courseImageById.has(enrollment.courseId) ? `<div class="dashboard-course-image"><img src="${courseImageById.get(enrollment.courseId)}" alt="${t(`courseMetadata.${enrollment.courseId}.title`, enrollment.courseName)}" loading="lazy"></div>` : ''}
             <div class="course-header">
-              <h3 class="course-title">${enrollment.courseName}</h3>
+              <h3 class="course-title">${t(`courseMetadata.${enrollment.courseId}.title`, enrollment.courseName)}</h3>
               <div class="course-meta">
-                <span>${enrollment.progress}% Complete</span>
+                <span>${t('coverage.percentComplete', '{percent}% Complete', { percent: enrollment.progress })}</span>
                 <span>${enrollment.completedHours}h / ${enrollment.totalHours}h</span>
               </div>
             </div>
@@ -164,14 +164,14 @@
             </div>
             <div class="course-actions">
               <a href="course-detail.html?id=${enrollment.courseId}" class="btn-outline">Continue Learning</a>
-              <span class="text-muted">Next: ${enrollment.nextLessonTitle}</span>
+              <span class="text-muted">${t('coverage.nextLessonLabel', 'Next: {lesson}', { lesson: enrollment.nextLessonTitle })}</span>
             </div>
           </div>
         `).join('');
       } else {
         coursesGrid.innerHTML = `
           <p style="color: var(--text-muted); text-align: center; grid-column: 1 / -1;">
-            No courses enrolled yet. <a href="courses.html">Browse courses</a> to get started.
+            ${t('coverage.noCoursesYet', 'No courses enrolled yet.')} <a href="courses.html">${t('coverage.browseCourses', 'Browse courses')}</a> ${t('coverage.toGetStarted', 'to get started.')}
           </p>
         `;
       }
@@ -182,7 +182,7 @@
       if (certificates.length === 0) {
         const empty = document.createElement('p');
         empty.className = 'text-muted';
-        empty.textContent = 'Passed course certificates will appear here.';
+        empty.textContent = t('coverage.passedCertificatesEmpty', 'Passed course certificates will appear here.');
         certificatesGrid.appendChild(empty);
       } else {
         certificates.forEach(certificate => {
@@ -198,14 +198,14 @@
             if (Number.isFinite(date.getTime())) {
               const issued = document.createElement('p');
               issued.className = 'text-muted';
-              issued.textContent = `Issued ${date.toLocaleDateString()}`;
+              issued.textContent = t('coverage.issuedDate', 'Issued {date}', { date: new Intl.DateTimeFormat(document.documentElement.lang).format(date) });
               card.appendChild(issued);
             }
           }
           const link = document.createElement('a');
           link.className = 'btn-outline';
           link.href = `certificate.html?certificateId=${encodeURIComponent(certificate.id)}`;
-          link.textContent = 'View Certificate';
+          link.textContent = t('coverage.viewCertificate', 'View Certificate');
           card.appendChild(link);
           certificatesGrid.appendChild(card);
         });
@@ -241,31 +241,31 @@
           switch (activity.type) {
             case 'login':
               icon = '<i class="fas fa-sign-in-alt"></i>';
-              action = 'Logged In';
+              action = t('coverage.loggedIn', 'Logged In');
               break;
             case 'register':
               icon = '<i class="fas fa-user-plus"></i>';
-              action = 'Account Created';
+              action = t('coverage.accountCreated', 'Account Created');
               break;
             case 'career_test':
               icon = '<i class="fas fa-star"></i>';
-              action = 'Career Test Completed';
+              action = t('coverage.careerTestCompleted', 'Career Test Completed');
               break;
             case 'enrollment':
               icon = '<i class="fas fa-book-open"></i>';
-              action = 'Course Enrolled';
+              action = t('coverage.courseEnrolled', 'Course Enrolled');
               break;
             case 'progress':
               icon = '<i class="fas fa-tasks"></i>';
-              action = 'Progress Updated';
+              action = t('coverage.progressUpdated', 'Progress Updated');
               break;
             case 'certificate':
               icon = '<i class="fas fa-graduation-cap"></i>';
-              action = 'Certificate Earned';
+              action = t('coverage.certificateEarned', 'Certificate Earned');
               break;
             case 'chat':
               icon = '<i class="fas fa-robot"></i>';
-              action = 'AI Conversation';
+              action = t('coverage.aiConversation', 'AI Conversation');
               break;
             default:
               icon = '<i class="fas fa-circle"></i>';
@@ -281,11 +281,11 @@
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
             if (diffDays === 0) {
-              timestampStr = 'Today';
+              timestampStr = t('coverage.today', 'Today');
             } else if (diffDays === 1) {
-              timestampStr = 'Yesterday';
+              timestampStr = t('coverage.yesterday', 'Yesterday');
             } else if (diffDays < 7) {
-              timestampStr = `${diffDays} days ago`;
+              timestampStr = t('coverage.daysAgo', '{count} days ago', { count: diffDays });
             } else {
               timestampStr = date.toLocaleDateString();
             }
@@ -307,7 +307,7 @@
       } else {
         activityFeed.innerHTML = `
           <p style="color: var(--text-muted); text-align: center;">
-            No recent activity. Start by taking the career test or enrolling in a course.
+            ${t('coverage.noRecentActivity', 'No recent activity. Start by taking the career test or enrolling in a course.')}
           </p>
         `;
       }
@@ -315,7 +315,7 @@
     } catch (error) {
       console.error('Dashboard error:', error);
       userName.textContent = 'Learner';
-      dashboardMessage.textContent = 'Unable to load dashboard data. Please try again later.';
+      dashboardMessage.textContent = t('coverage.loadDashboardError', 'Unable to load dashboard data. Please try again later.');
     }
 
     // Quick action button event listeners

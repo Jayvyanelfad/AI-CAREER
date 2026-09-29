@@ -79,12 +79,12 @@
       </section>
 
       <section class="dashboard-card profile-section profile-career-hero" aria-labelledby="career-profile-title">
-        <div class="profile-section-heading"><div><p class="profile-eyebrow">YOUR RESULTS</p><h2 id="career-profile-title" data-i18n="career.profile" data-i18n-fallback="Career Profile">Career Profile</h2></div><a id="career-assessment-action" class="btn-outline profile-retake-link" href="career-test.html" data-i18n="page.retakeAssessment" data-i18n-fallback="Retake Assessment">Retake Assessment</a>
+        <div class="profile-section-heading"><div><p class="profile-eyebrow" data-i18n="coverage.profileResultsEyebrow">YOUR RESULTS</p><h2 id="career-profile-title" data-i18n="career.profile" data-i18n-fallback="Career Profile">Career Profile</h2></div><a id="career-assessment-action" class="btn-outline profile-retake-link" href="career-test.html" data-i18n="page.retakeAssessment" data-i18n-fallback="Retake Assessment">Retake Assessment</a>
         <p id="career-assessment-status" class="profile-status" role="status" data-i18n="page.loadingAssessment" data-i18n-fallback="Loading assessment status...">Loading assessment status...</p>
         <button id="career-profile-retry" type="button" class="btn-outline profile-retry" hidden data-i18n="page.retryCareerProfile" data-i18n-fallback="Retry loading Career Profile">Retry loading Career Profile</button>
         <p id="assessment-version" class="text-body_small color-green_light profile-version"></p>
         <h3 id="career-directions-title" class="profile-subheading" data-i18n="career.topDirections" data-i18n-fallback="Top Career Directions">Top Career Directions</h3>
-        <h3 id="career-alignment-title" class="profile-visually-hidden" hidden>Career Alignment</h3>
+        <h3 id="career-alignment-title" class="profile-visually-hidden" hidden data-i18n="coverage.careerAlignmentHeading">Career Alignment</h3>
         <div id="career-directions" class="career-directions"></div>
         <h3 id="career-strengths-title" class="profile-subheading" hidden data-i18n="page.yourStrengths" data-i18n-fallback="Your Strengths">Your Strengths</h3>
         <ul id="career-strengths" class="profile-strengths" hidden></ul>
@@ -93,14 +93,14 @@
       </section>
 
       <section id="career-recommendations-section" class="dashboard-card profile-section profile-recommendations" aria-labelledby="career-recommendations-title" hidden>
-        <div class="profile-section-heading"><div><p class="profile-eyebrow">CAREER → LEARNING</p><h2 id="career-recommendations-title" data-i18n="page.recommendedForProfile" data-i18n-fallback="Recommended for Your Career Profile">Recommended for Your Career Profile</h2></div></div>
+        <div class="profile-section-heading"><div><p class="profile-eyebrow" data-i18n="coverage.careerLearningEyebrow">CAREER → LEARNING</p><h2 id="career-recommendations-title" data-i18n="page.recommendedForProfile" data-i18n-fallback="Recommended for Your Career Profile">Recommended for Your Career Profile</h2></div></div>
         <p class="profile-section-intro" data-i18n="page.basedOnDirections" data-i18n-fallback="Based on your career directions.">Based on your career directions.</p>
         <p id="career-recommendations-status" class="text-body_small color-green_light" role="status"></p>
         <div id="career-recommendations" class="profile-recommendation-grid"></div>
       </section>
 
       <section id="profile-whats-next" class="dashboard-card profile-section profile-whats-next" aria-labelledby="profile-whats-next-title" aria-live="polite">
-        <div><p class="profile-eyebrow">YOUR NEXT STEP</p><h2 id="profile-whats-next-title" data-i18n="page.whatsNext" data-i18n-fallback="What's Next">What's Next</h2><p id="profile-whats-next-copy" class="text-body_small color-green_light" data-i18n="page.findingNextStep" data-i18n-fallback="Finding a next step from your profile...">Finding a next step from your profile...</p></div>
+        <div><p class="profile-eyebrow" data-i18n="coverage.profileNextStepEyebrow">YOUR NEXT STEP</p><h2 id="profile-whats-next-title" data-i18n="page.whatsNext" data-i18n-fallback="What's Next">What's Next</h2><p id="profile-whats-next-copy" class="text-body_small color-green_light" data-i18n="page.findingNextStep" data-i18n-fallback="Finding a next step from your profile...">Finding a next step from your profile...</p></div>
         <a id="profile-whats-next-action" class="btn-primary" href="courses.html" hidden data-i18n="common.continue" data-i18n-fallback="Continue">Continue</a>
       </section>
 
@@ -119,7 +119,7 @@
       </section>
 
       <section class="dashboard-card profile-section profile-upload-section" aria-labelledby="profile-uploads-title">
-        <div class="profile-section-heading"><div><p class="profile-eyebrow" data-i18n="page.externalLearning" data-i18n-fallback="EXTERNAL LEARNING">EXTERNAL LEARNING</p><h2 id="profile-uploads-title">Uploaded Certificates</h2></div></div>
+        <div class="profile-section-heading"><div><p class="profile-eyebrow" data-i18n="page.externalLearning" data-i18n-fallback="EXTERNAL LEARNING">EXTERNAL LEARNING</p><h2 id="profile-uploads-title" data-i18n="coverage.uploadedCertificates">Uploaded Certificates</h2></div></div>
         <form id="external-certificate-form" class="external-certificate-form">
           <div class="form-group"><label for="external-certificate-title" data-i18n="page.certificateTitle" data-i18n-fallback="Certificate title">Certificate title</label><input id="external-certificate-title" name="title" type="text" maxlength="120" required /></div>
           <div class="form-group"><label for="external-certificate-file" data-i18n="page.certificateFile" data-i18n-fallback="Certificate file (PDF, PNG, or JPEG; up to 10 MB)">Certificate file (PDF, PNG, or JPEG; up to 10 MB)</label><input id="external-certificate-file" name="file" type="file" accept="application/pdf,image/png,image/jpeg" required /></div>
@@ -130,7 +130,7 @@
       </section>
 
       <section class="dashboard-card profile-section profile-settings-section profile-account-section" aria-labelledby="profile-account-title">
-        <div class="profile-section-heading"><div><p class="profile-eyebrow">ACCOUNT</p><h2 id="profile-account-title" data-i18n="ui.account" data-i18n-fallback="Account">Account</h2></div></div>
+        <div class="profile-section-heading"><div><p class="profile-eyebrow" data-i18n="coverage.accountEyebrow">ACCOUNT</p><h2 id="profile-account-title" data-i18n="ui.account" data-i18n-fallback="Account">Account</h2></div></div>
         <h3 id="profile-settings-title" class="profile-subheading" data-i18n="ui.settings" data-i18n-fallback="Settings">Settings</h3>
         <div class="profile-preference-grid">
           <div class="form-group">

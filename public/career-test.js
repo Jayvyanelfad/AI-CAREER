@@ -64,7 +64,7 @@
     try {
       const token = await window.getAuthAccessToken();
       if (!token) {
-        alert('Please log in first to take the career test.');
+        alert(t('coverage.assessmentLoginRequired', 'Please log in first to take the career test.'));
         window.location.href = 'login.html';
         return;
       }
@@ -112,7 +112,7 @@
       updateQuestionDisplay();
     } catch (error) {
       console.error('Failed to initialize quiz:', error);
-      alert('Failed to load career test. Please try again later.');
+      alert(t('coverage.assessmentLoadFailed', 'Failed to load career test. Please try again later.'));
       window.location.href = 'dashboard.html';
     }
   }
@@ -335,7 +335,7 @@
   function updateProgress() {
     const progress = ((currentQuestion + 1) / questions.length) * 100;
     progressFill.style.width = progress + '%';
-    progressText.textContent = `Question ${currentQuestion + 1} of ${questions.length}`;
+    progressText.textContent = t('assessment.questionProgress', 'Question {current} of {total}', { current: currentQuestion + 1, total: questions.length });
   }
 
   // Navigate to next question. Existing answers are never cleared - moving
@@ -432,7 +432,7 @@
     // Check if all questions answered
     const unanswered = questions.filter(q => !answers[q.id]);
     if (unanswered.length > 0) {
-      alert('Please answer all questions before submitting.');
+      alert(t('coverage.assessmentAnswerAll', 'Please answer all questions before submitting.'));
       return;
     }
 
@@ -490,7 +490,7 @@
       console.error('Career test error:', error);
       loadingSpinner.style.display = 'none';
       quizContainer.style.display = 'block';
-      alert('Error: ' + error.message);
+      alert(t('coverage.assessmentError', 'Something went wrong while processing your assessment. Please try again.'));
     }
   }
 
@@ -503,14 +503,14 @@
 
     if (!topCareers || topCareers.length === 0) {
       const emptyMessage = document.createElement('p');
-      emptyMessage.textContent = 'No career profile is available. Please retake the assessment.';
+      emptyMessage.textContent = t('coverage.noCareerProfileResult', 'No career profile is available. Please retake the assessment.');
       resultsContent.appendChild(emptyMessage);
       return;
     }
 
     const dimensionHeading = document.createElement('h2');
     dimensionHeading.className = 'text-h3';
-    dimensionHeading.textContent = '8-Dimension Profile';
+    dimensionHeading.textContent = t('coverage.eightDimensionProfile', '8-Dimension Profile');
     resultsContent.appendChild(dimensionHeading);
 
     dimensions.forEach(dimension => {
@@ -547,7 +547,7 @@
     const careersHeading = document.createElement('h2');
     careersHeading.className = 'text-h3';
     careersHeading.style.marginTop = 'var(--space-6)';
-    careersHeading.textContent = 'Top Career Directions';
+    careersHeading.textContent = t('coverage.topCareerDirections', 'Top Career Directions');
     resultsContent.appendChild(careersHeading);
 
     topCareers.forEach((careerObj, index) => {
@@ -562,7 +562,7 @@
       title.textContent = careerObj.career;
       const alignment = document.createElement('div');
       alignment.className = 'score';
-      alignment.append('Career Alignment: ');
+      alignment.append(t('coverage.assessmentAlignment', 'Career Alignment:'));
       const score = document.createElement('strong');
       score.textContent = `${careerObj.score}%`;
       alignment.appendChild(score);
@@ -587,8 +587,8 @@
     factualExplanation.className = 'text-body_small color-green_light';
     factualExplanation.style.marginTop = 'var(--space-4)';
     factualExplanation.textContent = strengths.length
-      ? `This profile's highest dimensions were ${strengths.map(label => label.replace(/^Strong | orientation$/g, '')).join(', ')}.`
-      : 'Career alignment compares this profile with the defined career direction references.';
+      ? t('coverage.assessmentDimensionSummary', "This profile's highest dimensions were {strengths}.", { strengths: strengths.map(label => label.replace(/^Strong | orientation$/g, '')).join(', ') })
+      : t('coverage.assessmentAlignmentExplanation', 'Career alignment compares this profile with the defined career direction references.');
     resultsContent.appendChild(factualExplanation);
 
     renderCareerCourseRecommendations(topCareers);
@@ -608,7 +608,7 @@
       const heading = document.createElement('h2');
       heading.className = 'text-h3';
       heading.style.marginTop = 'var(--space-8)';
-      heading.textContent = 'Learning paths related to your career profile';
+      heading.textContent = t('coverage.relatedLearningPaths', 'Learning paths related to your career profile');
       section.appendChild(heading);
 
       topCareers.forEach(careerResult => {
@@ -630,7 +630,18 @@
           const item = document.createElement('li');
           const link = document.createElement('a');
           link.href = `course-detail.html?id=${encodeURIComponent(course.id)}`;
-          link.textContent = `${course.title} · ${course.category}`;
+          const localizedTitle = t(`courseMetadata.${course.id}.title`, course.title);
+          const categoryKey = ({
+            'AI & Machine Learning': 'coverage.categoryAiml',
+            'Software Engineering': 'coverage.categorySoftware',
+            'AI Building & Automation': 'coverage.categoryAibuild',
+            Data: 'coverage.categoryData',
+            'Cloud & Infrastructure': 'coverage.categoryCloud',
+            Cybersecurity: 'coverage.categoryCyber',
+            'Design & Product': 'coverage.categoryDesign'
+          })[course.category];
+          const localizedCategory = categoryKey ? t(categoryKey, course.category) : course.category;
+          link.textContent = `${localizedTitle} · ${localizedCategory}`;
           item.appendChild(link);
           list.appendChild(item);
         });

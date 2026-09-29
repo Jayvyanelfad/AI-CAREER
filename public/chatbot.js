@@ -39,7 +39,7 @@ class Chatbot {
       });
     }
 
-    this.addMessage("bot", "👋 Hi! I'm CareerPath AI Assistant. I can help with career advice, courses, resume tips, and interview prep. What would you like to know?");
+    this.addMessage("bot", t("coverage.chatbotWelcome", "👋 Hi! I'm CareerPath AI Assistant. I can help with career advice, courses, resume tips, and interview prep. What would you like to know?"));
     this.showQuickReplies();
   }
 
@@ -132,7 +132,7 @@ class Chatbot {
 
       if (!token) {
         typingDiv.remove();
-        this.addMessage("bot", "Please log in first — the AI assistant needs your account to save your conversation and give personalized advice.");
+        this.addMessage("bot", t("coverage.chatbotNeedsLogin", "Please log in first — the AI assistant needs your account to save your conversation and give personalized advice."));
         this.showQuickReplies();
         return;
       }
@@ -152,12 +152,12 @@ class Chatbot {
       if (response.ok && data.reply) {
         this.addMessage("bot", data.reply);
       } else {
-        this.addMessage("bot", data.error || "❌ Sorry, I couldn't understand. Can you rephrase?");
+        this.addMessage("bot", data.error || t("coverage.chatbotUnknown", "❌ Sorry, I couldn't understand. Can you rephrase?"));
       }
     } catch (error) {
       console.error("Chat error:", error);
       typingDiv.remove();
-      this.addMessage("bot", "⚠️ Connection error. Please try again.");
+      this.addMessage("bot", t("coverage.chatbotConnectionError", "⚠️ Connection error. Please try again."));
     }
 
     this.showQuickReplies();

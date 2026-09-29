@@ -167,7 +167,7 @@
     // Fon is not translated yet: visible but not selectable.
     const fonOption = document.createElement('option');
     fonOption.value = 'fon';
-    fonOption.textContent = 'Fon (coming soon)';
+    fonOption.textContent = translate('coverage.fonComingSoon', 'Fon (coming soon)');
     fonOption.disabled = true;
     select.appendChild(fonOption);
     select.value = activeLanguage;
@@ -193,7 +193,7 @@
       });
       const fonOption = document.createElement('option');
       fonOption.value = 'fon';
-      fonOption.textContent = 'Fon (coming soon)';
+      fonOption.textContent = translate('coverage.fonComingSoon', 'Fon (coming soon)');
       fonOption.disabled = true;
       select.appendChild(fonOption);
       select.value = activeLanguage;
