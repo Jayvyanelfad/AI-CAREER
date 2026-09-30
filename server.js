@@ -7,6 +7,8 @@ const { createClient } = require('@supabase/supabase-js');
 const { GoogleGenAI } = require('@google/genai');
 const { randomInt } = require('crypto');
 const courseCatalogConfig = require('./course-catalog-config.json');
+const { createAdminRouter } = require('./admin-api');
+const { createProfileRouter, publicAvatarUrl } = require('./profile-api');
 
 // Load environment variables
 dotenv.config();
@@ -17,6 +19,12 @@ const HOST = '0.0.0.0';
 
 // Middleware
 app.use(cors());
+app.use((_req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  next();
+});
 app.use(express.json());
 app.use(express.static("public"));
 
@@ -261,7 +269,7 @@ async function hasCompletedCareerTest(userId) {
 }
 
 // Authentication middleware - verify Supabase JWT and fetch user metadata
-async function authenticateToken(req, res, next) {
+async function authenticateToken(req, res, next, { skipProfileLookup = false } = {}) {
   console.log('AUTH MIDDLEWARE: Checking token');
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
@@ -284,6 +292,19 @@ async function authenticateToken(req, res, next) {
     if (!user) {
       console.log('AUTH MIDDLEWARE: No user found, returning 401');
       return res.status(401).json({ error: 'Invalid or expired token' });
+    }
+
+    // Admin requests must reach requireAdmin before any service-role profile
+    // lookup. This branch reuses the same Supabase token verification and only
+    // attaches identity fields needed by the membership check.
+    if (skipProfileLookup) {
+      req.user = {
+        id: user.id,
+        email: user.email || null,
+        name: user.user_metadata?.full_name || user.email?.split('@')[0] || user.phone || 'User',
+        careerGoal: user.user_metadata?.career_goal || 'undecided'
+      };
+      return next();
     }
 
     // Fetch user metadata from our public.users table
@@ -319,6 +340,14 @@ async function authenticateToken(req, res, next) {
     return res.status(401).json({ error: 'Invalid or expired token' });
   }
 }
+
+// Every admin endpoint is protected by bearer authentication and a separate
+// server-side admin_users membership check before it performs admin queries.
+app.use('/api/admin', createAdminRouter({
+  supabase,
+  authenticateToken: (req, res, next) => authenticateToken(req, res, next, { skipProfileLookup: true })
+}));
+app.use('/api/profile', createProfileRouter({ supabase, authenticateToken }));
 
 // Initialize database tables (Supabase handles this, but we'll keep the function for compatibility)
 function initializeDatabase() {
@@ -561,7 +590,7 @@ app.get('/api/auth/me', authenticateToken, async (req, res) => {
     // public.users has NO email column - email comes from the authenticated Supabase user.
     const { data: userRow, error: userError } = await supabase
       .from('users')
-      .select('id, full_name, career_goal')
+      .select('id, full_name, career_goal, avatar_path, bio, preferred_language, theme_preference, created_at, updated_at')
       .eq('id', req.user.id)
       .maybeSingle();
 
@@ -583,6 +612,13 @@ app.get('/api/auth/me', authenticateToken, async (req, res) => {
       name: fullName,
       career_goal: careerGoal,
       careerGoal: careerGoal,
+      avatar_path: userRow?.avatar_path || null,
+      avatar_url: publicAvatarUrl(supabase, userRow?.avatar_path),
+      bio: userRow?.bio || '',
+      preferred_language: userRow?.preferred_language || null,
+      theme_preference: userRow?.theme_preference || null,
+      created_at: userRow?.created_at || null,
+      updated_at: userRow?.updated_at || null,
       careerTestCompleted
     });
   } catch (error) {
@@ -961,7 +997,7 @@ app.get('/api/dashboard', authenticateToken, async (req, res) => {
     // public.users has NO email column - email comes from the authenticated Supabase user.
     const { data: userData, error: userError } = await supabase
       .from('users')
-      .select('id, full_name, career_goal')
+      .select('id, full_name, career_goal, avatar_path')
       .eq('id', userId)
       .maybeSingle();
 
@@ -1018,7 +1054,9 @@ app.get('/api/dashboard', authenticateToken, async (req, res) => {
         id: userId,
         email: req.user.email,
         name: (userData && userData.full_name) || req.user.name,
-        careerGoal: (userData && userData.career_goal) || 'undecided'
+        careerGoal: (userData && userData.career_goal) || 'undecided',
+        avatarPath: userData?.avatar_path || null,
+        avatarUrl: publicAvatarUrl(supabase, userData?.avatar_path)
       },
       stats: {
         coursesEnrolled: enrollments.length,
@@ -1604,6 +1642,7 @@ function formatCourse(course) {
   const level = course.level || 'beginner';
   return {
     id: course.id,
+    status: course.status || 'available',
     title: course.title,
     description: course.description,
     image_url: course.image,
@@ -1621,7 +1660,7 @@ app.get('/api/courses', authenticateToken, async (_req, res) => {
   try {
     const { data, error } = await supabase
       .from('courses')
-      .select('id, title, description, image, badge, difficulty, weeks, level')
+      .select('id, title, description, image, badge, difficulty, weeks, level, status')
       .order('created_at', { ascending: true });
 
     if (error) {
@@ -1638,9 +1677,14 @@ app.get('/api/courses', authenticateToken, async (_req, res) => {
       ])
     );
 
+    const learningPathOrder = Object.fromEntries(
+      Object.entries(courseCatalogConfig.learningPathOrder || {}).map(([career, ids]) => [career, ids.filter(id => existingCourseIds.has(id))])
+    );
+
     res.json({
       categories: courseCatalogConfig.categories,
       career_course_mapping: careerCourseMapping,
+      learning_path_order: learningPathOrder,
       courses
     });
   } catch (error) {
@@ -1653,7 +1697,7 @@ app.get('/api/courses/:id', authenticateToken, async (req, res) => {
   try {
     const { data, error } = await supabase
       .from('courses')
-      .select('id, title, description, image, badge, difficulty, weeks, level')
+      .select('id, title, description, image, badge, difficulty, weeks, level, status')
       .eq('id', req.params.id)
       .maybeSingle();
 

@@ -3,6 +3,8 @@
   const API_BASE = window.API_BASE || '/api';
   const userName = document.getElementById('user-name');
   const careerGoal = document.getElementById('career-goal');
+  const dashboardAvatarFallback = document.getElementById('dashboard-avatar-fallback');
+  const dashboardAvatarImage = document.getElementById('dashboard-avatar-image');
   const dashboardMessage = document.getElementById('dashboard-message');
   const statsGrid = document.getElementById('stats-grid');
   const careerSummary = document.getElementById('career-summary');
@@ -55,6 +57,13 @@
       // Greeting
       if (data.user && data.user.name) {
         userName.textContent = data.user.name;
+        dashboardAvatarFallback.textContent = data.user.name.trim().slice(0, 1).toLocaleUpperCase() || 'C';
+        dashboardAvatarImage.hidden = true;
+        dashboardAvatarImage.onload = () => { dashboardAvatarImage.hidden = false; };
+        dashboardAvatarImage.onerror = () => { dashboardAvatarImage.hidden = true; };
+        if (data.user.avatarUrl) dashboardAvatarImage.src = data.user.avatarUrl;
+        else dashboardAvatarImage.removeAttribute('src');
+        window.updateCareerPathProfileIdentity?.(data.user);
       }
       if (data.user && data.user.careerGoal) {
         careerGoal.textContent = ` - ${data.user.careerGoal}`;

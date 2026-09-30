@@ -1,0 +1,23 @@
+﻿.career-result-hero,.career-result-section{margin:var(--space-5) 0;padding:var(--space-5);border:1px solid var(--border);border-radius:1rem;background:rgba(255,255,255,.035)}
+.career-result-hero{border-color:var(--bege);background:linear-gradient(135deg,rgba(218,186,132,.13),rgba(255,255,255,.025))}
+.career-result-hero h2{font-size:clamp(1.6rem,4vw,2.5rem);margin:.25rem 0 .5rem}
+.career-result-hero p,.career-result-section p{max-width:70ch;line-height:1.65}
+.career-result-section h2{margin:0 0 var(--space-3)}
+.career-result-details{margin-top:var(--space-4);padding:var(--space-3);border:1px solid var(--border);border-radius:.75rem}
+.career-result-details summary{cursor:pointer;font-weight:700}
+.career-dimension-list{margin-top:var(--space-3)}
+.career-result-section .dimension-insight{display:grid;grid-template-columns:minmax(0,1fr) 2fr 3.5rem;align-items:center;gap:.75rem;margin:.9rem 0}
+.career-result-section .dimension-label{overflow-wrap:anywhere}
+.career-result-section .dimension-bar{height:.6rem;background:var(--border);border-radius:999px;overflow:hidden}
+.career-result-section .dimension-fill{height:100%;background:var(--accent,var(--bege));border-radius:inherit}
+.career-related-list{display:flex;flex-wrap:wrap;gap:.6rem 1.5rem;padding-inline-start:1.25rem}
+.career-learning-path{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}
+.career-learning-path>h2{grid-column:1/-1}
+.career-course-step{min-width:0;padding:1.25rem;border:1px solid var(--border);border-radius:.85rem;display:flex;flex-direction:column;align-items:flex-start;gap:.6rem}
+.career-course-step.is-first{border-color:var(--bege);background:rgba(218,186,132,.08)}
+.career-course-stage{margin:0;text-transform:uppercase;letter-spacing:.1em;font-size:.75rem;font-weight:700;color:var(--bege)}
+.career-course-step h3{overflow-wrap:anywhere}
+.career-course-step a{max-width:100%;white-space:normal;text-align:center}
+.career-coming-later{opacity:.72}
+@media(max-width:600px){.career-result-hero,.career-result-section{padding:1rem;margin:1rem 0}.career-learning-path{grid-template-columns:minmax(0,1fr)}.career-result-section .dimension-insight{grid-template-columns:minmax(0,1fr) 3.5rem;gap:.35rem .6rem}.career-result-section .dimension-bar{grid-column:1/-1;grid-row:2}.career-result-section .dimension-percentage{grid-column:2;grid-row:1;text-align:end}}
+[dir="rtl"] .career-result-section .dimension-percentage{text-align:left}

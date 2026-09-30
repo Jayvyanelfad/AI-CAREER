@@ -34,10 +34,20 @@
       <section class="dashboard-card profile-section profile-personal-section" aria-labelledby="personal-information-title">
         <div class="profile-section-heading"><div><p class="profile-eyebrow" data-i18n="ui.whoAmI" data-i18n-fallback="WHO AM I?">WHO AM I?</p><h2 id="personal-information-title" data-i18n="ui.personal" data-i18n-fallback="Personal">Personal</h2></div></div>
         <p id="profile-personal-error" class="profile-error" role="alert" hidden></p>
+        <div class="profile-identity-row">
+          <div class="profile-avatar" id="profile-avatar" aria-label="Profile photo"><span id="profile-avatar-fallback" aria-hidden="true">C</span><img id="profile-avatar-image" alt="" hidden /></div>
+          <div class="profile-avatar-controls">
+            <label for="profile-avatar-file" data-i18n="profile.photo">Profile photo</label>
+            <input id="profile-avatar-file" type="file" accept="image/jpeg,image/png,image/webp" />
+            <div class="profile-avatar-actions"><button id="save-avatar-btn" type="button" class="btn-outline" disabled data-i18n="profile.savePhoto">Save photo</button><button id="remove-avatar-btn" type="button" class="btn-outline" hidden data-i18n="profile.removePhoto">Remove photo</button></div>
+            <small data-i18n="profile.photoHint">JPEG, PNG, or WebP, up to 5 MB.</small>
+          </div>
+        </div>
         <div id="profile-content" class="profile-personal-details">
           <p><strong data-i18n="ui.fullName" data-i18n-fallback="Full name">Full name</strong><span id="profile-name-display">Loading...</span></p>
           <p><strong>Email</strong><span id="profile-email-display">Loading...</span></p>
           <p><strong data-i18n="page.careerGoal" data-i18n-fallback="Career goal">Career goal</strong><span id="profile-career-display">Loading...</span></p>
+          <p><strong data-i18n="profile.bio">About</strong><span id="profile-bio-display"></span></p>
           <button id="edit-profile-btn" type="button" class="btn-outline" data-i18n="ui.editProfile" data-i18n-fallback="Edit Profile">Edit Profile</button>
         </div>
         <form id="profile-edit-form" class="profile-edit-form" hidden>
@@ -72,6 +82,11 @@
               <option value="cloud_engineer">Cloud Engineer (registration goal)</option>
               <option value="cybersecurity">Cybersecurity (registration goal)</option>
             </select>
+          </div>
+          <div class="form-group">
+            <label for="profile-bio" data-i18n="profile.bio">About</label>
+            <textarea id="profile-bio" maxlength="240" rows="4"></textarea>
+            <small data-i18n="profile.bioHint">Share a little about your career interests (240 characters max).</small>
           </div>
           <button type="submit" class="btn-primary component-button" id="save-btn" data-i18n="ui.saveChanges" data-i18n-fallback="Save Changes">Save Changes</button>
           <button type="button" class="btn-outline" id="cancel-edit-btn" data-i18n="ui.cancel" data-i18n-fallback="Cancel">Cancel</button>
@@ -153,7 +168,7 @@
             </select>
           </div>
         </div>
-        <p class="profile-muted-note">Language and theme preferences are saved in this browser.</p>
+        <p id="profile-preference-status" class="profile-muted-note" data-i18n="profile.preferenceHint">Preferences are saved to your profile and this browser.</p>
         <button id="profile-logout" type="button" class="btn-outline" data-logout data-auth-only><i class="fas fa-arrow-right-from-bracket" aria-hidden="true"></i> Logout</button>
       </section>
     </div>
@@ -178,6 +193,7 @@
 
   <script src="supabase-config.js"></script>
   <script src="auth-navigation.js"></script>
+  <script src="profile-photo.js"></script>
   <script src="profile.js"></script>
 </body>
 </html>

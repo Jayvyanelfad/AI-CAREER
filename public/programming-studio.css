@@ -172,11 +172,11 @@ html[data-theme="light"] body.programming-page .programming-specialization-list 
 .programming-copy-button { min-height: 40px; padding: 8px 12px; border: 1px solid rgba(134, 164, 142, .4); background: transparent; color: #f4ece6; font: inherit; font-size: .68rem; cursor: pointer; }
 .programming-copy-button:hover,
 .programming-copy-button:focus-visible { border-color: #a6c6aa; outline: 2px solid #a6c6aa; outline-offset: 2px; }
-.programming-code-example pre { max-width: 100%; margin: 0; padding: 16px; overflow-x: auto; color: #dce8dd; font: .76rem/1.65 "IBM Plex Mono", Consolas, monospace; tab-size: 2; }
+.programming-code-example pre { max-width: 100%; margin: 0; padding: 16px; overflow-x: auto; color: #dce8dd; font: .76rem/1.65 "IBM Plex Mono", Consolas, monospace; tab-size: 2; direction: ltr; text-align: left; }
 .programming-code-example code { white-space: pre; }
 .programming-practice { margin-top: 22px; padding: 17px; border: 1px solid rgba(234, 210, 191, .23); background: rgba(234, 210, 191, .045); scroll-margin-top: 24px; }
 .programming-practice label { display: block; margin-top: 15px; color: #ead2bf; font-size: .72rem; font-weight: 500; }
-.programming-practice-editor { display: block; width: 100%; min-height: 190px; margin-top: 8px; padding: 13px; border: 1px solid rgba(134, 164, 142, .36); border-radius: 0; background: #07130f; color: #dce8dd; font: .76rem/1.65 "IBM Plex Mono", Consolas, monospace; resize: vertical; tab-size: 2; }
+.programming-practice-editor { display: block; width: 100%; min-height: 190px; margin-top: 8px; padding: 13px; border: 1px solid rgba(134, 164, 142, .36); border-radius: 0; background: #07130f; color: #dce8dd; font: .76rem/1.65 "IBM Plex Mono", Consolas, monospace; resize: vertical; tab-size: 2; direction: ltr; text-align: left; }
 .programming-practice-editor:focus-visible { border-color: #a6c6aa; outline: 2px solid #a6c6aa; outline-offset: 2px; }
 .programming-practice-note { margin-top: 9px; color: rgba(244, 236, 230, .52); font-size: .67rem; line-height: 1.55; }
 .programming-challenge { margin-top: 20px; padding: 15px; border-top: 1px solid rgba(216, 173, 142, .42); background: rgba(216, 173, 142, .045); }
@@ -239,6 +239,10 @@ html[data-theme="light"] body.programming-page .programming-practice-editor { co
   .programming-stage-nav { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .programming-project-brief,
   .programming-project-presentation { grid-template-columns: minmax(0, 1fr); }
+}
+@media (min-width: 901px) and (max-width: 1100px) {
+  .programming-page .home-nav-links > .nav-item { padding-inline: 7px; }
+  .programming-page .nav-language-selector { width: 130px; max-width: 130px; margin-inline: 4px; }
 }
 @media (max-width: 640px) {
   .programming-stage-nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }

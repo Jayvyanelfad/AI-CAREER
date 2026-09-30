@@ -17,6 +17,16 @@
   const profileNameInput = document.getElementById('profile-name');
   const profileEmailInput = document.getElementById('profile-email');
   const profileCareerInput = document.getElementById('profile-careerGoal');
+  const profileBioInput = document.getElementById('profile-bio');
+  const profileBioDisplay = document.getElementById('profile-bio-display');
+  const avatarImage = document.getElementById('profile-avatar-image');
+  const avatarFallback = document.getElementById('profile-avatar-fallback');
+  const avatarFileInput = document.getElementById('profile-avatar-file');
+  const saveAvatarButton = document.getElementById('save-avatar-btn');
+  const removeAvatarButton = document.getElementById('remove-avatar-btn');
+  const preferenceStatus = document.getElementById('profile-preference-status');
+  const languagePreference = document.getElementById('language-preference');
+  const themePreference = document.getElementById('theme-preference');
   const editForm = document.getElementById('profile-edit-form');
   const profileContent = document.getElementById('profile-content');
   const saveButton = document.getElementById('save-btn');
@@ -42,6 +52,66 @@
   let courseCatalogLoaded = false;
   let enrolledCourses = null;
   let learningLoadFailed = false;
+  let currentProfile = null;
+  let pendingAvatarFile = null;
+  let pendingAvatarPreview = null;
+
+  function updateSharedIdentity(profile) {
+    if (typeof window.updateCareerPathProfileIdentity === 'function') {
+      window.updateCareerPathProfileIdentity({
+        id: profile.id,
+        name: profile.full_name || profile.name,
+        email: profile.email,
+        careerGoal: profile.career_goal || profile.careerGoal,
+        avatarUrl: profile.avatar_url,
+        avatarPath: profile.avatar_path,
+        bio: profile.bio
+      });
+    }
+  }
+
+  function renderAvatar(url, name) {
+    const initial = String(name || 'C').trim().slice(0, 1).toLocaleUpperCase() || 'C';
+    avatarFallback.textContent = initial;
+    avatarImage.hidden = true;
+    avatarImage.onload = () => { avatarImage.hidden = false; };
+    avatarImage.onerror = () => { avatarImage.hidden = true; };
+    if (url) avatarImage.src = url;
+    else { avatarImage.removeAttribute('src'); }
+  }
+
+  function applyProfile(profile) {
+    currentProfile = profile;
+    const name = profile.full_name || profile.name || 'User';
+    const goal = profile.career_goal || profile.careerGoal || 'undecided';
+    profileName.textContent = name;
+    profileEmail.textContent = profile.email || '';
+    profileCareer.textContent = goal === 'undecided' ? t('coverage.notSet', 'Not set') : (profileCareerInput.selectedOptions[0]?.textContent || goal);
+    profileBioDisplay.textContent = profile.bio || t('profile.noBio', 'No introduction yet.');
+    profileNameInput.value = name === 'User' ? '' : name;
+    profileEmailInput.value = profile.email || '';
+    profileCareerInput.value = goal;
+    profileBioInput.value = profile.bio || '';
+    renderAvatar(profile.avatar_url, name);
+    removeAvatarButton.hidden = !profile.avatar_path;
+    personalError.hidden = true;
+    document.getElementById('edit-profile-btn').disabled = false;
+    updateSharedIdentity(profile);
+  }
+
+  async function applySavedPreferences(profile) {
+    const supported = ['en', 'fr', 'hinglish', 'sw', 'ar'];
+    if (supported.includes(profile.preferred_language)) {
+      if (window.getCareerPathLanguage?.() !== profile.preferred_language) {
+        await window.setCareerPathLanguage?.(profile.preferred_language);
+      }
+      languagePreference.value = profile.preferred_language;
+    }
+    if (['system', 'light', 'dark'].includes(profile.theme_preference)) {
+      window.setCareerPathTheme?.(profile.theme_preference);
+      themePreference.value = profile.theme_preference;
+    }
+  }
 
   function showMessage(text, isError = false) {
     message.textContent = text;
@@ -221,16 +291,8 @@
 
   async function loadPersonalInformation() {
     try {
-      const profile = await apiRequest('/auth/me');
-      const name = profile.full_name || profile.name || 'User';
+      const profile = await apiRequest('/profile');
       const goal = profile.career_goal || profile.careerGoal || 'undecided';
-      profileName.textContent = name;
-      profileEmail.textContent = profile.email || '';
-      profileCareer.textContent = goal === 'undecided' ? t('coverage.notSet', 'Not set') : (profileCareerInput.selectedOptions[0]?.textContent || goal);
-      profileNameInput.value = name === 'User' ? '' : name;
-      profileEmailInput.value = profile.email || '';
-      personalError.hidden = true;
-      document.getElementById('edit-profile-btn').disabled = false;
 
       // Preserve real existing goals that are not in the current option list.
       if (![...profileCareerInput.options].some(option => option.value === goal)) {
@@ -239,7 +301,8 @@
         option.textContent = goal;
         profileCareerInput.appendChild(option);
       }
-      profileCareerInput.value = goal;
+      applyProfile(profile);
+      await applySavedPreferences(profile);
     } catch (error) {
       if (error.status === 401 || error.message === 'Authentication required') return;
       [profileName, profileEmail, profileCareer].forEach(field => { field.textContent = t('coverage.profileInfoUnavailable', 'Unavailable'); });
@@ -559,25 +622,19 @@
     event.preventDefault();
     saveButton.disabled = true;
     try {
-      const data = await apiRequest('/user/profile', {
+      const data = await apiRequest('/profile', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           fullName: profileNameInput.value.trim(),
-          careerGoal: profileCareerInput.value
+          careerGoal: profileCareerInput.value,
+          bio: profileBioInput.value
         })
       });
-      profileName.textContent = data.full_name || data.name || profileNameInput.value.trim();
-      const goal = data.career_goal || data.careerGoal || profileCareerInput.value;
-      profileCareer.textContent = goal === 'undecided' ? t('coverage.notSet', 'Not set') : (profileCareerInput.querySelector(`option[value="${CSS.escape(goal)}"]`)?.textContent || goal);
-      const stored = JSON.parse(localStorage.getItem('user') || '{}');
-      stored.name = profileName.textContent;
-      stored.email = profileEmail.textContent;
-      stored.careerGoal = goal;
-      localStorage.setItem('user', JSON.stringify(stored));
+      applyProfile(data);
       editForm.hidden = true;
       profileContent.hidden = false;
-      showMessage('Profile updated.');
+      showMessage(t('profile.saved', 'Profile updated.'));
     } catch (error) {
       showMessage(error.message || 'Could not save your profile.', true);
     } finally {
@@ -593,7 +650,102 @@
   document.getElementById('cancel-edit-btn').addEventListener('click', () => {
     editForm.hidden = true;
     profileContent.hidden = false;
+    if (currentProfile) applyProfile(currentProfile);
   });
+
+  function clearPendingAvatarPreview() {
+    if (pendingAvatarPreview) URL.revokeObjectURL(pendingAvatarPreview);
+    pendingAvatarPreview = null;
+    pendingAvatarFile = null;
+    avatarFileInput.value = '';
+    saveAvatarButton.disabled = true;
+  }
+
+  avatarFileInput.addEventListener('change', async () => {
+    const file = avatarFileInput.files?.[0];
+    if (!file) return;
+    const result = await window.CareerPathProfilePhoto.validateImageData(file);
+    if (!result.valid) {
+      clearPendingAvatarPreview();
+      renderAvatar(currentProfile?.avatar_url, currentProfile?.full_name || currentProfile?.name);
+      const key = result.reason === 'type' ? 'profile.photoTypeError' : result.reason === 'size' ? 'profile.photoSizeError' : 'profile.photoInvalidError';
+      showMessage(t(key), true);
+      return;
+    }
+    if (pendingAvatarPreview) URL.revokeObjectURL(pendingAvatarPreview);
+    pendingAvatarFile = file;
+    pendingAvatarPreview = URL.createObjectURL(file);
+    renderAvatar(pendingAvatarPreview, currentProfile?.full_name || currentProfile?.name);
+    saveAvatarButton.disabled = false;
+  });
+
+  saveAvatarButton.addEventListener('click', async () => {
+    if (!pendingAvatarFile || !currentProfile?.id || !window.supabase?.storage) return;
+    const validation = window.CareerPathProfilePhoto.validateProfilePhoto(pendingAvatarFile);
+    if (!validation.valid) return;
+    saveAvatarButton.disabled = true;
+    try {
+      if (!window.crypto?.randomUUID) throw new Error(t('profile.photoUploadFailed'));
+      const oldPath = currentProfile.avatar_path;
+      const newPath = `${currentProfile.id}/${window.crypto.randomUUID()}.${validation.extension}`;
+      const { error: uploadError } = await window.supabase.storage.from('profile-avatars').upload(newPath, pendingAvatarFile, {
+        cacheControl: '3600', contentType: pendingAvatarFile.type, upsert: false
+      });
+      if (uploadError) throw new Error(t('profile.photoUploadFailed'));
+      let saved;
+      try {
+        saved = await apiRequest('/profile', {
+          method: 'PUT', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ avatarPath: newPath })
+        });
+      } catch (error) {
+        await window.supabase.storage.from('profile-avatars').remove([newPath]);
+        throw error;
+      }
+      applyProfile(saved);
+      clearPendingAvatarPreview();
+      if (oldPath) await window.supabase.storage.from('profile-avatars').remove([oldPath]);
+      showMessage(t('profile.photoSaved'));
+    } catch (error) {
+      saveAvatarButton.disabled = !pendingAvatarFile;
+      showMessage(error.message || t('profile.photoUploadFailed'), true);
+    }
+  });
+
+  removeAvatarButton.addEventListener('click', async () => {
+    if (!currentProfile?.avatar_path) return;
+    const oldPath = currentProfile.avatar_path;
+    removeAvatarButton.disabled = true;
+    try {
+      const saved = await apiRequest('/profile', {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ avatarPath: null })
+      });
+      applyProfile(saved);
+      const { error } = await window.supabase.storage.from('profile-avatars').remove([oldPath]);
+      showMessage(error ? t('profile.photoRemovedCleanup') : t('profile.photoRemoved'), Boolean(error));
+    } catch (error) {
+      showMessage(error.message || t('profile.photoUploadFailed'), true);
+    } finally {
+      removeAvatarButton.disabled = false;
+    }
+  });
+
+  async function persistPreference(field, value) {
+    preferenceStatus.textContent = t('profile.preferenceSaving', 'Saving preference…');
+    try {
+      await apiRequest('/profile', {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ [field]: value })
+      });
+      preferenceStatus.textContent = t('profile.preferenceSaved', 'Preference saved.');
+    } catch {
+      preferenceStatus.textContent = t('profile.preferenceLocalOnly', 'Saved in this browser; profile sync is unavailable.');
+    }
+  }
+
+  languagePreference.addEventListener('change', () => persistPreference('preferredLanguage', languagePreference.value));
+  themePreference.addEventListener('change', () => persistPreference('themePreference', themePreference.value));
 
   const token = await getToken();
   if (!token) {

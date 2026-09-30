@@ -9,6 +9,7 @@
 <title>Career Assessment - CareerPath AI</title>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,600;1,400;1,500&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="career-result.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
   <style>
@@ -221,22 +222,15 @@
     <div id="results-container" style="display:none;">
       <!-- Results Header -->
       <div class="dashboard-header" style="margin-bottom: var(--space-6);">
-        <h1><i class="fas fa-bullseye"></i> <span data-i18n="ui.yourCareerProfile">Your Career Profile</span></h1>
-        <p class="text-body_small color-green_light" data-i18n="ui.assessmentDescription" data-i18n-fallback="Career alignment across the defined career directions, based on your assessment answers.">Career alignment across the defined career directions, based on your assessment answers.</p>
+        <p class="editorial-eyebrow" data-i18n="careerResult.eyebrow">YOUR CAREER DIRECTION</p>
+        <h1><span data-i18n="careerResult.title">Your Career Direction</span></h1>
       </div>
 
       <!-- Results Content -->
       <div id="results-content"></div>
 
-      <!-- Strengths Section -->
-      <div class="strengths-section" id="strengths-section" style="display:none;">
-        <h4 class="text-h4"><i class="fas fa-star"></i> <span data-i18n="coverage.strongestDimensions">Strongest Dimensions</span></h4>
-        <div id="strengths-list"></div>
-      </div>
-
       <!-- Action Buttons -->
       <div class="action-buttons" style="display: flex; gap: var(--space-4); flex-wrap: wrap; justify-content: center; margin-top: var(--space-6);">
-        <a href="courses.html" class="btn-primary" data-i18n="ui.recommendedCourses" data-i18n-fallback="Explore Recommended Courses">Explore Recommended Courses</a>
         <a href="dashboard.html" class="btn-outline" style="background: transparent; border: 1px solid var(--border); border-radius: 50px; color: var(--bege_light); font-family: var(--font-display); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; transition: var(--transition); padding: var(--space-3) var(--space-4); display: flex; justify-content: center; align-items: center; gap: var(--space-2); cursor: pointer;" onmouseover="this.style.background='var(--accent-light)'; this.style.borderColor='var(--bege)'; this.style.color='var(--bege)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.background='transparent'; this.style.borderColor='var(--border)'; this.style.color='var(--bege_light)'; this.style.transform='translateY(0)';">Go to Dashboard</a>
         <button class="btn-outline" id="retake-btn" style="background: transparent; border: 1px solid var(--border); border-radius: 50px; color: var(--bege_light); font-family: var(--font-display); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; transition: var(--transition); padding: var(--space-3) var(--space-4); display: flex; justify-content: center; align-items: center; gap: var(--space-2); cursor: pointer;" data-i18n="ui.retakeTest" data-i18n-fallback="Retake Test" onmouseover="this.style.background='var(--accent-light)'; this.style.borderColor='var(--bege)'; this.style.color='var(--bege)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.background='transparent'; this.style.borderColor='var(--border)'; this.style.color='var(--bege_light)'; this.style.transform='translateY(0)';">Retake Test</button>
       </div>

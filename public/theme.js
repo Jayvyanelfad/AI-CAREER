@@ -49,6 +49,7 @@
 
   applyTheme(getPreference());
   window.refreshCareerPathTheme = () => applyTheme(getPreference());
+  window.setCareerPathTheme = savePreference;
   document.addEventListener('careerpath:language-change', () => applyTheme(getPreference()));
 
   if (media) {

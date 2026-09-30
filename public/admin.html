@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#173a2d">
+  <title>Admin · CareerPath AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="admin.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script src="i18n.js"></script>
+  <script src="auth-navigation.js"></script>
+  <script defer src="admin.js"></script>
+</head>
+<body>
+  <div class="admin-shell">
+    <aside class="sidebar" aria-label="Admin navigation">
+      <a class="brand" href="index.html"><span>CareerPath</span> AI <small>ADMIN</small></a>
+      <p class="side-label" data-admin-i18n="workspace">Workspace</p>
+      <nav class="side-nav" id="side-nav">
+        <a href="#overview" data-page="overview"><span class="nav-mark">01</span><span data-admin-i18n="overview">Overview</span></a>
+        <a href="#users" data-page="users"><span class="nav-mark">02</span><span data-admin-i18n="users">Users</span></a>
+        <a href="#assessments" data-page="assessments"><span class="nav-mark">03</span><span data-admin-i18n="assessments">Assessments</span></a>
+        <a href="#courses" data-page="courses"><span class="nav-mark">04</span><span data-admin-i18n="courses">Courses</span></a>
+        <a href="#analytics" data-page="analytics"><span class="nav-mark">05</span><span data-admin-i18n="analytics">Analytics</span></a>
+      </nav>
+      <div class="side-foot"><span class="status-dot"></span><span data-admin-i18n="readOnly">Read-only workspace</span><button class="admin-logout sidebar-logout" data-logout data-admin-i18n="logout" hidden>Log out</button></div>
+    </aside>
+    <main class="main-area">
+      <header class="topbar">
+        <button id="menu-toggle" class="menu-toggle" aria-label="Open navigation" aria-expanded="false">☰</button>
+        <div><span class="eyebrow" data-admin-i18n="console">CAREERPATH / ADMIN CONSOLE</span><h1 id="page-title">Overview</h1></div>
+        <div class="top-actions"><span id="admin-identity" class="admin-identity" hidden></span><button class="admin-logout header-logout" data-logout data-admin-i18n="logout" hidden>Log out</button><a href="index.html" class="back-link" data-admin-i18n="backToWebsite">Back to website</a><select class="language-picker" data-language-preference aria-label="Language"></select></div>
+      </header>
+      <div id="access-state" class="state-panel" role="status"><span class="spinner"></span><p data-admin-i18n="checkingAccess">Checking administrator access…</p></div>
+      <div id="app-content" hidden>
+        <div id="page-content" aria-live="polite"></div>
+      </div>
+    </main>
+  </div>
+  <div class="scrim" id="scrim"></div>
+</body>
+</html>

@@ -33,6 +33,7 @@
   }
 
   function makeLink(container, definition) {
+    if (definition.href === 'profile.html') return makeProfileLink(container, definition);
     const existing = Array.from(container.querySelectorAll('a'))
       .find(anchor => normalizedHref(anchor) === definition.href && !isLogoutLink(anchor));
 
@@ -63,6 +64,74 @@
     }
     return anchor;
   }
+
+  function makeProfileLink(container, definition) {
+    let anchor = Array.from(container.querySelectorAll('a'))
+      .find(item => normalizedHref(item) === definition.href && !isLogoutLink(item));
+    if (!anchor) {
+      anchor = document.createElement('a');
+      anchor.href = definition.href;
+      anchor.className = 'text-menu color-bege_light nav-item';
+    }
+    anchor.classList.add('nav-profile-link', 'nav-item');
+    anchor.removeAttribute('data-i18n');
+    anchor.removeAttribute('data-i18n-fallback');
+    let avatar = anchor.querySelector('.nav-profile-avatar');
+    if (!avatar) {
+      avatar = document.createElement('span');
+      avatar.className = 'nav-profile-avatar';
+      avatar.setAttribute('aria-hidden', 'true');
+    }
+    let label = anchor.querySelector('.nav-profile-label');
+    if (!label) {
+      label = document.createElement('span');
+      label.className = 'nav-profile-label';
+    }
+    label.textContent = translatedLinkLabel(definition);
+    label.setAttribute('data-i18n', definition.key);
+    label.setAttribute('data-i18n-fallback', definition.label);
+    anchor.replaceChildren(avatar, label);
+    if (normalizedHref(anchor) === window.location.pathname.split('/').pop().toLowerCase()) {
+      anchor.classList.add('w--current');
+      anchor.setAttribute('aria-current', 'page');
+    } else {
+      anchor.classList.remove('w--current');
+      anchor.removeAttribute('aria-current');
+    }
+    return anchor;
+  }
+
+  function cachedProfile() {
+    try { return JSON.parse(localStorage.getItem('user') || '{}'); } catch { return {}; }
+  }
+
+  function applyProfileAvatar() {
+    const profile = cachedProfile();
+    document.querySelectorAll('.nav-profile-avatar').forEach(container => {
+      const label = document.querySelector('.nav-profile-link .nav-profile-label')?.textContent || 'Profile';
+      const initial = String(profile.name || profile.fullName || profile.email || 'C').trim().slice(0, 1).toLocaleUpperCase() || 'C';
+      container.replaceChildren();
+      if (profile.avatarUrl) {
+        const image = document.createElement('img');
+        image.src = profile.avatarUrl;
+        image.alt = '';
+        image.loading = 'lazy';
+        image.addEventListener('error', () => { image.remove(); container.textContent = initial; }, { once: true });
+        container.appendChild(image);
+      } else {
+        container.textContent = initial;
+      }
+      container.setAttribute('aria-label', label);
+    });
+  }
+
+  window.updateCareerPathProfileIdentity = function (profile) {
+    if (!profile || typeof profile !== 'object') return;
+    const stored = cachedProfile();
+    const next = { ...stored, ...profile };
+    try { localStorage.setItem('user', JSON.stringify(next)); } catch (_error) { /* current page still updates */ }
+    applyProfileAvatar();
+  };
 
   function renderNavGroup(container, authenticated, externalLogin = false) {
     if (!container) return;
@@ -229,6 +298,7 @@
           group.querySelector(':scope > .auth-external-login'));
       renderNavGroup(group, authenticated, hasExternalLogin);
     });
+    applyProfileAvatar();
 
     // Branded pages place Login beside the desktop link group.
     document.querySelectorAll('[data-auth-only]').forEach(element => {
