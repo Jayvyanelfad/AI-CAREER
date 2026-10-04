@@ -3650,6 +3650,16 @@ body:has(#free-courses) .cta-section { background: var(--surface); }
 .profile-avatar-controls input[type="file"] { width: 100%; min-width: 0; max-width: 100%; color: var(--text-secondary); }
 .profile-avatar-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .profile-avatar-controls small { color: var(--text-muted); }
+.profile-crop-dialog { width: min(92vw, 460px); max-width: 460px; padding: 24px; border: 1px solid var(--border-light); border-radius: 12px; background: var(--surface); color: var(--text-primary); }
+.profile-crop-dialog::backdrop { background: rgba(0, 0, 0, .72); }
+.profile-crop-dialog h2 { margin: 0 0 8px; }
+.profile-crop-dialog > p { margin: 0 0 16px; color: var(--text-muted); }
+.profile-crop-viewport { position: relative; width: min(72vw, 320px); aspect-ratio: 1; margin: 0 auto 16px; overflow: hidden; border-radius: 8px; background: #17251f; touch-action: none; cursor: grab; }
+.profile-crop-viewport:active { cursor: grabbing; }
+.profile-crop-viewport:focus-visible { outline: 3px solid var(--bege); outline-offset: 3px; }
+.profile-crop-viewport img { position: absolute; max-width: none; max-height: none; user-select: none; pointer-events: none; }
+.profile-crop-dialog input[type="range"] { display: block; width: 100%; margin: 8px 0 18px; }
+.profile-crop-actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 10px; }
 .profile-personal-section .profile-personal-details > p { overflow-wrap: anywhere; }
 .profile-edit-form textarea { width: 100%; min-height: 104px; padding: 12px 14px; border: 1px solid var(--border-light); border-radius: 4px; background: var(--surface); color: var(--text-primary); font: inherit; resize: vertical; }
 .nav-profile-link { display: inline-flex; align-items: center; gap: 8px; }
@@ -3870,6 +3880,11 @@ body:not(.home-page) .auth-mobile-open > .auth-responsive-nav {
 .nav-language-selector:focus-visible {
   outline: 3px solid var(--nav-hover, #e3b99d);
   outline-offset: 3px;
+}
+
+@media (min-width: 901px) and (max-width: 1100px) {
+  body:not(.home-page) :is(.nav-wrapper, header) .auth-responsive-nav > .nav-item { padding-inline: 7px; }
+  body:not(.home-page) :is(.nav-wrapper, header) .nav-language-selector { width: 130px; max-width: 130px; margin-inline: 4px; }
 }
 
 html[data-theme="light"] .nav-language-selector {
@@ -5858,4 +5873,103 @@ html[data-theme="light"] {
 }
 [dir="rtl"] body:has(#stats-grid) .stat-card:first-child {
   border-right: 0;
+}
+
+/* ==========================================================================
+   Home — B.Tech project identity. Editorial band between the final CTA and
+   the footer. Reuses home tokens (display serif, eyebrow, hairline borders).
+   Logical properties only so RTL flips correctly.
+   ========================================================================== */
+.home-project {
+  padding: clamp(64px, 8vw, 112px) 0;
+  border-top: 1px solid rgba(244, 236, 230, 0.13);
+  background:
+    radial-gradient(ellipse at 18% 30%, rgba(134, 164, 142, 0.12), transparent 50%),
+    var(--green_dark);
+}
+
+.home-project-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  align-items: start;
+  gap: clamp(32px, 5vw, 72px);
+}
+
+.home-project-copy .home-eyebrow {
+  margin-bottom: 16px;
+}
+
+.home-project-copy h2 {
+  margin: 0;
+  color: var(--bege_light);
+  font-family: var(--font-display);
+  font-size: clamp(2.2rem, 4.5vw, 3.4rem);
+  font-weight: 300;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  text-wrap: balance;
+}
+
+.home-project-tagline {
+  margin: 14px 0 0;
+  color: var(--bege);
+  font-family: var(--font-display);
+  font-size: clamp(1.05rem, 2vw, 1.35rem);
+  font-style: italic;
+  font-weight: 300;
+  line-height: 1.4;
+}
+
+.home-project-description {
+  max-width: 56ch;
+  margin: 20px 0 0;
+  color: rgba(244, 236, 230, 0.78);
+  font-size: 1rem;
+  line-height: 1.75;
+}
+
+.home-project-credits {
+  padding-top: clamp(4px, 1vw, 12px);
+}
+
+.home-project-row {
+  padding: 16px 0;
+  border-top: 1px solid rgba(244, 236, 230, 0.14);
+}
+
+.home-project-row:last-of-type {
+  border-bottom: 1px solid rgba(244, 236, 230, 0.14);
+}
+
+.home-project-row > span {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--green_light);
+  font-family: var(--font-body);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.home-project-row > strong {
+  display: block;
+  color: var(--bege_light);
+  font-weight: 500;
+  font-size: 1rem;
+  line-height: 1.65;
+}
+
+.home-project-institution {
+  margin: 18px 0 0;
+  color: rgba(244, 236, 230, 0.56);
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  line-height: 1.6;
+}
+
+@media (max-width: 900px) {
+  .home-project-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }

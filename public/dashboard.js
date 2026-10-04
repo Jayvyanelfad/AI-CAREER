@@ -1,358 +1,182 @@
-// Dashboard Logic - Backend Version (Supabase-powered)
-(async function() {
+// Authenticated Dashboard presentation. Assessment results and learning progress
+// are read from the existing API; this page does not calculate or persist them.
+(function () {
+async function initializeDashboard() {
+  if (window.setCareerPathLanguage) await window.setCareerPathLanguage(window.getCareerPathLanguage());
   const API_BASE = window.API_BASE || '/api';
-  const userName = document.getElementById('user-name');
-  const careerGoal = document.getElementById('career-goal');
-  const dashboardAvatarFallback = document.getElementById('dashboard-avatar-fallback');
-  const dashboardAvatarImage = document.getElementById('dashboard-avatar-image');
-  const dashboardMessage = document.getElementById('dashboard-message');
-  const statsGrid = document.getElementById('stats-grid');
-  const careerSummary = document.getElementById('career-summary');
-  const coursesGrid = document.getElementById('courses-grid');
-  const certificatesGrid = document.getElementById('certificates-grid');
-  const timelineContainer = document.getElementById('timeline-container');
-  const activityFeed = document.getElementById('activity-feed');
-  const takeCareerTestBtn = document.getElementById('take-career-test-btn');
-  const exploreCoursesBtn = document.getElementById('explore-courses-btn');
-  const viewProfileBtn = document.getElementById('view-profile-btn');
-  const floatingChatbot = document.getElementById('floating-chatbot');
+  const $ = selector => document.querySelector(selector);
+  const t = (key, fallback, vars) => window.t ? window.t(key, fallback, vars) : (fallback || key);
+  const el = (tag, className, text) => {
+    const node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text !== undefined) node.textContent = text;
+    return node;
+  };
+  const careerRoleKeys = {
+    'AI/ML Engineer': 'careerRoleAi', 'Software Developer': 'careerRoleSoftware',
+    'Data Scientist': 'careerRoleData', 'UI/UX Designer': 'careerRoleDesign',
+    'Full Stack Developer': 'careerRoleFullStack', 'Frontend Developer': 'careerRoleFrontend',
+    'Backend Developer': 'careerRoleBackend', 'Data Analyst': 'careerRoleAnalyst',
+    'Cloud Architect': 'careerRoleCloud', 'DevOps Engineer': 'careerRoleDevops',
+    'Product Manager': 'careerRoleProduct'
+  };
+  const dimensionKeys = {
+    'Software Engineering': 'signalSoftware', 'Data & Analytical Thinking': 'signalAnalysis',
+    'AI & Computational Intelligence': 'signalIntelligentSystems', 'Systems & Infrastructure': 'signalSystems',
+    'Security & Reliability': 'signalSecurity', 'Product & User Orientation': 'signalProduct',
+    'Design & Human Experience': 'signalDesign', 'Leadership & Delivery': 'signalLeadership'
+  };
+  const careerDomain = career => window.CAREER_DIRECTION_BY_ROLE?.[career] || 'software';
+  const token = await window.careerPathAuthReady;
+  if (!token) { window.location.href = 'login.html'; return; }
 
-  if (coursesGrid) {
-    coursesGrid.addEventListener('error', event => {
-      const image = event.target;
-      if (!(image instanceof HTMLImageElement) || !image.closest('.dashboard-course-image')) return;
-      const imagePanel = image.closest('.dashboard-course-image');
-      imagePanel.dataset.courseTitle = image.alt || 'Course';
-      imagePanel.classList.add('dashboard-course-image--fallback');
-      image.remove();
-    }, true);
+  const response = await fetch(`${API_BASE}/dashboard`, { headers: { Authorization: `Bearer ${token}` } }).catch(() => null);
+  if (response && response.status === 401) {
+    localStorage.removeItem('token'); localStorage.removeItem('user'); window.location.href = 'login.html'; return;
   }
-
-  const token = localStorage.getItem('token');
-
-  // Check if DOM is ready, if not wait for it
-  async function initializeDashboard() {
-    if (!token) {
-      window.location.href = 'login.html';
-      return;
-    }
-
-    try {
-      const response = await fetch(`${API_BASE}/dashboard`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-
-      if (!response.ok) {
-        if (response.status === 401) {
-          localStorage.removeItem('token');
-          localStorage.removeItem('user');
-          window.location.href = 'login.html';
-          return;
-        }
-        throw new Error('Failed to load dashboard');
-      }
-
-      const data = await response.json();
-
-      // Greeting
-      if (data.user && data.user.name) {
-        userName.textContent = data.user.name;
-        dashboardAvatarFallback.textContent = data.user.name.trim().slice(0, 1).toLocaleUpperCase() || 'C';
-        dashboardAvatarImage.hidden = true;
-        dashboardAvatarImage.onload = () => { dashboardAvatarImage.hidden = false; };
-        dashboardAvatarImage.onerror = () => { dashboardAvatarImage.hidden = true; };
-        if (data.user.avatarUrl) dashboardAvatarImage.src = data.user.avatarUrl;
-        else dashboardAvatarImage.removeAttribute('src');
-        window.updateCareerPathProfileIdentity?.(data.user);
-      }
-      if (data.user && data.user.careerGoal) {
-        careerGoal.textContent = ` - ${data.user.careerGoal}`;
-        dashboardMessage.textContent = t('coverage.greetingKeepGoing', "Keep going, {name}! You're on your way to becoming a {goal}.", { name: data.user.name, goal: data.user.careerGoal });
-      } else {
-        dashboardMessage.textContent = t('coverage.takeTestDiscover', 'Take the career test to discover your ideal tech career path.');
-      }
-
-      // Stats Cards
-      if (data.stats) {
-        statsGrid.innerHTML = `
-          <div class="stat-card">
-            <span class="stat-number">${data.stats.coursesEnrolled}</span>
-            <span class="stat-label">Courses Enrolled</span>
-          </div>
-          <div class="stat-card">
-            <span class="stat-number">${data.stats.overallProgress}%</span>
-            <span class="stat-label">Overall Progress</span>
-          </div>
-          <div class="stat-card">
-            <span class="stat-number">${data.stats.streak === null || data.stats.streak === undefined ? t('coverage.notTracked', 'Not tracked') : data.stats.streak}</span>
-            <span class="stat-label">Day Streak</span>
-          </div>
-          <div class="stat-card">
-            <span class="stat-number">${data.stats.certificatesEarned}</span>
-            <span class="stat-label">Certificates Earned</span>
-          </div>
-        `;
-      }
-
-      // Career Test Summary
-      if (data.careerTest && data.careerTest.completed &&
-          data.careerTest.assessmentVersion === 'career-profile-v1' &&
-          data.careerTest.dimensionScores) {
-        const topCareers = data.careerTest.topCareers || [];
-        const strengths = data.careerTest.strengths || [];
-        careerSummary.innerHTML = `
-          <div class="career-recommendations">
-            ${topCareers.map((career) => {
-              // /api/dashboard returns topCareers as [{ career, score }]; older rows in the
-              // career_test table stored plain strings, so accept both shapes.
-              const careerName = (career && typeof career === 'object') ? career.career : career;
-              const careerScore = (career && typeof career === 'object') ? career.score : null;
-              return `
-              <div class="career-card">
-                <h4>${careerName}</h4>
-                ${careerScore !== null && careerScore !== undefined ? `
-                <div class="career-confidence">
-                  <span>Career alignment:</span>
-                  <span>${careerScore}%</span>
-                </div>
-                ` : ''}
-                ${strengths.length > 0 ? `
-                  <div class="career-strengths">
-                    ${t('coverage.strengthsLabel', 'Strengths:')} ${strengths.join(', ')}
-                  </div>
-                ` : ''}
-              </div>
-            `;
-            }).join('')}
-          </div>
-          ${data.careerTest.learningPath ? `
-            <p style="margin-top: var(--space-3); color: var(--text-muted); font-style: italic;">
-              ${t('coverage.learningPathLabel', 'Learning path:')} ${data.careerTest.learningPath}
-            </p>
-          ` : ''}
-        `;
-      } else {
-        careerSummary.innerHTML = `
-          <p style="color: var(--text-muted); text-align: center;">
-            ${t('coverage.profileIncomplete', 'Career Profile not completed yet.')} <a href="career-test.html">${t('coverage.completeCareerTestLink', 'Complete the Career Assessment')}</a> ${t('coverage.assessmentProfileBuild', 'Complete the Career Assessment to build your career profile.')}
-          </p>
-        `;
-      }
-
-      // Enrolled Courses Grid
-      if (data.enrollments && data.enrollments.length > 0) {
-        // Course artwork is presentation data from the existing catalog endpoint.
-        // If it is unavailable, the learning cards still render as before.
-        const courseImageById = new Map();
-        try {
-          const catalogResponse = await fetch(`${API_BASE}/courses`);
-          if (catalogResponse.ok) {
-            const catalogData = await catalogResponse.json();
-            (Array.isArray(catalogData.courses) ? catalogData.courses : []).forEach(course => {
-              if (course && course.id && typeof course.image_url === 'string' && course.image_url.trim()) {
-                courseImageById.set(course.id, course.image_url.trim());
-              }
-            });
-          }
-        } catch (error) {
-          // Course images are an enhancement; dashboard data remains usable.
-        }
-
-        coursesGrid.innerHTML = data.enrollments.map(enrollment => `
-          <div class="course-card"${courseImageById.has(enrollment.courseId) ? ` data-course-image="${courseImageById.get(enrollment.courseId)}"` : ''}>
-            ${courseImageById.has(enrollment.courseId) ? `<div class="dashboard-course-image"><img src="${courseImageById.get(enrollment.courseId)}" alt="${t(`courseMetadata.${enrollment.courseId}.title`, enrollment.courseName)}" loading="lazy"></div>` : ''}
-            <div class="course-header">
-              <h3 class="course-title">${t(`courseMetadata.${enrollment.courseId}.title`, enrollment.courseName)}</h3>
-              <div class="course-meta">
-                <span>${t('coverage.percentComplete', '{percent}% Complete', { percent: enrollment.progress })}</span>
-                <span>${enrollment.completedHours}h / ${enrollment.totalHours}h</span>
-              </div>
-            </div>
-            <div class="progress-bar-container">
-              <div class="progress-bar-fill" style="width: ${enrollment.progress}%"></div>
-            </div>
-            <div class="course-actions">
-              <a href="course-detail.html?id=${enrollment.courseId}" class="btn-outline">Continue Learning</a>
-              <span class="text-muted">${t('coverage.nextLessonLabel', 'Next: {lesson}', { lesson: enrollment.nextLessonTitle })}</span>
-            </div>
-          </div>
-        `).join('');
-      } else {
-        coursesGrid.innerHTML = `
-          <p style="color: var(--text-muted); text-align: center; grid-column: 1 / -1;">
-            ${t('coverage.noCoursesYet', 'No courses enrolled yet.')} <a href="courses.html">${t('coverage.browseCourses', 'Browse courses')}</a> ${t('coverage.toGetStarted', 'to get started.')}
-          </p>
-        `;
-      }
-
-      // Only render issued database records, and build text/links with DOM APIs.
-      certificatesGrid.replaceChildren();
-      const certificates = Array.isArray(data.certificates) ? data.certificates : [];
-      if (certificates.length === 0) {
-        const empty = document.createElement('p');
-        empty.className = 'text-muted';
-        empty.textContent = t('coverage.passedCertificatesEmpty', 'Passed course certificates will appear here.');
-        certificatesGrid.appendChild(empty);
-      } else {
-        certificates.forEach(certificate => {
-          if (!certificate || typeof certificate.id !== 'string') return;
-          const card = document.createElement('article');
-          card.className = 'course-card certificate-dashboard-card';
-          const title = document.createElement('h4');
-          title.className = 'course-title';
-          title.textContent = certificate.course_name || 'CareerPath AI Certificate';
-          card.appendChild(title);
-          if (certificate.earned_at) {
-            const date = new Date(certificate.earned_at);
-            if (Number.isFinite(date.getTime())) {
-              const issued = document.createElement('p');
-              issued.className = 'text-muted';
-              issued.textContent = t('coverage.issuedDate', 'Issued {date}', { date: new Intl.DateTimeFormat(document.documentElement.lang).format(date) });
-              card.appendChild(issued);
-            }
-          }
-          const link = document.createElement('a');
-          link.className = 'btn-outline';
-          link.href = `certificate.html?certificateId=${encodeURIComponent(certificate.id)}`;
-          link.textContent = t('coverage.viewCertificate', 'View Certificate');
-          card.appendChild(link);
-          certificatesGrid.appendChild(card);
-        });
-      }
-
-      // Timeline Milestone (using mock data for now - in future would come from backend)
-      if (Array.isArray(data.timeline) && data.timeline.length > 0) {
-        timelineContainer.innerHTML = data.timeline.map((item, index) => `
-          <div class="timeline-item ${index % 2 === 0 ? 'odd' : 'even'}">
-            <div class="timeline-icon">
-              ${item.icon}
-            </div>
-            <div class="timeline-content">
-              <h4>${item.title}</h4>
-              <p class="timeline-date">${item.date}</p>
-              <p>${item.description}</p>
-            </div>
-          </div>
-        `).join('');
-      } else {
-        timelineContainer.innerHTML = '<p class="text-muted">No recorded milestones yet.</p>';
-      }
-
-      // Recent Activity Feed
-      if (data.recentActivity && data.recentActivity.length > 0) {
-        activityFeed.innerHTML = data.recentActivity.map(activity => {
-          // Map activity types to icons and descriptions
-          let icon = '<i class="fas fa-circle"></i>';
-          let action = activity.type.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase());
-          let details = activity.description;
-
-          // Customize based on activity type
-          switch (activity.type) {
-            case 'login':
-              icon = '<i class="fas fa-sign-in-alt"></i>';
-              action = t('coverage.loggedIn', 'Logged In');
-              break;
-            case 'register':
-              icon = '<i class="fas fa-user-plus"></i>';
-              action = t('coverage.accountCreated', 'Account Created');
-              break;
-            case 'career_test':
-              icon = '<i class="fas fa-star"></i>';
-              action = t('coverage.careerTestCompleted', 'Career Test Completed');
-              break;
-            case 'enrollment':
-              icon = '<i class="fas fa-book-open"></i>';
-              action = t('coverage.courseEnrolled', 'Course Enrolled');
-              break;
-            case 'progress':
-              icon = '<i class="fas fa-tasks"></i>';
-              action = t('coverage.progressUpdated', 'Progress Updated');
-              break;
-            case 'certificate':
-              icon = '<i class="fas fa-graduation-cap"></i>';
-              action = t('coverage.certificateEarned', 'Certificate Earned');
-              break;
-            case 'chat':
-              icon = '<i class="fas fa-robot"></i>';
-              action = t('coverage.aiConversation', 'AI Conversation');
-              break;
-            default:
-              icon = '<i class="fas fa-circle"></i>';
-              action = activity.type.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase());
-          }
-
-          // Format timestamp
-          let timestampStr = '';
-          if (activity.timestamp) {
-            const date = new Date(activity.timestamp);
-            const now = new Date();
-            const diffTime = Math.abs(now - date);
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-            if (diffDays === 0) {
-              timestampStr = t('coverage.today', 'Today');
-            } else if (diffDays === 1) {
-              timestampStr = t('coverage.yesterday', 'Yesterday');
-            } else if (diffDays < 7) {
-              timestampStr = t('coverage.daysAgo', '{count} days ago', { count: diffDays });
-            } else {
-              timestampStr = date.toLocaleDateString();
-            }
-          }
-
-          return `
-            <div class="activity-item">
-              <div class="activity-icon">
-                ${icon}
-              </div>
-              <div class="activity-content">
-                <p class="action-text">${action}</p>
-                <p class="action-details">${details}</p>
-                <p class="action-time">${timestampStr}</p>
-              </div>
-            </div>
-          `;
-        }).join('');
-      } else {
-        activityFeed.innerHTML = `
-          <p style="color: var(--text-muted); text-align: center;">
-            ${t('coverage.noRecentActivity', 'No recent activity. Start by taking the career test or enrolling in a course.')}
-          </p>
-        `;
-      }
-
-    } catch (error) {
-      console.error('Dashboard error:', error);
-      userName.textContent = 'Learner';
-      dashboardMessage.textContent = t('coverage.loadDashboardError', 'Unable to load dashboard data. Please try again later.');
-    }
-
-    // Quick action button event listeners
-    takeCareerTestBtn.addEventListener('click', () => {
-      window.location.href = 'career-test.html';
-    });
-
-    exploreCoursesBtn.addEventListener('click', () => {
-      window.location.href = 'courses.html';
-    });
-
-    viewProfileBtn.addEventListener('click', () => {
-      window.location.href = 'profile.html';
-    });
-
-    // Floating chatbot button
-    floatingChatbot.addEventListener('click', () => {
-      window.location.href = 'ai-chat.html';
-    });
-
-    // Logout — signs out of Supabase too, not just clearing localStorage
+  if (!response || !response.ok) {
+    $('#welcome-subtitle').textContent = t('dashboardHome.loadError', 'We could not load your dashboard. Please refresh and try again.');
+    $('#career-summary').textContent = t('dashboardHome.loadError', 'We could not load your dashboard. Please refresh and try again.');
+    $('#courses-grid').textContent = t('dashboardHome.loadError', 'We could not load your dashboard. Please refresh and try again.');
+    $('#certificates-grid').textContent = '';
+    return;
   }
+  const data = await response.json();
+  const user = data.user || {};
+  const assessment = data.careerTest && data.careerTest.completed && data.careerTest.assessmentVersion === 'career-profile-v1' ? data.careerTest : null;
+  const firstName = (user.name || '').trim().split(/\s+/)[0] || t('dashboardHome.learner', 'there');
+  $('#dashboard-welcome').textContent = t(assessment ? 'dashboardHome.welcomeReturning' : 'dashboardHome.welcomeNew', assessment ? 'Welcome back, {name}' : 'Welcome, {name}', { name: firstName });
+  $('#welcome-subtitle').textContent = assessment
+    ? t('dashboardHome.returningCopy', 'Pick up where you left off, or explore a new direction.')
+    : t('dashboardHome.newCopy', 'Start by discovering a direction that feels right for you.');
+  const primary = $('#welcome-primary');
+  primary.href = assessment ? 'courses.html' : 'career-test.html';
+  primary.textContent = t(assessment ? 'dashboardHome.exploreCourses' : 'dashboardHome.takeTest', assessment ? 'Explore courses' : 'Take the Career Test');
+  const secondary = $('#welcome-secondary');
+  if (assessment) { secondary.hidden = false; secondary.textContent = t('dashboardHome.viewInsights', 'View Career Insights'); secondary.href = 'career-test.html?view=result'; }
+  const avatarFallback = $('#dashboard-avatar-fallback');
+  const avatarImage = $('#dashboard-avatar-image');
+  avatarFallback.textContent = firstName.slice(0, 1).toLocaleUpperCase();
+  if (user.avatarUrl) { avatarImage.src = user.avatarUrl; avatarImage.onload = () => { avatarImage.hidden = false; }; avatarImage.onerror = () => { avatarImage.hidden = true; }; }
+  window.updateCareerPathProfileIdentity?.(user);
 
-  // Initialize dashboard
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializeDashboard);
+  const careerSummary = $('#career-summary');
+  if (!assessment) {
+    const empty = el('div', 'empty-panel');
+    empty.append(el('p', '', t('dashboardHome.noAssessment', 'Your career direction will appear here after you take the Career Test.')));
+    const link = el('a', 'text-link', t('dashboardHome.takeTest', 'Take the Career Test'));
+    link.href = 'career-test.html'; empty.append(link); careerSummary.append(empty);
   } else {
-    // DOM already ready
-    initializeDashboard();
+    const topCareer = Array.isArray(assessment.topCareers) ? assessment.topCareers[0] : null;
+    const career = typeof topCareer === 'string' ? topCareer : topCareer?.career;
+    const direction = el('div', 'insight-panel');
+    const copy = el('div', 'insight-direction');
+    copy.append(el('p', 'eyebrow', t('dashboardHome.yourDirection', 'YOUR CAREER DIRECTION')));
+    copy.append(el('h3', '', t(`careerResult.domain.${careerDomain(career || '')}`, t('dashboardHome.directionFallback', 'Your next direction'))));
+    if (career) copy.append(el('p', 'direction-domain', t(`dashboardHome.${careerRoleKeys[career] || ''}`, career)));
+    direction.append(copy);
+    const signals = el('div', 'signals');
+    signals.append(el('h4', '', t('dashboardHome.signalsTitle', 'What we noticed')));
+    const list = el('ul');
+    const scores = assessment.dimensionScores && typeof assessment.dimensionScores === 'object' ? assessment.dimensionScores : {};
+    const dimensions = Object.entries(scores).filter(([, score]) => Number.isFinite(Number(score))).sort((a, b) => Number(b[1]) - Number(a[1])).slice(0, 3);
+    dimensions.forEach(([dimension]) => list.append(el('li', '', t(`dashboardHome.${dimensionKeys[dimension] || ''}`, dimension))));
+    if (dimensions.length === 0 && Array.isArray(assessment.strengths)) assessment.strengths.slice(0, 3).forEach(signal => list.append(el('li', '', String(signal).replace(/^Strong /, '').replace(/ orientation$/i, ''))));
+    signals.append(list); direction.append(signals);
+    const action = el('a', 'button button-primary', t('dashboardHome.viewInsights', 'View Career Insights'));
+    action.href = 'career-test.html?view=result'; direction.append(action); careerSummary.append(direction);
   }
+
+  const enrollments = Array.isArray(data.enrollments) ? data.enrollments : [];
+  const coursesGrid = $('#courses-grid');
+  if (!enrollments.length) {
+    const empty = el('div', 'empty-panel');
+    empty.append(el('p', '', t('dashboardHome.noEnrolledCourses', 'Your courses will show here once you enroll.')));
+    const link = el('a', 'text-link', t('dashboardHome.exploreCourses', 'Explore courses')); link.href = 'courses.html'; empty.append(link); coursesGrid.append(empty);
+  } else {
+    enrollments.forEach(enrollment => {
+      if (!enrollment || typeof enrollment.courseId !== 'string') return;
+      const card = el('article', 'learning-card');
+      const title = t(`courseMetadata.${enrollment.courseId}.title`, enrollment.courseName || t('dashboardHome.courseFallback', 'Course'));
+      card.append(el('p', 'eyebrow', t('dashboardHome.inProgress', 'IN PROGRESS')));
+      card.append(el('h3', '', title));
+      const progress = Number(enrollment.progress);
+      if (enrollment.progressAvailable && Number.isFinite(progress)) {
+        const validProgress = Math.max(0, Math.min(100, progress));
+        const label = el('p', 'progress-label', t('dashboardHome.progress', '{percent}% complete', { percent: validProgress }));
+        card.append(label);
+        const meter = el('div', 'progress-track'); meter.setAttribute('role', 'progressbar'); meter.setAttribute('aria-valuemin', '0'); meter.setAttribute('aria-valuemax', '100'); meter.setAttribute('aria-valuenow', String(validProgress));
+        const fill = el('span'); fill.style.width = `${validProgress}%`; meter.append(fill); card.append(meter);
+      }
+      if (typeof enrollment.nextLessonTitle === 'string' && enrollment.nextLessonTitle.trim()) card.append(el('p', 'next-lesson', t('dashboardHome.nextLesson', 'Next: {lesson}', { lesson: enrollment.nextLessonTitle })));
+      const link = el('a', 'text-link', t('coverage.continueLearning', 'Continue learning')); link.href = `course-detail.html?id=${encodeURIComponent(enrollment.courseId)}`; card.append(link);
+      coursesGrid.append(card);
+    });
+  }
+
+  const certificates = Array.isArray(data.certificates) ? data.certificates.filter(c => c && typeof c.id === 'string') : [];
+  const certificateGrid = $('#certificates-grid');
+  if (!certificates.length) certificateGrid.append(el('p', 'empty-copy', t('dashboardHome.noCertificates', 'Certificates you earn will appear here.')));
+  else certificates.forEach(certificate => {
+    const card = el('article', 'certificate-card');
+    card.append(el('h3', '', certificate.course_name || t('coverage.certificateTitle', 'CareerPath AI Certificate')));
+    if (certificate.earned_at) { const date = new Date(certificate.earned_at); if (Number.isFinite(date.getTime())) card.append(el('p', 'muted-copy', t('dashboardHome.issued', 'Issued {date}', { date: new Intl.DateTimeFormat(document.documentElement.lang).format(date) }))); }
+    const link = el('a', 'text-link', t('coverage.viewCertificateButton', 'View certificate')); link.href = `certificate.html?certificateId=${encodeURIComponent(certificate.id)}`; card.append(link); certificateGrid.append(card);
+  });
+
+  await renderExploreCourses(assessment, enrollments, token);
+
+  async function renderExploreCourses(completedAssessment, currentEnrollments, accessToken) {
+    const grid = $('#explore-grid');
+    try {
+      const [catalogResult, mappingResult, localeResult] = await Promise.allSettled([
+        fetch(`${API_BASE}/courses`, { headers: { Authorization: `Bearer ${accessToken}` } }),
+        fetch('course-catalog-config.json'),
+        fetch(`locales/${window.getCareerPathLanguage?.() || 'en'}.json`)
+      ]);
+      const catalogResponse = catalogResult.status === 'fulfilled' ? catalogResult.value : null;
+      const mappingResponse = mappingResult.status === 'fulfilled' ? mappingResult.value : null;
+      const localeResponse = localeResult.status === 'fulfilled' ? localeResult.value : null;
+      const catalogData = catalogResponse?.ok ? await catalogResponse.json() : {};
+      const mapping = mappingResponse?.ok ? await mappingResponse.json() : {};
+      const localeData = localeResponse?.ok ? await localeResponse.json() : {};
+      let catalog = Array.isArray(catalogData.courses) ? catalogData.courses : [];
+      if (!catalog.length) {
+        // The checked-in career map supplies authentic IDs; localized catalog
+        // metadata supplies real titles and descriptions if the live endpoint
+        // is unavailable (for example while a schema migration is pending).
+        const metadata = localeData.courseMetadata || {};
+        catalog = Object.entries(metadata).filter(([, course]) => course && typeof course.title === 'string')
+          .map(([id, course]) => ({ id, title: course.title, description: course.description }));
+      }
+      const byId = new Map(catalog.filter(course => course && course.id).map(course => [course.id, course]));
+      const career = completedAssessment?.topCareers?.[0]?.career || (typeof completedAssessment?.topCareers?.[0] === 'string' ? completedAssessment.topCareers[0] : '');
+      const mappedIds = career && Array.isArray(mapping.careerCourseMapping?.[career]) ? mapping.careerCourseMapping[career] : [];
+      const enrolledIds = new Set(currentEnrollments.map(enrollment => enrollment.courseId));
+      const orderedIds = mappedIds.length ? [...mappedIds, ...catalog.map(course => course.id)] : catalog.map(course => course.id);
+      const selected = orderedIds.map(id => byId.get(id)).filter((course, index, all) => course && all.indexOf(course) === index && !enrolledIds.has(course.id)).slice(0, 3);
+      selected.forEach(course => {
+        const card = el('article', 'explore-card');
+        const category = mapping.courseCategories?.[course.id];
+        if (category) card.append(el('p', 'eyebrow', category));
+        const title = t(`courseMetadata.${course.id}.title`, course.title || course.name || '');
+        const description = t(`courseMetadata.${course.id}.description`, course.description || '');
+        card.append(el('h3', '', title));
+        if (description) card.append(el('p', 'course-description', description));
+        if (course.status === 'coming_soon') {
+          card.append(el('p', 'course-availability', t('ui.comingSoon', 'Coming soon')));
+        } else if (course.status === 'available') {
+          const link = el('a', 'text-link', t('dashboardHome.viewCourse', 'View course')); link.href = `course-detail.html?id=${encodeURIComponent(course.id)}`; card.append(link);
+        }
+        grid.append(card);
+      });
+    } catch (_error) { /* The complete catalog remains available from the Courses page. */ }
+    if (!grid.children.length) {
+      const link = el('a', 'text-link', t('dashboardHome.browseCatalog', 'Browse catalog')); link.href = 'courses.html';
+      grid.append(el('p', 'empty-copy', t('dashboardHome.catalogUnavailable', 'Browse the course catalog to find a place to begin.')), link);
+    }
+  }
+}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initializeDashboard, { once: true });
+else initializeDashboard();
 })();

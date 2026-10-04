@@ -1,23 +1,191 @@
-﻿.career-result-hero,.career-result-section{margin:var(--space-5) 0;padding:var(--space-5);border:1px solid var(--border);border-radius:1rem;background:rgba(255,255,255,.035)}
-.career-result-hero{border-color:var(--bege);background:linear-gradient(135deg,rgba(218,186,132,.13),rgba(255,255,255,.025))}
-.career-result-hero h2{font-size:clamp(1.6rem,4vw,2.5rem);margin:.25rem 0 .5rem}
-.career-result-hero p,.career-result-section p{max-width:70ch;line-height:1.65}
-.career-result-section h2{margin:0 0 var(--space-3)}
-.career-result-details{margin-top:var(--space-4);padding:var(--space-3);border:1px solid var(--border);border-radius:.75rem}
-.career-result-details summary{cursor:pointer;font-weight:700}
-.career-dimension-list{margin-top:var(--space-3)}
-.career-result-section .dimension-insight{display:grid;grid-template-columns:minmax(0,1fr) 2fr 3.5rem;align-items:center;gap:.75rem;margin:.9rem 0}
-.career-result-section .dimension-label{overflow-wrap:anywhere}
-.career-result-section .dimension-bar{height:.6rem;background:var(--border);border-radius:999px;overflow:hidden}
-.career-result-section .dimension-fill{height:100%;background:var(--accent,var(--bege));border-radius:inherit}
-.career-related-list{display:flex;flex-wrap:wrap;gap:.6rem 1.5rem;padding-inline-start:1.25rem}
-.career-learning-path{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}
-.career-learning-path>h2{grid-column:1/-1}
-.career-course-step{min-width:0;padding:1.25rem;border:1px solid var(--border);border-radius:.85rem;display:flex;flex-direction:column;align-items:flex-start;gap:.6rem}
-.career-course-step.is-first{border-color:var(--bege);background:rgba(218,186,132,.08)}
-.career-course-stage{margin:0;text-transform:uppercase;letter-spacing:.1em;font-size:.75rem;font-weight:700;color:var(--bege)}
-.career-course-step h3{overflow-wrap:anywhere}
-.career-course-step a{max-width:100%;white-space:normal;text-align:center}
-.career-coming-later{opacity:.72}
-@media(max-width:600px){.career-result-hero,.career-result-section{padding:1rem;margin:1rem 0}.career-learning-path{grid-template-columns:minmax(0,1fr)}.career-result-section .dimension-insight{grid-template-columns:minmax(0,1fr) 3.5rem;gap:.35rem .6rem}.career-result-section .dimension-bar{grid-column:1/-1;grid-row:2}.career-result-section .dimension-percentage{grid-column:2;grid-row:1;text-align:end}}
-[dir="rtl"] .career-result-section .dimension-percentage{text-align:left}
+﻿#results-container {
+  width: min(960px, 100%);
+  margin-inline: auto;
+}
+
+#results-container > .dashboard-header {
+  margin-inline: auto;
+  text-align: center;
+}
+
+#results-content {
+  display: grid;
+  gap: clamp(1rem, 3vw, 1.5rem);
+}
+
+.career-result-hero,
+.career-result-section,
+.career-assessment-detail {
+  min-width: 0;
+  margin: 0;
+  padding: clamp(1.1rem, 4vw, 2rem);
+  border: 1px solid var(--border);
+  border-radius: 1.1rem;
+  background: var(--surface);
+}
+
+.career-result-hero {
+  padding-block: clamp(2rem, 7vw, 4.25rem);
+  border-color: color-mix(in srgb, var(--bege) 55%, var(--border));
+  background: linear-gradient(135deg, color-mix(in srgb, var(--green) 88%, transparent), var(--surface-elevated));
+  text-align: center;
+}
+
+.career-result-domain {
+  max-width: 18ch;
+  margin: 0 auto;
+  color: var(--bege_light);
+  font: 400 clamp(2rem, 7vw, 4.5rem)/1.04 var(--font-display);
+  letter-spacing: -.035em;
+  overflow-wrap: anywhere;
+}
+
+.career-result-section h2,
+.career-assessment-detail h3 {
+  margin: 0 0 1rem;
+  color: var(--text);
+  font: 400 clamp(1.45rem, 4vw, 2rem)/1.15 var(--font-display);
+}
+
+.career-result-section > p,
+.career-course-step > p,
+.career-assessment-detail > p {
+  color: var(--text-secondary);
+  line-height: 1.65;
+}
+
+.career-result-section > ul {
+  display: grid;
+  gap: .75rem;
+  margin: 0;
+  padding-inline-start: 1.25rem;
+  color: var(--text);
+  font-size: clamp(1rem, 2.5vw, 1.15rem);
+  line-height: 1.55;
+}
+
+.career-result-section > ul li::marker {
+  color: var(--accent);
+}
+
+.career-learning-path {
+  border-color: color-mix(in srgb, var(--accent) 48%, var(--border));
+}
+
+.career-course-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .85rem;
+}
+
+.career-course-step {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: .65rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: .85rem;
+  background: color-mix(in srgb, var(--surface-elevated) 72%, transparent);
+}
+
+.career-course-step:first-child {
+  border-color: color-mix(in srgb, var(--accent) 72%, var(--border));
+}
+
+.career-course-step h3 {
+  margin: 0;
+  color: var(--text);
+  font: 500 1.12rem/1.3 var(--font-display);
+  overflow-wrap: anywhere;
+}
+
+.career-course-step p {
+  flex: 1 1 auto;
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: .95rem;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.career-course-step a {
+  width: fit-content;
+  max-width: 100%;
+  min-height: 44px;
+  white-space: normal;
+  text-align: center;
+}
+
+.career-course-empty {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.career-assessment-detail {
+  padding: 0;
+  overflow: clip;
+}
+
+.career-assessment-detail > summary {
+  padding: 1rem 1.2rem;
+  color: var(--text);
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.career-assessment-detail[open] > :not(summary) {
+  margin-inline: 1.2rem;
+}
+
+.career-assessment-detail[open] > h3 {
+  margin-block: 1.2rem .6rem;
+  font: 600 1rem/1.4 var(--font-body);
+}
+
+.career-detail-list,
+.career-assessment-detail > ul {
+  display: grid;
+  gap: .35rem;
+  padding-inline-start: 1.2rem;
+  color: var(--text-secondary);
+  line-height: 1.55;
+}
+
+.career-assessment-detail > p:last-child {
+  margin-bottom: 1.2rem;
+}
+
+.career-result-details summary:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: -3px;
+}
+
+@media (max-width: 640px) {
+  .career-course-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .career-course-step a {
+    width: 100%;
+  }
+
+  #results-container .action-buttons {
+    justify-content: stretch !important;
+  }
+
+  #results-container .action-buttons > * {
+    flex: 1 1 100%;
+    justify-content: center;
+  }
+}
+
+[dir="rtl"] .career-result-section > ul,
+[dir="rtl"] .career-detail-list,
+[dir="rtl"] .career-assessment-detail > ul {
+  padding-inline-start: 0;
+  padding-inline-end: 1.25rem;
+}

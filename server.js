@@ -1042,7 +1042,9 @@ app.get('/api/dashboard', authenticateToken, async (req, res) => {
     const enrollments = enrollData || [];
     const certificates = certData || [];
 
-    const latestAssessment = await getLatestCareerAssessment(userId);
+    // Career Insights always reflect the newest completed result, even when a
+    // later in-progress retake exists.
+    const latestAssessment = await getLatestCareerAssessment(userId, true);
     const careerTest = latestAssessment && latestAssessment.completed &&
       latestAssessment.assessmentVersion === 'career-profile-v1' &&
       latestAssessment.dimensionScores
@@ -1642,7 +1644,9 @@ function formatCourse(course) {
   const level = course.level || 'beginner';
   return {
     id: course.id,
-    status: course.status || 'available',
+    // Preserve unknown states so a client can fail closed instead of treating
+    // a missing status as available.
+    status: course.status ?? null,
     title: course.title,
     description: course.description,
     image_url: course.image,
@@ -1776,7 +1780,7 @@ app.post('/api/enroll', authenticateToken, async (req, res) => {
     // Validate the course exists. The courses table is the source of truth for the name.
     const { data: course, error: courseError } = await supabase
       .from('courses')
-      .select('id, title')
+      .select('id, title, status')
       .eq('id', courseId)
       .maybeSingle();
 
@@ -1787,6 +1791,13 @@ app.post('/api/enroll', authenticateToken, async (req, res) => {
 
     if (!course) {
       return res.status(404).json({ error: 'Course not found' });
+    }
+
+    if (course.status === 'coming_soon') {
+      return res.status(409).json({ error: 'This course is not available for enrollment yet' });
+    }
+    if (course.status !== 'available') {
+      return res.status(409).json({ error: 'Course availability is not configured' });
     }
 
     // Prevent duplicate enrollment

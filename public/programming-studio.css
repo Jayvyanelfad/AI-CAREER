@@ -1,4 +1,9 @@
 /* Programming Studio learning architecture */
+.programming-purpose { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; margin: 0 auto; width: min(1180px, calc(100% - 96px)); border: 1px solid rgba(134, 164, 142, .24); background: rgba(134, 164, 142, .2); }
+.programming-purpose article { min-width: 0; padding: clamp(22px, 4vw, 38px); background: #0b1a14; }
+.programming-purpose h2 { max-width: 20ch; margin-top: 10px; color: #ead2bf; font-family: var(--font-display); font-size: clamp(1.45rem, 2.4vw, 2rem); font-weight: 300; line-height: 1.2; }
+.programming-purpose article > p:not(.programming-eyebrow) { max-width: 54ch; margin-top: 11px; color: rgba(244, 236, 230, .7); font-size: .8rem; line-height: 1.7; }
+.programming-purpose .programming-text-link { display: inline-block; margin-top: 17px; }
 .programming-journey-steps { grid-template-columns: repeat(6, minmax(0, 1fr)); }
 .programming-journey-steps h2 { font-size: clamp(1.15rem, 1.65vw, 1.65rem); }
 .programming-journey-steps p { font-size: .76rem; }
@@ -104,6 +109,7 @@ html[data-theme="light"] body.programming-page .programming-specialization-list 
   .programming-track-journey { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 @media (max-width: 640px) {
+  .programming-purpose { grid-template-columns: minmax(0, 1fr); width: calc(100% - 40px); }
   .programming-journey-steps { grid-template-columns: minmax(0, 1fr); }
   .programming-journey-steps > div:nth-child(4) { padding-left: 0; border-left: 0; }
   .programming-track summary { grid-template-columns: 30px minmax(0, 1fr) 22px; gap: 8px; }
@@ -188,6 +194,8 @@ html[data-theme="light"] body.programming-page .programming-specialization-list 
 .programming-project-presentation li > span { color: #91b59b; font-size: .58rem; letter-spacing: .1em; }
 .programming-challenge-board strong { color: #ead2bf; font-size: .76rem; font-weight: 500; }
 .programming-challenge-board li p { margin-top: 7px; color: rgba(244, 236, 230, .68); font-size: .72rem; line-height: 1.6; }
+.programming-mini-build { display: grid; grid-template-columns: minmax(100px, .28fr) minmax(0, 1fr); gap: 12px; margin-top: 14px; padding: 14px 16px; border-left: 2px solid #d8ad8e; background: rgba(216, 173, 142, .06); }
+.programming-mini-build > p:not(.programming-eyebrow) { color: rgba(244, 236, 230, .8); font-size: .76rem; line-height: 1.6; }
 .programming-project-brief { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: clamp(20px, 4vw, 42px); margin-top: 48px; padding: clamp(20px, 3vw, 34px); border: 1px solid rgba(234, 210, 191, .28); background: linear-gradient(110deg, rgba(24, 54, 41, .66), rgba(13, 32, 24, .42)); scroll-margin-top: 20px; }
 .programming-project-summary { margin-top: 10px; color: rgba(244, 236, 230, .78); font-size: .85rem; line-height: 1.65; }
 .programming-project-context { display: grid; gap: 12px; margin-top: 22px; }
@@ -232,8 +240,12 @@ html[data-theme="light"] body.programming-page .programming-challenge-board li p
 html[data-theme="light"] body.programming-page .programming-project-context dd,
 html[data-theme="light"] body.programming-page .programming-project-requirements,
 html[data-theme="light"] body.programming-page .programming-project-work > p { color: #58655c; }
+html[data-theme="light"] body.programming-page .programming-mini-build > p:not(.programming-eyebrow) { color: #58655c; }
 html[data-theme="light"] body.programming-page .programming-code-example pre,
 html[data-theme="light"] body.programming-page .programming-practice-editor { color: #20382d; }
+html[data-theme="light"] body.programming-page .programming-purpose article { background: #f7f3ed; }
+html[data-theme="light"] body.programming-page .programming-purpose h2 { color: #80563e; }
+html[data-theme="light"] body.programming-page .programming-purpose article > p:not(.programming-eyebrow) { color: #58655c; }
 
 @media (max-width: 1024px) {
   .programming-stage-nav { grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -260,4 +272,5 @@ html[data-theme="light"] body.programming-page .programming-practice-editor { co
   .programming-project-presentation,
   .programming-challenge-board { padding: 17px 14px; }
   .programming-project-context div { grid-template-columns: 58px minmax(0, 1fr); gap: 8px; }
+  .programming-mini-build { grid-template-columns: minmax(0, 1fr); gap: 6px; padding: 12px; }
 }

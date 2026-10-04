@@ -12,11 +12,21 @@ async function fixture(t) {
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   await context.addInitScript(() => {
     const session = { access_token: 'profile-test-token', user: { id: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', email: 'asha@example.test' } };
+    window.__avatarUploads = [];
     window.supabase = { auth: {
       getSession: async () => ({ data: { session }, error: null }),
       onAuthStateChange: () => ({ data: { subscription: { unsubscribe() {} } } }),
       signOut: async () => ({ error: null })
-    } };
+    }, storage: { from: () => ({
+      upload: async (path, file, options) => {
+        const image = await createImageBitmap(file);
+        window.__avatarUploads.push({ path, type: file.type, width: image.width, height: image.height, options });
+        image.close();
+        return { data: { path }, error: null };
+      },
+      remove: async () => ({ data: [], error: null }),
+      getPublicUrl: path => ({ data: { publicUrl: `https://storage.example.test/${path}` } })
+    }) } };
   });
   await context.route('**/cdn.jsdelivr.net/**', route => route.fulfill({ status: 200, contentType: 'text/javascript', body: '' }));
   await context.route('**/api/**', route => {
@@ -53,6 +63,56 @@ test('profile renders identity, saves editable fields, and stays within supporte
   assert.equal(savedBody.bio, 'Building useful tools');
   assert.deepEqual(await page.evaluate(() => window.CareerPathProfilePhoto.validateProfilePhoto({ type: 'image/svg+xml', size: 40 })), { valid: false, reason: 'type' });
   assert.deepEqual(await page.evaluate(() => window.CareerPathProfilePhoto.validateProfilePhoto({ type: 'image/png', size: 5 * 1024 * 1024 + 1 })), { valid: false, reason: 'size' });
+});
+
+test('profile photo crop supports zoom, reposition, square JPEG save, and cancel', async t => {
+  const page = await fixture(t);
+  const imageData = await page.evaluate(() => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 800;
+    canvas.height = 400;
+    const context = canvas.getContext('2d');
+    context.fillStyle = '#d22'; context.fillRect(0, 0, 400, 400);
+    context.fillStyle = '#26c'; context.fillRect(400, 0, 400, 400);
+    return canvas.toDataURL('image/png').split(',')[1];
+  });
+  const file = { name: 'wide.png', mimeType: 'image/png', buffer: Buffer.from(imageData, 'base64') };
+
+  await page.locator('#profile-avatar-file').setInputFiles(file);
+  await page.locator('#avatar-crop-dialog[open]').waitFor();
+  await page.locator('#avatar-crop-zoom').fill('1.7');
+  const beforeDrag = await page.locator('#avatar-crop-image').evaluate(image => image.style.left);
+  const viewport = page.locator('#avatar-crop-viewport');
+  const box = await viewport.boundingBox();
+  await page.mouse.move(box.x + box.width * 0.7, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width * 0.6, box.y + box.height / 2);
+  await page.mouse.up();
+  const after = await page.locator('#avatar-crop-image').evaluate(image => image.style.left);
+  await page.route('**/api/profile', async route => {
+    if (route.request().method() === 'PUT') {
+      return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({
+        id: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', email: 'asha@example.test', full_name: 'Asha Example',
+        career_goal: 'Data Scientist', avatar_path: route.request().postDataJSON().avatarPath,
+        avatar_url: 'https://storage.example.test/profile-avatars/asha.jpg', bio: 'Learning data science'
+      }) });
+    }
+    return route.fallback();
+  });
+  await page.locator('#save-avatar-crop-btn').click();
+  await page.waitForFunction(() => window.__avatarUploads.length === 1);
+  const uploaded = await page.evaluate(() => window.__avatarUploads[0]);
+  assert.equal(uploaded.type, 'image/jpeg');
+  assert.equal(uploaded.width, 512);
+  assert.equal(uploaded.height, 512);
+  await page.waitForFunction(() => !document.getElementById('avatar-crop-dialog').open);
+  assert.notEqual(after, beforeDrag, 'dragging repositions the crop preview');
+
+  await page.locator('#profile-avatar-file').setInputFiles(file);
+  await page.locator('#avatar-crop-dialog[open]').waitFor();
+  await page.locator('#cancel-avatar-crop-btn').click();
+  assert.equal(await page.locator('#avatar-crop-dialog').evaluate(dialog => dialog.open), false);
+  assert.equal(await page.evaluate(() => window.__avatarUploads.length), 1, 'cancel does not upload a file');
 });
 
 test('profile has no horizontal overflow at target widths and in Arabic RTL', async t => {

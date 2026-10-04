@@ -205,7 +205,19 @@
             });
 
             const accessToken = await window.careerPathAuthReady;
-            if (!accessToken) return;
+            if (!accessToken) {
+                const loading = document.getElementById('free-courses-loading');
+                const error = document.getElementById('free-courses-error');
+                if (loading) loading.style.display = 'none';
+                if (error) {
+                    const message = error.querySelector('p');
+                    if (message) message.textContent = t('coverage.signInToBrowseCourses', 'Sign in to load the course catalog.');
+                    const retry = error.querySelector('button');
+                    if (retry) retry.hidden = true;
+                    error.style.display = 'flex';
+                }
+                return;
+            }
 
             // Initialize course filtering
             initCourseFilters();
@@ -283,18 +295,20 @@
                 ...[...grouped.keys()].filter(category => !categoryOrder.includes(category))
             ];
             const cardMarkup = (course, isPremium) => `
-                <div class="course-card animate-on-scroll" data-level="${course.level}" data-course-id="${course.id}" data-course-name="${course.title}" onclick="location.href='course-detail.html?id=${encodeURIComponent(course.id)}'">
+                <div class="course-card animate-on-scroll" data-level="${course.level}" data-course-id="${course.id}" data-course-name="${course.title}" ${course.status === 'coming_soon' ? '' : `onclick="location.href='course-detail.html?id=${encodeURIComponent(course.id)}'"`}>
                     <div class="course-image">
                         <img src="${course.image}" alt="${t(`courseMetadata.${course.id}.title`, course.title)}">
                     </div>
                     <div class="course-card-content">
-                    <p class="course-card-level">${course.badge}${isPremium ? ' · Pro' : ''}</p>
-                    <h3><a class="course-title-link" href="course-detail.html?id=${encodeURIComponent(course.id)}" onclick="event.stopPropagation()">${t(`courseMetadata.${course.id}.title`, course.title)}</a></h3>
+                    <p class="course-card-level">${course.status === 'coming_soon' ? t('ui.comingSoon', 'Coming soon') : course.badge}${isPremium ? ' &middot; Pro' : ''}</p>
+                    <h3>${course.status === 'coming_soon' ? `<span class="course-title-link">${t(`courseMetadata.${course.id}.title`, course.title)}</span>` : `<a class="course-title-link" href="course-detail.html?id=${encodeURIComponent(course.id)}" onclick="event.stopPropagation()">${t(`courseMetadata.${course.id}.title`, course.title)}</a>`}</h3>
                     <p>${t(`courseMetadata.${course.id}.description`, course.description || '')}</p>
                     <div class="course-meta">
                         <span>${t("coverage.weekDuration", "{count} weeks", { count: course.weeks })}</span>
                     </div>
-                    ${isPremium
+                    ${course.status === 'coming_soon'
+                        ? `<button class="course-btn" type="button" disabled>${t('ui.comingSoon', 'Coming soon')}</button>`
+                        : isPremium
                         ? '<a class="course-btn" href="course-detail.html?id=' + encodeURIComponent(course.id) + '" onclick="event.stopPropagation()">Explore Course</a>'
                         : '<button class="course-btn enroll-btn" onclick="event.stopPropagation()">Enroll Free</button>'}
                     </div>
@@ -337,6 +351,9 @@
                 }
 
                 const data = await response.json();
+                if (!Array.isArray(data.courses) || data.courses.some(course => !['available', 'coming_soon'].includes(course.status))) {
+                    throw new Error('Course catalog response is missing valid availability status.');
+                }
 
                 // Transform API response to match expected UI format
                 const allCourses = data.courses.map(course => ({
@@ -348,6 +365,7 @@
                     weeks: course.duration_weeks,
                     category: course.category,
                     level: course.level,
+                    status: course.status,
                     // Determine if premium based on level or other criteria
                     premium: Boolean(course.premium)
                 }));

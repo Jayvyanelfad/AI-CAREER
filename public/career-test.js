@@ -71,19 +71,21 @@
       const used = localStorage.getItem('cs-career-v2-used-questions');
       usedQuestionIds = used ? JSON.parse(used) : [];
 
-      // Resume an unfinished attempt first; otherwise reopen the latest saved result.
+      // A Dashboard result link explicitly opens the saved result, even if a
+      // separate in-progress retake draft is present in sessionStorage.
       const hasInProgressAttempt = Boolean(sessionStorage.getItem(ATTEMPT_STORAGE_KEY));
-      if (!skipSavedResult && !hasInProgressAttempt) {
+      const forceSavedResult = new URLSearchParams(window.location.search).get('view') === 'result';
+      if (!skipSavedResult && (!hasInProgressAttempt || forceSavedResult)) {
         const savedResponse = await fetch(`${API_BASE}/career-test`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (savedResponse.ok) {
           const savedPayload = await savedResponse.json();
           if (savedPayload.result?.assessment_version === assessmentVersion && savedPayload.result.dimension_scores) {
+            await displayResults(savedPayload.result);
             loadingSpinner.style.display = 'none';
             quizContainer.style.display = 'none';
             resultsContainer.style.display = 'block';
-            displayResults(savedPayload.result);
             return;
           } else if (savedPayload.result) {
             console.info('The saved assessment predates career-profile-v1 and is not displayed as a v1 profile.');
@@ -91,6 +93,14 @@
         } else if (savedResponse.status !== 404) {
           console.warn('Could not load the saved career profile:', await savedResponse.text());
         }
+      }
+
+      if (forceSavedResult && !skipSavedResult) {
+        await displayResults(null);
+        loadingSpinner.style.display = 'none';
+        quizContainer.style.display = 'none';
+        resultsContainer.style.display = 'block';
+        return;
       }
 
       // Load questions from Supabase
@@ -479,10 +489,11 @@
       }
       localStorage.setItem('cs-career-v2-used-questions', JSON.stringify(usedQuestionIds));
 
-      // Hide loading, show results
+      // Render with the selected locale before revealing the result.
+      await displayResults(result.result);
       loadingSpinner.style.display = 'none';
+      quizContainer.style.display = 'none';
       resultsContainer.style.display = 'block';
-      displayResults(result.result);
 
     } catch (error) {
       console.error('Career test error:', error);
@@ -492,21 +503,32 @@
     }
   }
 
-  const careerDirections = {
-    'Software Developer': ['Software & Engineering', ['Software Developer', 'Full Stack Developer', 'Backend Developer']],
-    'Full Stack Developer': ['Software & Engineering', ['Software Developer', 'Full Stack Developer', 'Backend Developer']],
-    'Backend Developer': ['Software & Engineering', ['Software Developer', 'Full Stack Developer', 'Backend Developer']],
-    'Data Scientist': ['Data & Analytics', ['Data Scientist', 'Data Analyst']],
-    'Data Analyst': ['Data & Analytics', ['Data Scientist', 'Data Analyst']],
-    'AI/ML Engineer': ['AI & Intelligent Systems', ['AI/ML Engineer']],
-    'Cloud Architect': ['Cloud & Infrastructure', ['Cloud Architect', 'DevOps Engineer']],
-    'DevOps Engineer': ['Cloud & Infrastructure', ['Cloud Architect', 'DevOps Engineer']],
-    'Frontend Developer': ['Design & Experience', ['Frontend Developer', 'UI/UX Designer']],
-    'UI/UX Designer': ['Design & Experience', ['Frontend Developer', 'UI/UX Designer']],
-    'Product Manager': ['Product & Delivery', ['Product Manager']]
+  // Presentation order mirrors course-catalog-config.json. IDs are kept here
+  // so a saved result can still show mapped learning recommendations if the
+  // status-dependent catalog API is temporarily unavailable.
+  const careerCourseIds = {
+    'Software Developer': ['python_for_careers', 'web_dev', 'dsa', 'full_stack', 'vibe_coding', 'ai_software_engineering', 'ai_builder_capstone'],
+    'Data Scientist': ['python_for_careers', 'data_science', 'advanced_ml', 'generative_ai_llm', 'rag_knowledge_systems', 'ai_evaluation'],
+    'Full Stack Developer': ['web_dev', 'dsa', 'full_stack', 'python_for_careers', 'vibe_coding', 'ai_software_engineering', 'ai_builder_capstone'],
+    'Frontend Developer': ['web_dev', 'ui_ux', 'full_stack', 'vibe_coding', 'ai_software_engineering'],
+    'Backend Developer': ['python_for_careers', 'dsa', 'full_stack', 'devops', 'generative_ai_llm', 'rag_knowledge_systems', 'ai_software_engineering', 'ai_agents'],
+    'AI/ML Engineer': ['intro_to_ai', 'python_for_careers', 'advanced_ml', 'generative_ai_llm', 'rag_knowledge_systems', 'ai_agents', 'mcp_tool_connected_ai', 'ai_evaluation', 'ai_builder_capstone'],
+    'Data Analyst': ['data_analytics_basics', 'python_for_careers', 'data_science', 'intro_to_ai', 'prompt_engineering', 'ai_automation_n8n', 'generative_ai_llm', 'ai_evaluation'],
+    'Cloud Architect': ['aws_architect', 'devops', 'cybersecurity', 'ai_automation_n8n', 'mcp_tool_connected_ai'],
+    'DevOps Engineer': ['devops', 'aws_architect', 'python_for_careers', 'cybersecurity', 'ai_automation_n8n', 'vibe_coding', 'mcp_tool_connected_ai', 'ai_software_engineering', 'ai_evaluation'],
+    'UI/UX Designer': ['ui_ux', 'web_dev', 'full_stack', 'prompt_engineering', 'vibe_coding', 'generative_ai_llm'],
+    'Product Manager': ['ui_ux', 'data_analytics_basics', 'web_dev', 'intro_to_ai', 'prompt_engineering', 'ai_automation_n8n', 'vibe_coding', 'ai_evaluation', 'ai_builder_capstone']
   };
-  const learningPathOrder = {
-    'Software Developer': ['python_for_careers', 'web_dev', 'dsa', 'full_stack', 'vibe_coding', 'ai_software_engineering', 'ai_builder_capstone']
+
+  const careerSignals = {
+    'Software Engineering': 'signal.software',
+    'Data & Analytical Thinking': 'signal.data',
+    'AI & Computational Intelligence': 'signal.ai',
+    'Systems & Infrastructure': 'signal.systems',
+    'Security & Reliability': 'signal.security',
+    'Product & User Orientation': 'signal.product',
+    'Design & Human Experience': 'signal.design',
+    'Leadership & Delivery': 'signal.delivery'
   };
 
   const dimensionLocaleKeys = {
@@ -521,7 +543,10 @@
   };
   const localizedDimension = dimension => t(`coverage.${dimensionLocaleKeys[dimension]}`, dimension);
 
-  function displayResults(result) {
+  async function displayResults(result) {
+    if (typeof window.setCareerPathLanguage === 'function') {
+      await window.setCareerPathLanguage(window.getCareerPathLanguage());
+    }
     const topCareers = result?.top_careers || result?.topCareers || [];
     const strengths = result?.strengths || [];
     const dimensionScores = result?.dimension_scores || result?.dimensionScores || {};
@@ -533,112 +558,199 @@
       return;
     }
 
-    const [direction, related] = careerDirections[topCareers[0].career] || ['Technology & Digital Careers', topCareers.map(c => c.career)];
+    const directionKey = window.CAREER_DIRECTION_BY_ROLE?.[topCareers[0].career];
     const hero = document.createElement('section');
     hero.className = 'career-result-hero';
-    const title = document.createElement('h2');
-    title.textContent = t('careerResult.direction.' + direction, direction);
-    const summary = document.createElement('p');
-    summary.textContent = t('careerResult.directionSummary', 'Your strongest career alignment is with {career}, with related paths to explore.', {career: topCareers[0].career});
-    hero.append(title, summary);
+    const domain = document.createElement('p');
+    domain.className = 'career-result-domain';
+    domain.textContent = directionKey ? t(`careerResult.domain.${directionKey}`) : topCareers[0].career;
+    hero.appendChild(domain);
     resultsContent.appendChild(hero);
 
     const observed = document.createElement('section');
     observed.className = 'career-result-section';
     const observedTitle = document.createElement('h2');
-    observedTitle.textContent = t('careerResult.observed', 'What we observed');
+    observedTitle.textContent = t('careerResult.whatNoticed');
     observed.appendChild(observedTitle);
-    const strongest = Object.entries(dimensionScores).filter(([, value]) => Number.isFinite(Number(value))).sort((a,b) => Number(b[1])-Number(a[1])).slice(0,3);
     const observations = document.createElement('ul');
-    strongest.forEach(([name], index) => {
+    const strongest = Object.entries(dimensionScores)
+      .filter(([, value]) => Number.isFinite(Number(value)))
+      .sort((a, b) => Number(b[1]) - Number(a[1]))
+      .slice(0, 3);
+    const signalDimensions = strongest.length
+      ? strongest.map(([dimension]) => dimension)
+      : strengths.map(strength => dimensions.find(dimension => String(strength).includes(dimension))).filter(Boolean).slice(0, 3);
+    signalDimensions.forEach(dimension => {
       const li = document.createElement('li');
-      li.textContent = t(index === 0 ? 'careerResult.signalStrongest' : 'careerResult.signalAlso', index === 0 ? 'Your strongest signal is {dimension}.' : '{dimension} is also a signal in your profile.', {dimension: localizedDimension(name)});
+      const signalKey = careerSignals[dimension];
+      li.textContent = signalKey ? t(`careerResult.${signalKey}`) : localizedDimension(dimension);
       observations.appendChild(li);
     });
     observed.appendChild(observations);
-    const signals = document.createElement('details');
-    signals.className = 'career-result-details';
-    const signalsSummary = document.createElement('summary');
-    signalsSummary.textContent = t('careerResult.profileSignals', 'Your profile signals');
-    signals.appendChild(signalsSummary);
-    const bars = document.createElement('div');
-    bars.className = 'career-dimension-list';
+    resultsContent.appendChild(observed);
+
+    const learningSection = document.createElement('section');
+    learningSection.className = 'career-result-section career-learning-path';
+    const learningTitle = document.createElement('h2');
+    learningTitle.textContent = t('careerResult.startLearningHeading');
+    learningSection.appendChild(learningTitle);
+    const courseList = document.createElement('div');
+    courseList.className = 'career-course-list';
+    learningSection.appendChild(courseList);
+    resultsContent.appendChild(learningSection);
+
+    const detail = document.createElement('details');
+    detail.className = 'career-result-details career-assessment-detail';
+    const detailSummary = document.createElement('summary');
+    detailSummary.textContent = t('careerResult.viewDetails');
+    detail.appendChild(detailSummary);
+
+    const dimensionsTitle = document.createElement('h3');
+    dimensionsTitle.textContent = t('careerResult.dimensions');
+    detail.appendChild(dimensionsTitle);
+    const dimensionList = document.createElement('ul');
+    dimensionList.className = 'career-detail-list';
     dimensions.forEach(dimension => {
       if (!Number.isFinite(Number(dimensionScores[dimension]))) return;
-      const row = document.createElement('div'); row.className = 'dimension-insight';
-      const label = document.createElement('span'); label.className = 'dimension-label'; label.textContent = localizedDimension(dimension);
-      const track = document.createElement('div'); track.className = 'dimension-bar';
-      const fill = document.createElement('div'); fill.className = 'dimension-fill'; fill.style.width = `${Math.round(Number(dimensionScores[dimension])*100)}%`;
-      track.appendChild(fill);
-      const value = document.createElement('span'); value.className = 'dimension-percentage'; value.textContent = `${Math.round(Number(dimensionScores[dimension])*100)}%`;
-      row.append(label, track, value); bars.appendChild(row);
+      const item = document.createElement('li');
+      item.textContent = `${localizedDimension(dimension)}: ${Math.round(Number(dimensionScores[dimension]) * 100)}%`;
+      dimensionList.appendChild(item);
     });
-    signals.appendChild(bars); observed.appendChild(signals); resultsContent.appendChild(observed);
+    detail.appendChild(dimensionList);
 
-    const relatedSection = document.createElement('section'); relatedSection.className = 'career-result-section';
-    const relatedTitle = document.createElement('h2'); relatedTitle.textContent = t('careerResult.relatedPaths', 'Related paths'); relatedSection.appendChild(relatedTitle);
-    const relatedList = document.createElement('ul'); relatedList.className = 'career-related-list';
-    related.filter(career => career !== topCareers[0].career).forEach(career => {
-      const found = topCareers.find(item => item.career === career);
-      const li = document.createElement('li'); li.textContent = found ? `${career} ? ${found.score}%` : career; relatedList.appendChild(li);
+    const careersTitle = document.createElement('h3');
+    careersTitle.textContent = t('careerResult.careerResults');
+    detail.appendChild(careersTitle);
+    const careerList = document.createElement('ul');
+    careerList.className = 'career-detail-list';
+    topCareers.forEach(item => {
+      const career = typeof item === 'string' ? item : item.career;
+      if (!career) return;
+      const score = typeof item === 'string' || item.score === null || item.score === undefined ? '' : `: ${item.score}%`;
+      const listItem = document.createElement('li');
+      listItem.textContent = `${career}${score}`;
+      careerList.appendChild(listItem);
     });
-    if (!relatedList.children.length) topCareers.slice(1).forEach(item => { const li=document.createElement('li'); li.textContent=`${item.career} ? ${item.score}%`; relatedList.appendChild(li); });
-    if (relatedList.children.length) { relatedSection.appendChild(relatedList); resultsContent.appendChild(relatedSection); }
+    detail.appendChild(careerList);
 
-    const transparency = document.createElement('section'); transparency.className = 'career-result-section career-transparency';
-    const calc = document.createElement('details'); calc.className = 'career-result-details';
-    const calcSummary = document.createElement('summary'); calcSummary.textContent = t('careerResult.calculationTitle', 'How this result is calculated'); calc.appendChild(calcSummary);
-    const calcText = document.createElement('p'); calcText.textContent = t('careerResult.calculationBody', 'Each answer is 1?5 and is normalized with (answer ? 1) / 4. Normalized answers are averaged within each of the 8 dimensions. The resulting 8-dimensional learner vector is compared with 11 fixed career reference vectors using mean absolute difference (L1 distance). Similarity is 1 minus mean absolute difference; fit percentage is similarity ? 100. This deterministic mathematical similarity algorithm identifies the highest-aligned career profiles.');
-    calc.appendChild(calcText); transparency.appendChild(calc);
-    const full = document.createElement('details'); full.className = 'career-result-details';
-    const fullSummary = document.createElement('summary'); fullSummary.textContent = t('careerResult.fullResults', 'Your full results'); full.appendChild(fullSummary);
-    const allResults = document.createElement('ul');
-    topCareers.forEach(item => { const li=document.createElement('li'); li.textContent=`${item.career}: ${item.score}%`; allResults.appendChild(li); });
-    strengths.forEach(item => { const li=document.createElement('li'); li.textContent=item; allResults.appendChild(li); });
-    full.appendChild(allResults); transparency.appendChild(full); resultsContent.appendChild(transparency);
+    if (strengths.length) {
+      const strengthsTitle = document.createElement('h3');
+      strengthsTitle.textContent = t('careerResult.strengthDetails');
+      detail.appendChild(strengthsTitle);
+      const strengthsList = document.createElement('ul');
+      strengths.forEach(strength => {
+        const item = document.createElement('li');
+        item.textContent = strength;
+        strengthsList.appendChild(item);
+      });
+      detail.appendChild(strengthsList);
+    }
 
-    renderCareerCourseRecommendations(topCareers);
+    const calculationTitle = document.createElement('h3');
+    calculationTitle.textContent = t('careerResult.calculationTitle');
+    const calculationBody = document.createElement('p');
+    calculationBody.textContent = t('careerResult.calculationBody');
+    detail.append(calculationTitle, calculationBody);
+    resultsContent.appendChild(detail);
+
+    renderCareerCourseRecommendations(topCareers[0].career, courseList);
   }
 
-  async function renderCareerCourseRecommendations(topCareers) {
+  function localizedCourseField(courseId, field) {
+    const key = `courseMetadata.${courseId}.${field}`;
+    const value = t(key);
+    if (typeof value !== 'string' || value === key || /^(?:courseMetadata|courses)\.[\w-]+\.(?:title|description)$/i.test(value.trim())) {
+      return '';
+    }
+    return value.trim();
+  }
+
+  function courseCopy(value) {
+    if (typeof value !== 'string') return '';
+    const copy = value.trim();
+    return /^(?:courseMetadata|courses)\.[\w-]+\.(?:title|description)$/i.test(copy) ? '' : copy;
+  }
+
+  function renderCourseCards(courseList, courseIds, catalogCourses = new Map()) {
+    courseList.replaceChildren();
+    const cards = courseIds.map(id => {
+      const apiCourse = catalogCourses.get(id);
+      const title = courseCopy(apiCourse?.title) || localizedCourseField(id, 'title');
+      const description = courseCopy(apiCourse?.description) || localizedCourseField(id, 'description');
+      return { id, title, description, status: apiCourse?.status };
+    }).filter(course => course.title && course.description).slice(0, 5);
+
+    cards.forEach((course, index) => {
+      const card = document.createElement('article');
+      card.className = 'career-course-step';
+      const title = document.createElement('h3');
+      title.textContent = course.title;
+      const description = document.createElement('p');
+      description.textContent = course.description;
+      card.append(title, description);
+      if (course.status === 'coming_soon') {
+        const status = document.createElement('p');
+        status.className = 'course-availability';
+        status.textContent = t('ui.comingSoon', 'Coming soon');
+        card.appendChild(status);
+      } else if (course.status === 'available') {
+        const link = document.createElement('a');
+        link.className = index === 0 ? 'btn-primary' : 'btn-outline';
+        link.href = `course-detail.html?id=${encodeURIComponent(course.id)}`;
+        link.textContent = t('careerResult.startCourse');
+        card.appendChild(link);
+      }
+      courseList.appendChild(card);
+    });
+
+    if (!cards.length) {
+      const empty = document.createElement('p');
+      empty.className = 'career-course-empty';
+      empty.textContent = t('careerResult.noCourseRecommendations');
+      courseList.appendChild(empty);
+    }
+    return cards.length;
+  }
+
+  async function renderCareerCourseRecommendations(primaryCareer, courseList) {
+    const mappedIds = careerCourseIds[primaryCareer] || [];
+    renderCourseCards(courseList, mappedIds);
+
     try {
       const token = await window.getAuthAccessToken();
-      if (!token) throw new Error('Please sign in to load the learning path.');
+      if (!token) return;
       const response = await fetch(`${API_BASE}/courses`, { headers: { Authorization: `Bearer ${token}` } });
-      if (!response.ok) throw new Error(`Course catalog request failed: ${response.status}`);
+      if (!response.ok) return;
       const catalog = await response.json();
-      const coursesById = new Map((catalog.courses || []).map(course => [course.id, course]));
-      const mappings = catalog.career_course_mapping || {};
-      const recommendedIds = new Set(topCareers.flatMap(item => mappings[item.career] || []));
-      const primaryCareer = topCareers[0].career;
-      const ordered = catalog.learning_path_order?.[primaryCareer] || learningPathOrder[primaryCareer] || [];
-      const orderedIds = [...ordered, ...topCareers.flatMap(item => mappings[item.career] || [])].filter((id, i, arr) => arr.indexOf(id) === i && recommendedIds.has(id));
-      const available = orderedIds.map(id => coursesById.get(id)).filter(course => course && (course.status || 'available') === 'available');
-      const coming = orderedIds.map(id => coursesById.get(id)).filter(course => course && course.status === 'coming_soon');
-      const section = document.createElement('section'); section.className = 'career-result-section career-learning-path';
-      const heading = document.createElement('h2'); heading.textContent = t('careerResult.learningPath', 'Your learning path'); section.appendChild(heading);
-      const stages = ['startHere','next','then','continue'];
-      available.forEach((course, index) => {
-        const card = document.createElement('article'); card.className = `career-course-step${index === 0 ? ' is-first' : ''}`;
-        const stage = document.createElement('p'); stage.className='career-course-stage'; stage.textContent=t(`careerResult.stage.${stages[index] || 'continue'}`, ['Start here','Next','Then','Continue'][index] || 'Continue');
-        const name=document.createElement('h3'); name.textContent=t(`courseMetadata.${course.id}.title`,course.title);
-        const link=document.createElement('a'); link.className=index===0?'btn-primary':'btn-outline'; link.href=`course-detail.html?id=${encodeURIComponent(course.id)}`;
-        link.textContent=index===0?t('careerResult.startLearning','Start learning: {course}',{course:name.textContent}):t('careerResult.viewCourse','View course');
-        card.append(stage,name,link); section.appendChild(card);
-      });
-      if (available.length) resultsContent.appendChild(section);
-      if (coming.length) {
-        const later=document.createElement('section'); later.className='career-result-section career-coming-later';
-        const laterTitle=document.createElement('h2'); laterTitle.textContent=t('careerResult.comingLater','Coming later'); later.appendChild(laterTitle);
-        const list=document.createElement('ul'); coming.forEach(course=>{const li=document.createElement('li');li.textContent=t(`courseMetadata.${course.id}.title`,course.title);list.appendChild(li);}); later.appendChild(list); resultsContent.appendChild(later);
-      }
-    } catch (error) { console.warn('Could not load courses related to this career profile:', error); }
+      if (!Array.isArray(catalog.courses)) return;
+
+      const allowedIds = new Set(mappedIds);
+      const mappedFromCatalog = catalog.career_course_mapping?.[primaryCareer];
+      const recommendedIds = Array.isArray(mappedFromCatalog)
+        ? mappedFromCatalog.filter(id => allowedIds.has(id))
+        : mappedIds;
+      const configuredOrder = catalog.learning_path_order?.[primaryCareer];
+      const orderedIds = Array.isArray(configuredOrder)
+        ? [...configuredOrder.filter(id => recommendedIds.includes(id)), ...recommendedIds.filter(id => !configuredOrder.includes(id))]
+        : mappedIds;
+      const coursesById = new Map(catalog.courses
+        .filter(course => allowedIds.has(course.id))
+        .map(course => [course.id, course]));
+      const catalogIds = orderedIds.filter(id => coursesById.has(id));
+      renderCourseCards(courseList, catalogIds, coursesById);
+    } catch (_error) {
+      // The repository's localized course metadata keeps the learning path
+      // useful when the status-dependent catalog API is temporarily offline.
+    }
   }
 
   // Retake test
   retakeBtn.addEventListener('click', () => {
     // Discard any stored attempt so the retake starts from a clean slate
     clearAttemptState();
+    const currentUrl = new URL(window.location.href);
+    currentUrl.searchParams.delete('view');
+    window.history.replaceState({}, '', `${currentUrl.pathname}${currentUrl.search}${currentUrl.hash}`);
     resultsContainer.style.display = 'none';
     quizContainer.style.display = 'block';
     window.scrollTo({ top: 0, behavior: 'auto' });

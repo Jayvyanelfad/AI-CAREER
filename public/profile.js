@@ -24,6 +24,11 @@
   const avatarFileInput = document.getElementById('profile-avatar-file');
   const saveAvatarButton = document.getElementById('save-avatar-btn');
   const removeAvatarButton = document.getElementById('remove-avatar-btn');
+  const cropDialog = document.getElementById('avatar-crop-dialog');
+  const cropViewport = document.getElementById('avatar-crop-viewport');
+  const cropImage = document.getElementById('avatar-crop-image');
+  const cropZoom = document.getElementById('avatar-crop-zoom');
+  const saveAvatarCropButton = document.getElementById('save-avatar-crop-btn');
   const preferenceStatus = document.getElementById('profile-preference-status');
   const languagePreference = document.getElementById('language-preference');
   const themePreference = document.getElementById('theme-preference');
@@ -55,6 +60,13 @@
   let currentProfile = null;
   let pendingAvatarFile = null;
   let pendingAvatarPreview = null;
+  let cropSourceImage = null;
+  let cropBaseScale = 1;
+  let cropScale = 1;
+  let cropOffsetX = 0;
+  let cropOffsetY = 0;
+  let cropDrag = null;
+  let savingCroppedAvatar = false;
 
   function updateSharedIdentity(profile) {
     if (typeof window.updateCareerPathProfileIdentity === 'function') {
@@ -455,7 +467,7 @@
     }
 
     const mappedCourses = getMappedCourses();
-    const availableCourses = mappedCourses.filter(item => !item.enrolled).slice(0, 3);
+    const availableCourses = mappedCourses.filter(item => !item.enrolled && item.course.status !== 'coming_soon').slice(0, 3);
     if (availableCourses.length === 0) {
       recommendationStatus.textContent = mappedCourses.length > 0
         ? t('coverage.alreadyLearningMapped', 'You are already learning the courses currently mapped to your top career directions.')
@@ -657,8 +669,45 @@
     if (pendingAvatarPreview) URL.revokeObjectURL(pendingAvatarPreview);
     pendingAvatarPreview = null;
     pendingAvatarFile = null;
+    cropSourceImage = null;
+    cropImage.removeAttribute('src');
     avatarFileInput.value = '';
     saveAvatarButton.disabled = true;
+  }
+
+  function clampCropOffset() {
+    const size = cropViewport.clientWidth;
+    const renderedWidth = cropSourceImage.naturalWidth * cropScale;
+    const renderedHeight = cropSourceImage.naturalHeight * cropScale;
+    cropOffsetX = Math.min(0, Math.max(size - renderedWidth, cropOffsetX));
+    cropOffsetY = Math.min(0, Math.max(size - renderedHeight, cropOffsetY));
+  }
+
+  function renderCropPosition() {
+    if (!cropSourceImage) return;
+    clampCropOffset();
+    cropImage.style.width = `${cropSourceImage.naturalWidth * cropScale}px`;
+    cropImage.style.height = `${cropSourceImage.naturalHeight * cropScale}px`;
+    cropImage.style.left = `${cropOffsetX}px`;
+    cropImage.style.top = `${cropOffsetY}px`;
+  }
+
+  function setCropZoom(value) {
+    if (!cropSourceImage) return;
+    const size = cropViewport.clientWidth;
+    const imageXAtCenter = (size / 2 - cropOffsetX) / cropScale;
+    const imageYAtCenter = (size / 2 - cropOffsetY) / cropScale;
+    cropScale = cropBaseScale * Number(value);
+    cropOffsetX = size / 2 - imageXAtCenter * cropScale;
+    cropOffsetY = size / 2 - imageYAtCenter * cropScale;
+    renderCropPosition();
+  }
+
+  function resetCrop() {
+    cropDrag = null;
+    if (cropDialog.open) cropDialog.close();
+    clearPendingAvatarPreview();
+    renderAvatar(currentProfile?.avatar_url, currentProfile?.full_name || currentProfile?.name);
   }
 
   avatarFileInput.addEventListener('change', async () => {
@@ -666,8 +715,7 @@
     if (!file) return;
     const result = await window.CareerPathProfilePhoto.validateImageData(file);
     if (!result.valid) {
-      clearPendingAvatarPreview();
-      renderAvatar(currentProfile?.avatar_url, currentProfile?.full_name || currentProfile?.name);
+      resetCrop();
       const key = result.reason === 'type' ? 'profile.photoTypeError' : result.reason === 'size' ? 'profile.photoSizeError' : 'profile.photoInvalidError';
       showMessage(t(key), true);
       return;
@@ -675,21 +723,97 @@
     if (pendingAvatarPreview) URL.revokeObjectURL(pendingAvatarPreview);
     pendingAvatarFile = file;
     pendingAvatarPreview = URL.createObjectURL(file);
-    renderAvatar(pendingAvatarPreview, currentProfile?.full_name || currentProfile?.name);
+    cropSourceImage = new Image();
+    cropSourceImage.onload = () => {
+      cropDialog.showModal();
+      const size = cropViewport.clientWidth;
+      cropBaseScale = Math.max(size / cropSourceImage.naturalWidth, size / cropSourceImage.naturalHeight);
+      cropZoom.value = '1';
+      cropScale = cropBaseScale;
+      cropOffsetX = (size - cropSourceImage.naturalWidth * cropScale) / 2;
+      cropOffsetY = (size - cropSourceImage.naturalHeight * cropScale) / 2;
+      renderCropPosition();
+      saveAvatarButton.disabled = false;
+      cropViewport.focus();
+    };
+    cropSourceImage.onerror = () => {
+      resetCrop();
+      showMessage(t('profile.photoInvalidError'), true);
+    };
+    cropSourceImage.src = pendingAvatarPreview;
     saveAvatarButton.disabled = false;
   });
 
-  saveAvatarButton.addEventListener('click', async () => {
-    if (!pendingAvatarFile || !currentProfile?.id || !window.supabase?.storage) return;
-    const validation = window.CareerPathProfilePhoto.validateProfilePhoto(pendingAvatarFile);
-    if (!validation.valid) return;
-    saveAvatarButton.disabled = true;
+  saveAvatarButton.addEventListener('click', () => {
+    if (cropSourceImage && !cropDialog.open) cropDialog.showModal();
+  });
+
+  cropZoom.addEventListener('input', () => setCropZoom(cropZoom.value));
+  cropViewport.addEventListener('pointerdown', event => {
+    if (!cropSourceImage) return;
+    cropDrag = { pointerId: event.pointerId, x: event.clientX, y: event.clientY, offsetX: cropOffsetX, offsetY: cropOffsetY };
+    cropViewport.setPointerCapture(event.pointerId);
+    event.preventDefault();
+  });
+  cropViewport.addEventListener('pointermove', event => {
+    if (!cropDrag || cropDrag.pointerId !== event.pointerId) return;
+    cropOffsetX = cropDrag.offsetX + event.clientX - cropDrag.x;
+    cropOffsetY = cropDrag.offsetY + event.clientY - cropDrag.y;
+    renderCropPosition();
+  });
+  const finishCropDrag = event => {
+    if (cropDrag && cropDrag.pointerId === event.pointerId) cropDrag = null;
+  };
+  cropViewport.addEventListener('pointerup', finishCropDrag);
+  cropViewport.addEventListener('pointercancel', finishCropDrag);
+  cropViewport.addEventListener('keydown', event => {
+    const step = event.shiftKey ? 20 : 5;
+    if (event.key === 'ArrowLeft') cropOffsetX -= step;
+    else if (event.key === 'ArrowRight') cropOffsetX += step;
+    else if (event.key === 'ArrowUp') cropOffsetY -= step;
+    else if (event.key === 'ArrowDown') cropOffsetY += step;
+    else return;
+    event.preventDefault();
+    renderCropPosition();
+  });
+  document.getElementById('cancel-avatar-crop-btn').addEventListener('click', resetCrop);
+  cropDialog.addEventListener('cancel', event => {
+    event.preventDefault();
+    resetCrop();
+  });
+  cropDialog.addEventListener('close', () => {
+    if (!savingCroppedAvatar && pendingAvatarFile) resetCrop();
+  });
+
+  async function makeCroppedAvatar() {
+    const outputSize = 512;
+    const size = cropViewport.clientWidth;
+    const sourceSize = size / cropScale;
+    const sourceX = -cropOffsetX / cropScale;
+    const sourceY = -cropOffsetY / cropScale;
+    const canvas = document.createElement('canvas');
+    canvas.width = outputSize;
+    canvas.height = outputSize;
+    const context = canvas.getContext('2d');
+    context.drawImage(cropSourceImage, sourceX, sourceY, sourceSize, sourceSize, 0, 0, outputSize, outputSize);
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.9));
+    if (!blob) throw new Error(t('profile.photoUploadFailed'));
+    return new File([blob], 'profile-photo.jpg', { type: 'image/jpeg', lastModified: Date.now() });
+  }
+
+  saveAvatarCropButton.addEventListener('click', async () => {
+    if (!pendingAvatarFile || !cropSourceImage || !currentProfile?.id || !window.supabase?.storage) return;
+    saveAvatarCropButton.disabled = true;
+    savingCroppedAvatar = true;
     try {
+      const croppedFile = await makeCroppedAvatar();
+      const validation = window.CareerPathProfilePhoto.validateProfilePhoto(croppedFile);
+      if (!validation.valid) throw new Error(t('profile.photoUploadFailed'));
       if (!window.crypto?.randomUUID) throw new Error(t('profile.photoUploadFailed'));
       const oldPath = currentProfile.avatar_path;
       const newPath = `${currentProfile.id}/${window.crypto.randomUUID()}.${validation.extension}`;
-      const { error: uploadError } = await window.supabase.storage.from('profile-avatars').upload(newPath, pendingAvatarFile, {
-        cacheControl: '3600', contentType: pendingAvatarFile.type, upsert: false
+      const { error: uploadError } = await window.supabase.storage.from('profile-avatars').upload(newPath, croppedFile, {
+        cacheControl: '3600', contentType: croppedFile.type, upsert: false
       });
       if (uploadError) throw new Error(t('profile.photoUploadFailed'));
       let saved;
@@ -703,12 +827,15 @@
         throw error;
       }
       applyProfile(saved);
+      cropDialog.close();
       clearPendingAvatarPreview();
       if (oldPath) await window.supabase.storage.from('profile-avatars').remove([oldPath]);
       showMessage(t('profile.photoSaved'));
     } catch (error) {
-      saveAvatarButton.disabled = !pendingAvatarFile;
+      saveAvatarCropButton.disabled = false;
       showMessage(error.message || t('profile.photoUploadFailed'), true);
+    } finally {
+      savingCroppedAvatar = false;
     }
   });
 

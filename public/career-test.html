@@ -231,7 +231,7 @@
 
       <!-- Action Buttons -->
       <div class="action-buttons" style="display: flex; gap: var(--space-4); flex-wrap: wrap; justify-content: center; margin-top: var(--space-6);">
-        <a href="dashboard.html" class="btn-outline" style="background: transparent; border: 1px solid var(--border); border-radius: 50px; color: var(--bege_light); font-family: var(--font-display); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; transition: var(--transition); padding: var(--space-3) var(--space-4); display: flex; justify-content: center; align-items: center; gap: var(--space-2); cursor: pointer;" onmouseover="this.style.background='var(--accent-light)'; this.style.borderColor='var(--bege)'; this.style.color='var(--bege)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.background='transparent'; this.style.borderColor='var(--border)'; this.style.color='var(--bege_light)'; this.style.transform='translateY(0)';">Go to Dashboard</a>
+        <a href="dashboard.html" class="btn-outline" data-i18n="ui.goDashboard" data-i18n-fallback="Go to Dashboard" style="background: transparent; border: 1px solid var(--border); border-radius: 50px; color: var(--bege_light); font-family: var(--font-display); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; transition: var(--transition); padding: var(--space-3) var(--space-4); display: flex; justify-content: center; align-items: center; gap: var(--space-2); cursor: pointer;" onmouseover="this.style.background='var(--accent-light)'; this.style.borderColor='var(--bege)'; this.style.color='var(--bege)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.background='transparent'; this.style.borderColor='var(--border)'; this.style.color='var(--bege_light)'; this.style.transform='translateY(0)';">Go to Dashboard</a>
         <button class="btn-outline" id="retake-btn" style="background: transparent; border: 1px solid var(--border); border-radius: 50px; color: var(--bege_light); font-family: var(--font-display); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; transition: var(--transition); padding: var(--space-3) var(--space-4); display: flex; justify-content: center; align-items: center; gap: var(--space-2); cursor: pointer;" data-i18n="ui.retakeTest" data-i18n-fallback="Retake Test" onmouseover="this.style.background='var(--accent-light)'; this.style.borderColor='var(--bege)'; this.style.color='var(--bege)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.background='transparent'; this.style.borderColor='var(--border)'; this.style.color='var(--bege_light)'; this.style.transform='translateY(0)';">Retake Test</button>
       </div>
     </div>
@@ -244,6 +244,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js"></script>
   <script src="auth-navigation.js"></script>
+  <script src="career-direction-config.js"></script>
   <script src="career-test.js"></script>
 </body>
 </html>
