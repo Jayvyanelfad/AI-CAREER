@@ -202,6 +202,73 @@ test('course recommendation actions follow explicit availability and omit missin
   } finally { await context.close(); }
 });
 
+test('saved assessment absence is distinct from assessment read failure', async t => {
+  const { browser, origin } = await startFixture(t);
+  const dimensionsForQuestions = [...dimensions, dimensions[0]];
+
+  async function openQuiz(savedResult) {
+    const context = await browser.newContext();
+    await context.addInitScript(() => {
+      localStorage.setItem('aicareer-language', 'en');
+      localStorage.removeItem('token');
+      sessionStorage.clear();
+      const session = { access_token: 'career-result-test-token', user: { id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa' } };
+      window.supabase = { auth: {
+        getSession: async () => ({ data: { session }, error: null }),
+        onAuthStateChange: () => ({ data: { subscription: { unsubscribe() {} } } }),
+        getUser: async () => ({ data: { user: session.user }, error: null })
+      } };
+    });
+    await context.route('**/*', route => {
+      const hostname = new URL(route.request().url()).hostname;
+      return hostname === '127.0.0.1' ? route.continue() : route.abort();
+    });
+    await context.route('**/cdn.jsdelivr.net/**', route => route.fulfill({ status: 200, contentType: 'text/javascript', body: '' }));
+    let questionRequests = 0;
+    await context.route('**/api/**', route => {
+      const path = new URL(route.request().url()).pathname;
+      if (path === '/api/career-test') return route.fulfill({
+        status: savedResult.status, contentType: 'application/json',
+        body: JSON.stringify(savedResult.body)
+      });
+      if (path === '/api/questions') {
+        questionRequests++;
+        return route.fulfill({
+          status: 200, contentType: 'application/json',
+          body: JSON.stringify(Array.from({ length: 25 }, (_, index) => ({
+            id: `question-${index + 1}`, text: `Question ${index + 1}`,
+            category: dimensionsForQuestions[index % dimensionsForQuestions.length],
+            options: [1, 2, 3, 4, 5].map(value => ({ value, text: String(value) }))
+          })))
+        });
+      }
+      if (path === '/api/dashboard') return route.fulfill({ status: 200, contentType: 'application/json', body: '{}' });
+      if (path === '/api/courses') return route.fulfill({ status: 200, contentType: 'application/json', body: '{"courses":[]}' });
+      return route.fulfill({ status: 404, contentType: 'application/json', body: '{}' });
+    });
+    const page = await context.newPage();
+    page.on('dialog', dialog => dialog.accept());
+    await page.goto(`${origin}/career-test.html`, { waitUntil: 'domcontentloaded' });
+    return { context, page, getQuestionRequests: () => questionRequests };
+  }
+
+  const noResult = await openQuiz({ status: 404, body: { error: 'NO_COMPLETED_CAREER_ASSESSMENT' } });
+  try {
+    await noResult.page.locator('#options-container .answer-choice').first().waitFor();
+    assert.equal(noResult.getQuestionRequests(), 1, 'an explicit no-result response starts a new assessment');
+  } finally {
+    await noResult.context.close();
+  }
+
+  const readFailure = await openQuiz({ status: 500, body: { error: 'CAREER_ASSESSMENT_READ_FAILED' } });
+  try {
+    await readFailure.page.waitForURL('**/dashboard.html');
+    assert.equal(readFailure.getQuestionRequests(), 0, 'a failed saved-result read is not misreported as a new assessment');
+  } finally {
+    await readFailure.context.close();
+  }
+});
+
 test('Dashboard and Career Result share broad-domain mappings for supported roles', async t => {
   const { browser, origin } = await startFixture(t);
   const cases = [

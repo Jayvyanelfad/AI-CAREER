@@ -90,8 +90,13 @@
           } else if (savedPayload.result) {
             console.info('The saved assessment predates career-profile-v1 and is not displayed as a v1 profile.');
           }
-        } else if (savedResponse.status !== 404) {
-          console.warn('Could not load the saved career profile:', await savedResponse.text());
+        } else if (savedResponse.status === 404) {
+          const savedPayload = await savedResponse.json();
+          if (savedPayload.error !== 'NO_COMPLETED_CAREER_ASSESSMENT') {
+            throw new Error('Unexpected response while loading the saved career profile');
+          }
+        } else {
+          throw new Error(`Could not load the saved career profile: ${savedResponse.status}`);
         }
       }
 

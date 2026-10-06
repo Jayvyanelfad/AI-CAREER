@@ -10,10 +10,10 @@ const assessment = {
   dimensionScores: { 'Software Engineering': 0.7, 'AI & Computational Intelligence': 0.9, 'Data & Analytical Thinking': 0.8 }
 };
 const catalog = { courses: [
-  { id: 'intro_to_ai', title: 'Introduction to AI', description: 'Explore the foundations of artificial intelligence.', status: 'available' },
-  { id: 'python_for_careers', title: 'Python for Careers', description: 'Learn Python through practical work.', status: 'coming_soon' },
-  { id: 'advanced_ml', title: 'Advanced Machine Learning', description: 'Study machine learning methods.', status: 'available' }
-] };
+  { id: 'intro_to_ai', title: 'Introduction to AI', description: 'Explore the foundations of artificial intelligence.', category: 'AI & Machine Learning', status: 'available' },
+  { id: 'python_for_careers', title: 'Python for Careers', description: 'Learn Python through practical work.', category: 'Software Engineering', status: 'coming_soon' },
+  { id: 'advanced_ml', title: 'Advanced Machine Learning', description: 'Study machine learning methods.', category: 'AI & Machine Learning', status: 'available' }
+], career_course_mapping: { 'AI/ML Engineer': ['advanced_ml', 'intro_to_ai'] } };
 
 test('authenticated dashboard renders new, returning, course and certificate states safely', async t => {
   const app = express(); app.use(express.static('public'));
@@ -54,6 +54,8 @@ test('authenticated dashboard renders new, returning, course and certificate sta
   assert.deepEqual(await fresh.page.locator('#explore-grid a[href^="course-detail.html?id="]').count(), 2);
   assert.equal(await fresh.page.locator('#explore-grid').getByText(/coming soon/i).count(), 1);
   assert.equal(await fresh.page.locator('#explore-grid a[href*="python_for_careers"]').count(), 0);
+  assert.equal(await fresh.page.evaluate(() => performance.getEntriesByType('resource').some(entry => new URL(entry.name).pathname.endsWith('/course-catalog-config.json'))), false, 'dashboard does not request the unserved catalog config');
+  assert.equal(await fresh.page.locator('#explore-grid .eyebrow').first().innerText(), 'AI & Machine Learning');
   await fresh.context.close();
 
   const returning = await openDashboard({ user: { id: userId, name: 'Asha Learner' }, careerTest: assessment, enrollments: [], certificates: [] });

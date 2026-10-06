@@ -14,6 +14,7 @@
     let lessonProgressUnavailable = false;
     let totalLessons = 0;
     let completedLessonsCount = 0;
+    let courseProgress = null;
     let certificateEligible = false;
     let certificateResult = null;
 
@@ -148,11 +149,11 @@
     // Fetch completed lesson IDs for the user in this course
     // Fetch completed lesson IDs for the user in this course (requires authentication)
 async function fetchCompletedLessons() {
-    const token = localStorage.getItem('token');
+    const token = await window.getAuthAccessToken();
     lessonProgressUnavailable = false;
     if (!token) {
-        // If not authenticated, we cannot fetch completed lessons, so return an empty set.
         completedLessonIds = new Set();
+        courseProgress = null;
         return completedLessonIds;
     }
     try {
@@ -170,10 +171,20 @@ async function fetchCompletedLessons() {
 
         const data = await response.json();
         completedLessonIds = new Set(data.completedLessons || []);
+        courseProgress = Number.isInteger(data.totalLessons) &&
+            Number.isInteger(data.completedCount) &&
+            Number.isFinite(data.progress)
+            ? {
+                totalLessons: data.totalLessons,
+                completedLessons: data.completedCount,
+                progress: data.progress
+            }
+            : null;
         return completedLessonIds;
     } catch (error) {
         console.error('Error fetching completed lessons:', error);
         lessonProgressUnavailable = true;
+        courseProgress = null;
         return completedLessonIds;
     }
 }
@@ -181,7 +192,7 @@ async function fetchCompletedLessons() {
     // Fetch exam for the course
     async function fetchExamForCourse(courseId) {
         try {
-            const token = localStorage.getItem('token');
+            const token = await window.getAuthAccessToken();
             const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
             const response = await fetch(`/api/exams?course_id=${courseId}`, {
                 headers
@@ -208,7 +219,7 @@ async function fetchCompletedLessons() {
 
     // Fetch enrollment for the course and current user (requires authentication)
     async function fetchEnrollmentForCourse(courseId) {
-        const token = localStorage.getItem('token');
+        const token = await window.getAuthAccessToken();
         enrollmentUnavailable = false;
         if (!token) {
             // If not authenticated, we cannot fetch enrollment, so set to null.
@@ -222,8 +233,9 @@ async function fetchCompletedLessons() {
                 }
             });
 
+            const data = await response.json().catch(() => ({}));
             if (!response.ok) {
-                if (response.status === 404) {
+                if (response.status === 404 && data.error === 'NOT_ENROLLED') {
                     // Not enrolled
                     enrollment = null;
                 } else {
@@ -232,7 +244,6 @@ async function fetchCompletedLessons() {
                     enrollmentUnavailable = true;
                 }
             } else {
-                const data = await response.json();
                 // Handle both old format { enrollments: [...] } and new format flat enrollment object
                 if (data.enrollments && Array.isArray(data.enrollments)) {
                     // Old format: { enrollments: [ ... ] }
@@ -253,7 +264,8 @@ async function fetchCompletedLessons() {
     // Mark a lesson as complete via backend
     async function markLessonComplete(lessonId) {
         try {
-            const token = localStorage.getItem('token');
+            const token = await window.getAuthAccessToken();
+            if (!token) throw new Error('Sign in to mark lessons complete.');
             const headers = token ? {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
@@ -268,9 +280,17 @@ async function fetchCompletedLessons() {
             }
 
             const data = await response.json();
-            // Update our completed set
-            completedLessonIds.add(lessonId);
-            // Note: The backend returns progress, but we'll recalculate from our set for consistency
+            if (Array.isArray(data.completedLessonIds)) {
+                completedLessonIds = new Set(data.completedLessonIds);
+            } else {
+                completedLessonIds.add(lessonId);
+            }
+            courseProgress = {
+                totalLessons: data.totalLessons,
+                completedLessons: data.completedLessons,
+                progress: data.progress
+            };
+            lessonProgressUnavailable = false;
             return data;
         } catch (error) {
             console.error('Error marking lesson as complete:', error);
@@ -390,7 +410,7 @@ async function fetchCompletedLessons() {
                         heading: 'Narrow AI versus general intelligence',
                         paragraphs: [
                             'Most deployed AI is <strong>narrow AI</strong>: designed for one task or a bounded set of related tasks. Success on one task does not prove general capability. A spam filter cannot drive a car. A chess engine cannot hold a conversation.',
-                            '<strong>General intelligence</strong> (strong AI) would be a system with human-like flexibility across any task. It does not exist today. When people say "AI" they almost always mean narrow AI â€” and that is what you will be working with.'
+                            '<strong>General intelligence</strong> (strong AI) would be a system with human-like flexibility across any task. It does not exist today. When people say "AI" they almost always mean narrow AI, and that is what you will be working with.'
                         ]
                     }
                 ]
@@ -429,7 +449,7 @@ async function fetchCompletedLessons() {
                     'AI is a broad field; machine learning is one approach that fits models to examples.',
                     'Fixed rules, search, and learned models are different methods and can work together.',
                     'For a learned model, data quality and coverage shape performance and fairness.',
-                    'You have already met AI today â€” recommendations, voice assistants, photo search, spam filters and route predictions are all narrow AI.',
+                    'You have already met AI today: recommendations, voice assistants, photo search, spam filters and route predictions are all narrow AI.',
                     'Narrow AI is excellent at one task. General, human-like intelligence does not exist yet.'
                 ],
                 closing: 'You can now distinguish fixed rules from learned predictions and describe AI as a broader field. Next, examine how different learning setups use data.'
@@ -514,8 +534,8 @@ async function fetchCompletedLessons() {
                                 <i class="${item.icon}"></i>
                                 <h3>${item.title}</h3>
                             </div>
-                            <p><strong>What it does:</strong> ${item.what}</p>
-                            <p><strong>Why it is AI:</strong> ${item.why}</p>
+                            <p><strong>${t('coverage.whatItDoes', 'What it does')}:</strong> ${item.what}</p>
+                            <p><strong>${t('coverage.whyItIsAI', 'Why it is AI')}:</strong> ${item.why}</p>
                         </div>
                     `).join('')}
                 </div>
@@ -534,8 +554,8 @@ async function fetchCompletedLessons() {
                                 <p>${scenario.text}</p>
                             </div>
                             <div class="lxp-scenario-actions">
-                                <button type="button" class="lxp-choice" data-choice="ai">This is AI</button>
-                                <button type="button" class="lxp-choice" data-choice="rules">Fixed rules</button>
+                                <button type="button" class="lxp-choice" data-choice="ai">${t('coverage.thisIsAI', 'This is AI')}</button>
+                                <button type="button" class="lxp-choice" data-choice="rules">${t('coverage.fixedRules', 'Fixed rules')}</button>
                             </div>
                             <div class="lxp-scenario-feedback" hidden></div>
                         </div>
@@ -712,13 +732,13 @@ async function fetchCompletedLessons() {
             </style>
             <div class="lxp" id="lxp-root">
                 <div class="lxp-header">
-                    <span class="lxp-badge"><i class="fas fa-wand-magic-sparkles"></i> Interactive Lesson</span>
-                    <h1 class="lxp-lesson-title">What is Artificial Intelligence?</h1>
+                    <span class="lxp-badge"><i class="fas fa-wand-magic-sparkles"></i> ${t('coverage.interactiveLesson', 'Interactive Lesson')}</span>
+                    <h1 class="lxp-lesson-title">${t('coverage.aiIntroLessonTitle', 'What is Artificial Intelligence?')}</h1>
                     <div class="lxp-steps" id="lxp-steps">
                         ${stages.map((s, i) => `
                             <button type="button" class="lxp-step" data-stage-index="${i}" ${i === 0 ? '' : 'disabled'}>
                                 <span class="lxp-step-num">${i + 1}</span>
-                                <span class="lxp-step-label">${s.label}</span>
+                                <span class="lxp-step-label">${t(`ui.${s.type === 'examples' ? 'examples' : s.type}`, s.label)}</span>
                             </button>
                         `).join('')}
                     </div>
@@ -733,11 +753,11 @@ async function fetchCompletedLessons() {
                 <div class="lxp-progress"><div class="lxp-progress-fill" id="lxp-progress-fill" style="width: ${100 / stages.length}%"></div></div>
                 <div class="lxp-controls">
                     <button type="button" class="component-button" id="lxp-back" disabled>
-                        <i class="fas fa-arrow-left"></i> Back
+                        <i class="fas fa-arrow-left"></i> ${t('common.back', 'Back')}
                     </button>
-                    <span class="lxp-stage-counter" id="lxp-counter">Stage 1 of ${stages.length}</span>
+                    <span class="lxp-stage-counter" id="lxp-counter">${t('coverage.lxpStageCounter', 'Stage {current} of {total}', { current: 1, total: stages.length })}</span>
                     <button type="button" class="component-button" id="lxp-next">
-                        Continue <i class="fas fa-arrow-right"></i>
+                        ${t('common.continue', 'Continue')} <i class="fas fa-arrow-right"></i>
                     </button>
                     <button type="button" class="component-button lxp-btn-complete" id="lxp-complete" hidden>
                         <i class="fas fa-check"></i> Complete Lesson
@@ -800,7 +820,7 @@ async function fetchCompletedLessons() {
             nextBtn.disabled = challengeIncomplete;
             nextBtn.title = challengeIncomplete ? t('coverage.assessmentAnswerAll', 'Answer every scenario to continue') : '';
 
-            counterEl.textContent = t('coverage.lessonStage', 'Stage {current} of {total}', { current: currentStage + 1, total: stages.length });
+            counterEl.textContent = t('coverage.lxpStageCounter', 'Stage {current} of {total}', { current: currentStage + 1, total: stages.length });
             progressFill.style.width = `${((currentStage + 1) / stages.length) * 100}%`;
             saveLxpStage(currentStage);
         }
@@ -881,6 +901,9 @@ async function fetchCompletedLessons() {
             const originalHtml = completeBtn.innerHTML;
             completeBtn.disabled = true;
             completeBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${t('coverage.saving', 'Saving...')}`;
+            noteEl.setAttribute('role', 'status');
+            noteEl.textContent = t('coverage.saving', 'Saving...');
+            noteEl.hidden = false;
 
             try {
                 await markLessonComplete(lesson.id);
@@ -890,7 +913,9 @@ async function fetchCompletedLessons() {
                 console.error('Error completing lesson:', error);
                 completeBtn.disabled = false;
                 completeBtn.innerHTML = originalHtml;
-                alert(t('coverage.failedComplete', 'Could not mark this lesson complete. Please try again.'));
+                noteEl.setAttribute('role', 'alert');
+                noteEl.textContent = t('coverage.failedComplete', 'Could not mark this lesson complete. Please try again.');
+                noteEl.hidden = false;
             }
         });
 
@@ -925,7 +950,7 @@ async function fetchCompletedLessons() {
     async function handleCourseEnrollment() {
         const enrollButton = document.getElementById('btn-enroll-free');
         const statusMessage = document.getElementById('enrollment-status-message');
-        const token = localStorage.getItem('token');
+        const token = await window.getAuthAccessToken();
 
         if (!token) {
             statusMessage.textContent = t('coverage.signInEnroll', 'Please sign in to enroll in this course.');
@@ -948,19 +973,7 @@ async function fetchCompletedLessons() {
             });
             const data = await response.json().catch(() => ({}));
 
-            if (!response.ok) {
-                if (response.status === 400 && /already enrolled/i.test(data.error || '')) {
-                    await fetchEnrollmentForCourse(currentCourseId);
-                    if (enrollment) {
-                        renderExamButton();
-                        if (currentModuleIndex !== null && currentLessonIndex !== null) {
-                            renderLessonContent();
-                        }
-                        return;
-                    }
-                }
-                throw new Error(data.error || `Enrollment failed: ${response.status}`);
-            }
+            if (!response.ok) throw new Error(data.error || `Enrollment failed: ${response.status}`);
 
             if (!data.enrollment) {
                 throw new Error('The server did not return the created enrollment.');
@@ -968,7 +981,11 @@ async function fetchCompletedLessons() {
 
             enrollment = data.enrollment;
             enrollmentUnavailable = false;
+            await fetchCompletedLessons();
+            syncProgressCounts();
+            renderModules();
             renderExamButton();
+            updateProgressUI();
             if (currentModuleIndex !== null && currentLessonIndex !== null) {
                 renderLessonContent();
             }
@@ -985,16 +1002,16 @@ async function fetchCompletedLessons() {
     function renderExamButton() {
         examButtonContainer.innerHTML = '';
 
+        if (enrollmentUnavailable) {
+            examButtonContainer.innerHTML = `<p role="status">${t('coverage.verifyEnrollmentError', 'Enrollment status could not be verified. Please refresh and try again.')}</p>`;
+            return;
+        }
+
         if (!enrollment && course?.status !== 'available') {
             const availability = course?.status === 'coming_soon'
                 ? t('ui.comingSoon', 'Coming soon')
                 : t('ui.notAvailable', 'Not available');
             examButtonContainer.innerHTML = `<p role="status">${availability}</p>`;
-            return;
-        }
-
-        if (enrollmentUnavailable) {
-            examButtonContainer.innerHTML = `<p role="status">${t('coverage.verifyEnrollmentError', 'Enrollment status could not be verified. Please refresh and try again.')}</p>`;
             return;
         }
 
@@ -1037,6 +1054,8 @@ async function fetchCompletedLessons() {
             if (certificateResult?.certificateId) {
                 html += `<a href="certificate.html?certificateId=${encodeURIComponent(certificateResult.certificateId)}" class="component-button">${t("coverage.viewCertificate", "View Certificate")}</a>`;
             }
+        } else if (currentExam) {
+            html += `<button type="button" class="component-button" id="btn-recover-certificate">${t('coverage.recoverCertificate', 'Passed the exam but no certificate? Retry')}</button><p id="certificate-recovery-status" role="status" aria-live="polite"></p>`;
         }
 
         if (html === '') {
@@ -1045,6 +1064,34 @@ async function fetchCompletedLessons() {
             examButtonContainer.innerHTML = enrollmentNotice + `<p>${t('coverage.noExam', 'No exam available and not eligible for certificate.')}</p>`;
         } else {
             examButtonContainer.innerHTML = enrollmentNotice + html;
+            const recoverButton = document.getElementById('btn-recover-certificate');
+            if (recoverButton) {
+                recoverButton.addEventListener('click', async () => {
+                    recoverButton.disabled = true;
+                    const status = document.getElementById('certificate-recovery-status');
+                    status.textContent = t('coverage.certificateRetrying', 'Checking certificate eligibility...');
+                    try {
+                        const token = await window.getAuthAccessToken();
+                        if (!token) throw new Error(t('common.pleaseSignIn', 'Please sign in.'));
+                        const response = await fetch(`/api/certificate/${encodeURIComponent(currentCourseId)}/issue`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`
+                            },
+                            body: JSON.stringify({})
+                        });
+                        const data = await response.json().catch(() => ({}));
+                        if (!response.ok) throw new Error(data.error || `Certificate request failed: ${response.status}`);
+                        certificateResult = data.certificate;
+                        certificateEligible = Boolean(certificateResult?.certificateId);
+                        renderExamButton();
+                    } catch (error) {
+                        status.textContent = error.message || t('coverage.certificateRetryFailed', 'Certificate could not be issued. You can retry later.');
+                        recoverButton.disabled = false;
+                    }
+                });
+            }
         }
     }
 
@@ -1060,12 +1107,15 @@ async function fetchCompletedLessons() {
         modules.forEach((module, moduleIndex) => {
             const moduleEl = document.createElement('details');
             moduleEl.className = 'module-section';
-            moduleEl.open = moduleIndex === 0;
-            const lessonCount = (lessonsByModuleId.get(module.id) || []).length;
+            moduleEl.open = moduleIndex === 0 || moduleIndex === currentModuleIndex;
+            const lessons = lessonsByModuleId.get(module.id) || [];
+            const lessonCount = lessons.length;
+            const completedInModule = lessons.filter(lesson => completedLessonIds.has(lesson.id)).length;
             moduleEl.innerHTML = `
                 <summary class="module-title">
                     <span>${module.title}</span>
                     <span class="module-lesson-count">${lessonCount} ${lessonCount === 1 ? 'lesson' : 'lessons'}</span>
+                    <span class="module-progress-label">${t('coverage.moduleProgress', '{completed}/{total} completed', { completed: completedInModule, total: lessonCount })}</span>
                     <span class="module-disclosure" aria-hidden="true"></span>
                 </summary>
                 <div class="lesson-list">
@@ -1147,6 +1197,14 @@ async function fetchCompletedLessons() {
             `;
         }
 
+        if (completed) {
+            const completionState = document.createElement('p');
+            completionState.className = 'lesson-completion-state';
+            completionState.setAttribute('role', 'status');
+            completionState.innerHTML = `<i class="fas fa-circle-check" aria-hidden="true"></i> `;
+            completionState.append(document.createTextNode(t('coverage.lessonCompleted', 'Lesson Completed')));
+            lessonContentDiv.prepend(completionState);
+        }
 
         // Update action buttons
         const prevBtn = document.getElementById('btn-prev-lesson');
@@ -1188,30 +1246,45 @@ async function fetchCompletedLessons() {
             };
         }
 
-        // Mark complete button - always show "Mark as Complete" since undo is not supported by backend
-        completeBtn.textContent = t('coverage.markingComplete', 'Mark as Complete');
+        completeBtn.textContent = completed
+            ? t('coverage.lessonCompleted', 'Lesson Completed')
+            : t('coverage.markingComplete', 'Mark as Complete');
 
         // The learning experience owns completion at the end of its final stage, so the
         // generic bar button is hidden while it is active to avoid two competing controls.
         completeBtn.style.display = isLearningExperience ? 'none' : '';
 
 // Disable completion button if not enrolled
-        if (!enrollment) {
+        if (completed) {
             completeBtn.disabled = true;
-            completeBtn.title = 'Please enroll in the course to complete lessons';
-            // Remove misleading click handler - disabled buttons don't receive click events
+            completeBtn.onclick = null;
+            completeBtn.title = t('coverage.lessonCompleted', 'Lesson Completed');
+        } else if (!enrollment) {
+            completeBtn.disabled = true;
+            completeBtn.onclick = null;
+            completeBtn.title = t('coverage.lessonEnrollNotice', 'Enroll in this course to mark the lesson complete.');
         } else {
             completeBtn.disabled = false;
             completeBtn.title = '';
             completeBtn.onclick = async () => {
+                const completionFeedback = document.getElementById('lesson-completion-feedback');
+                completionFeedback.setAttribute('role', 'status');
+                completionFeedback.textContent = t('coverage.saving', 'Saving...');
+                completionFeedback.hidden = false;
                 try {
-                    await markLessonComplete(lesson.id);
-                    // Update UI
-                    await loadAndRenderData(); // Re-fetch data to get the latest from backend
+                    const result = await markLessonComplete(lesson.id);
+                    completedLessonsCount = result.completedLessons;
+                    totalLessons = result.totalLessons;
+                    renderModules();
+                    renderLessonContent();
+                    renderExamButton();
+                    updateProgressUI();
+                    completionFeedback.hidden = true;
                 } catch (error) {
-                    // Show error to user
                     console.error('Error completing lesson:', error);
-                    alert(t('coverage.failedComplete', 'Could not mark this lesson complete. Please try again.'));
+                    completionFeedback.setAttribute('role', 'alert');
+                    completionFeedback.textContent = t('coverage.failedComplete', 'Could not mark this lesson complete. Please try again.');
+                    completionFeedback.hidden = false;
                 }
             };
         }
@@ -1233,7 +1306,7 @@ async function fetchCompletedLessons() {
     }
 
     // Select a lesson and update UI
-    async function selectLesson(moduleIndex, lessonIndex) {
+    async function selectLesson(moduleIndex, lessonIndex, { historyMode = 'push', scroll = true } = {}) {
         // Ensure indices are within bounds
         if (moduleIndex < 0 || moduleIndex >= modules.length) {
             console.warn(`Module index ${moduleIndex} out of bounds`);
@@ -1247,6 +1320,7 @@ async function fetchCompletedLessons() {
             return;
         }
 
+        const enteringLessonView = lessonContentDiv.classList.contains('hidden');
         currentModuleIndex = moduleIndex;
         currentLessonIndex = lessonIndex;
         const moduleDetails = courseModulesDiv.querySelectorAll('.module-section');
@@ -1254,16 +1328,33 @@ async function fetchCompletedLessons() {
         showLessonView();
 
         // Update URL without reloading
-        const courseIdFromUrl = new URLSearchParams(window.location.search).get('id');
-        const newUrl = `${window.location.pathname}?id=${courseIdFromUrl}&module=${moduleIndex}&lesson=${lessonIndex}`;
-        window.history.replaceState({}, '', newUrl);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        const url = new URL(window.location.href);
+        url.searchParams.set('module', String(moduleIndex));
+        url.searchParams.set('lesson', String(lessonIndex));
+        if (historyMode === 'push') {
+            window.history.pushState({}, '', url);
+        } else if (historyMode === 'replace') {
+            window.history.replaceState({}, '', url);
+        }
 
         // Render lesson content
         renderLessonContent();
 
         // Update progress
         updateProgressUI();
+        if (scroll && enteringLessonView) {
+            lessonContentDiv.scrollIntoView({ block: 'start', behavior: 'smooth' });
+        }
+    }
+
+    function syncProgressCounts() {
+        const localTotalLessons = modules.reduce(
+            (total, module) => total + (lessonsByModuleId.get(module.id) || []).length, 0
+        );
+        totalLessons = courseProgress?.totalLessons ?? localTotalLessons;
+        completedLessonsCount = courseProgress?.completedLessons ??
+            modules.reduce((total, module) => total + (lessonsByModuleId.get(module.id) || [])
+                .filter(lesson => completedLessonIds.has(lesson.id)).length, 0);
     }
 
     // Update progress bar and percentage
@@ -1274,26 +1365,15 @@ async function fetchCompletedLessons() {
             return;
         }
 
-        if (!modules || modules.length === 0) {
-            progressPercentSpan.textContent = '0%';
-            progressFillDiv.style.width = '0%';
+        if (courseProgress) {
+            progressPercentSpan.textContent = `${courseProgress.progress}%`;
+            progressFillDiv.style.width = `${courseProgress.progress}%`;
             return;
         }
 
-        let totalLessons = 0;
-        let completedLessons = 0;
-
-        modules.forEach(module => {
-            const lessons = lessonsByModuleId.get(module.id) || [];
-            totalLessons += lessons.length;
-            lessons.forEach(lesson => {
-                if (completedLessonIds.has(lesson.id)) {
-                    completedLessons++;
-                }
-            });
-        });
-
-        const percent = totalLessons === 0 ? 0 : Math.round((completedLessons / totalLessons) * 100);
+        const percent = totalLessons === 0
+            ? 0
+            : Math.round((completedLessonIds.size / totalLessons) * 100);
         progressPercentSpan.textContent = `${percent}%`;
         progressFillDiv.style.width = `${percent}%`;
     }
@@ -1301,7 +1381,7 @@ async function fetchCompletedLessons() {
     // Read an existing issued certificate. Issuance is triggered after a passed
     // exam result, and the server independently verifies all eligibility facts.
     async function loadCourseCertificate(courseId) {
-        const token = localStorage.getItem('token');
+        const token = await window.getAuthAccessToken();
         const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
         const response = await fetch(`/api/certificate/${encodeURIComponent(courseId)}`, { headers });
         if (response.status === 404) return null;
@@ -1335,26 +1415,12 @@ async function fetchCompletedLessons() {
 
             // Course level describes learning difficulty, not paid access.
             // Fetch lessons for every authenticated learner and every course.
-            const modulesWithLessons = await Promise.all(
-                modules.map(async (module) => {
-                    const lessons = await fetchLessonsForModule(module.id);
-                    lessonsByModuleId.set(module.id, lessons);
-                    return module;
-                })
-            );
+            await Promise.all(modules.map(async module => {
+                const lessons = await fetchLessonsForModule(module.id);
+                lessonsByModuleId.set(module.id, lessons);
+            }));
 
-            // Calculate total lessons and completed lessons count
-            totalLessons = 0;
-            completedLessonsCount = 0;
-            modules.forEach(module => {
-                const lessons = lessonsByModuleId.get(module.id) || [];
-                totalLessons += lessons.length;
-                lessons.forEach(lesson => {
-                    if (completedLessonIds.has(lesson.id)) {
-                        completedLessonsCount++;
-                    }
-                });
-            });
+            syncProgressCounts();
 
             // A course only displays a certificate backed by an issued record.
             if (enrollment && completedLessonsCount === totalLessons && currentExam) {
@@ -1391,7 +1457,7 @@ async function fetchCompletedLessons() {
                 const safeLessonIndex = modules[safeModuleIndex]
                     ? Math.max(0, Math.min(lessonParam, (lessonsByModuleId.get(modules[safeModuleIndex].id) || []).length - 1))
                     : 0;
-                selectLesson(safeModuleIndex, safeLessonIndex);
+                selectLesson(safeModuleIndex, safeLessonIndex, { historyMode: 'none', scroll: true });
             } else {
                 currentModuleIndex = null;
                 currentLessonIndex = null;
@@ -1414,7 +1480,24 @@ async function fetchCompletedLessons() {
         if (!accessToken) return;
 
         backToCurriculumButton.addEventListener('click', showCurriculumView);
-        loadAndRenderData();
+        await loadAndRenderData();
+
+        window.addEventListener('popstate', () => {
+            const params = new URLSearchParams(window.location.search);
+            if (!params.has('module') && !params.has('lesson')) {
+                currentModuleIndex = null;
+                currentLessonIndex = null;
+                showCurriculumView();
+                lessonActionsDiv.style.display = 'none';
+                updateProgressUI();
+                return;
+            }
+            const moduleIndex = Number(params.get('module'));
+            const lessonIndex = Number(params.get('lesson'));
+            if (Number.isInteger(moduleIndex) && Number.isInteger(lessonIndex)) {
+                selectLesson(moduleIndex, lessonIndex, { historyMode: 'none', scroll: false });
+            }
+        });
 
 
         const observerOptions = { threshold: 0.1, rootMargin: '0px 0px -50px 0px' };

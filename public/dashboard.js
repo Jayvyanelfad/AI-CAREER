@@ -129,35 +129,22 @@ async function initializeDashboard() {
   async function renderExploreCourses(completedAssessment, currentEnrollments, accessToken) {
     const grid = $('#explore-grid');
     try {
-      const [catalogResult, mappingResult, localeResult] = await Promise.allSettled([
+      const [catalogResponse] = await Promise.all([
         fetch(`${API_BASE}/courses`, { headers: { Authorization: `Bearer ${accessToken}` } }),
-        fetch('course-catalog-config.json'),
-        fetch(`locales/${window.getCareerPathLanguage?.() || 'en'}.json`)
       ]);
-      const catalogResponse = catalogResult.status === 'fulfilled' ? catalogResult.value : null;
-      const mappingResponse = mappingResult.status === 'fulfilled' ? mappingResult.value : null;
-      const localeResponse = localeResult.status === 'fulfilled' ? localeResult.value : null;
-      const catalogData = catalogResponse?.ok ? await catalogResponse.json() : {};
-      const mapping = mappingResponse?.ok ? await mappingResponse.json() : {};
-      const localeData = localeResponse?.ok ? await localeResponse.json() : {};
-      let catalog = Array.isArray(catalogData.courses) ? catalogData.courses : [];
-      if (!catalog.length) {
-        // The checked-in career map supplies authentic IDs; localized catalog
-        // metadata supplies real titles and descriptions if the live endpoint
-        // is unavailable (for example while a schema migration is pending).
-        const metadata = localeData.courseMetadata || {};
-        catalog = Object.entries(metadata).filter(([, course]) => course && typeof course.title === 'string')
-          .map(([id, course]) => ({ id, title: course.title, description: course.description }));
-      }
+      if (!catalogResponse?.ok) throw new Error(`Course catalog request failed: ${catalogResponse?.status || 'network error'}`);
+      const catalogData = await catalogResponse.json();
+      const catalog = Array.isArray(catalogData.courses) ? catalogData.courses : [];
+      const careerCourseMapping = catalogData.career_course_mapping || {};
       const byId = new Map(catalog.filter(course => course && course.id).map(course => [course.id, course]));
       const career = completedAssessment?.topCareers?.[0]?.career || (typeof completedAssessment?.topCareers?.[0] === 'string' ? completedAssessment.topCareers[0] : '');
-      const mappedIds = career && Array.isArray(mapping.careerCourseMapping?.[career]) ? mapping.careerCourseMapping[career] : [];
+      const mappedIds = career && Array.isArray(careerCourseMapping[career]) ? careerCourseMapping[career] : [];
       const enrolledIds = new Set(currentEnrollments.map(enrollment => enrollment.courseId));
       const orderedIds = mappedIds.length ? [...mappedIds, ...catalog.map(course => course.id)] : catalog.map(course => course.id);
       const selected = orderedIds.map(id => byId.get(id)).filter((course, index, all) => course && all.indexOf(course) === index && !enrolledIds.has(course.id)).slice(0, 3);
       selected.forEach(course => {
         const card = el('article', 'explore-card');
-        const category = mapping.courseCategories?.[course.id];
+        const category = course.category;
         if (category) card.append(el('p', 'eyebrow', category));
         const title = t(`courseMetadata.${course.id}.title`, course.title || course.name || '');
         const description = t(`courseMetadata.${course.id}.description`, course.description || '');
