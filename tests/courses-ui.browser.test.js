@@ -62,6 +62,7 @@ test('course catalog presents coming-soon status and blocks enrollment', async t
   });
 
   await page.locator('[data-course-id="coming-course"]').waitFor();
+  assert.doesNotMatch(await page.locator('[data-course-id="available-course"]').innerText(), /\b4 weeks\b/i, 'unverified course duration estimates are not displayed');
   const comingSoon = page.locator('[data-course-id="coming-course"]');
   assert.match(await comingSoon.innerText(), /Coming soon/i);
   assert.equal(await comingSoon.locator('button').isDisabled(), true);

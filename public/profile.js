@@ -725,6 +725,7 @@
     pendingAvatarPreview = URL.createObjectURL(file);
     cropSourceImage = new Image();
     cropSourceImage.onload = () => {
+      cropImage.src = pendingAvatarPreview;
       cropDialog.showModal();
       const size = cropViewport.clientWidth;
       cropBaseScale = Math.max(size / cropSourceImage.naturalWidth, size / cropSourceImage.naturalHeight);

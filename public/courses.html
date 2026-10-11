@@ -303,9 +303,6 @@
                     <p class="course-card-level">${course.status === 'coming_soon' ? t('ui.comingSoon', 'Coming soon') : course.badge}${isPremium ? ' &middot; Pro' : ''}</p>
                     <h3>${course.status === 'coming_soon' ? `<span class="course-title-link">${t(`courseMetadata.${course.id}.title`, course.title)}</span>` : `<a class="course-title-link" href="course-detail.html?id=${encodeURIComponent(course.id)}" onclick="event.stopPropagation()">${t(`courseMetadata.${course.id}.title`, course.title)}</a>`}</h3>
                     <p>${t(`courseMetadata.${course.id}.description`, course.description || '')}</p>
-                    <div class="course-meta">
-                        <span>${t("coverage.weekDuration", "{count} weeks", { count: course.weeks })}</span>
-                    </div>
                     ${course.status === 'coming_soon'
                         ? `<button class="course-btn" type="button" disabled>${t('ui.comingSoon', 'Coming soon')}</button>`
                         : isPremium
@@ -362,7 +359,6 @@
                     description: course.description,
                     image: course.image_url,
                     badge: course.level.charAt(0).toUpperCase() + course.level.slice(1), // Capitalize first letter
-                    weeks: course.duration_weeks,
                     category: course.category,
                     level: course.level,
                     status: course.status,

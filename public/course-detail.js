@@ -9,6 +9,8 @@
     let currentModuleIndex = null;
     let currentLessonIndex = null;
     let currentExam = null;
+    let examUnavailable = false;
+    const completionRequestsInFlight = new Set();
     let enrollment = null;
     let enrollmentUnavailable = false;
     let lessonProgressUnavailable = false;
@@ -191,6 +193,7 @@ async function fetchCompletedLessons() {
 
     // Fetch exam for the course
     async function fetchExamForCourse(courseId) {
+        examUnavailable = false;
         try {
             const token = await window.getAuthAccessToken();
             const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
@@ -214,6 +217,7 @@ async function fetchCompletedLessons() {
         } catch (error) {
             console.error('Error fetching exam for course:', error);
             currentExam = null;
+            examUnavailable = true;
         }
     }
 
@@ -941,7 +945,6 @@ async function fetchCompletedLessons() {
             <p class="course-detail-description">${courseDescription}</p>
             ${availability ? `<p class="course-availability" role="status">${availability}</p>` : ''}
             <div class="course-detail-meta">
-                <span><i class="fas fa-clock"></i> ${t('coverage.weekDuration', '{count} weeks', { count: course.duration_weeks })}</span>
                 <span><i class="fas fa-signal"></i> ${course.level.charAt(0).toUpperCase() + course.level.slice(1)}</span>
             </div>
         `;
@@ -1033,6 +1036,16 @@ async function fetchCompletedLessons() {
 
         if (totalLessons === 0) {
             examButtonContainer.innerHTML = enrollmentNotice + `<p>${t('coverage.noLessonsAvailable', 'No lessons available for this course.')}</p>`;
+            return;
+        }
+
+        if (examUnavailable) {
+            examButtonContainer.innerHTML = enrollmentNotice + `<p role="alert">${t('coverage.examLoadError', 'Final exam availability could not be checked. Please try again.')}</p><button type="button" class="component-button" id="btn-retry-exam-load">${t('common.tryAgain', 'Try again')}</button>`;
+            document.getElementById('btn-retry-exam-load').addEventListener('click', async event => {
+                event.currentTarget.disabled = true;
+                await fetchExamForCourse(currentCourseId);
+                renderExamButton();
+            });
             return;
         }
 
@@ -1267,6 +1280,9 @@ async function fetchCompletedLessons() {
             completeBtn.disabled = false;
             completeBtn.title = '';
             completeBtn.onclick = async () => {
+                if (completionRequestsInFlight.has(lesson.id)) return;
+                completionRequestsInFlight.add(lesson.id);
+                completeBtn.disabled = true;
                 const completionFeedback = document.getElementById('lesson-completion-feedback');
                 completionFeedback.setAttribute('role', 'status');
                 completionFeedback.textContent = t('coverage.saving', 'Saving...');
@@ -1285,6 +1301,11 @@ async function fetchCompletedLessons() {
                     completionFeedback.setAttribute('role', 'alert');
                     completionFeedback.textContent = t('coverage.failedComplete', 'Could not mark this lesson complete. Please try again.');
                     completionFeedback.hidden = false;
+                } finally {
+                    completionRequestsInFlight.delete(lesson.id);
+                    if (completeBtn.isConnected && !completedLessonIds.has(lesson.id)) {
+                        completeBtn.disabled = false;
+                    }
                 }
             };
         }

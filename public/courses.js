@@ -36,7 +36,6 @@ async function fetchCourses(token) {
       description: course.description,
       image: course.image_url,
       badge: course.level.charAt(0).toUpperCase() + course.level.slice(1), // Capitalize first letter
-      weeks: course.duration_weeks,
       level: course.level,
       // The API reports access classification; difficulty alone never implies Pro.
       premium: Boolean(course.premium)

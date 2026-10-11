@@ -337,3 +337,71 @@ test('career result remains localized and has no horizontal overflow at required
     }
   }
 });
+
+test('career test submits all answers and renders the server-saved result', async t => {
+  const { browser, origin } = await startFixture(t);
+  const context = await browser.newContext();
+  await context.addInitScript(() => {
+    localStorage.setItem('aicareer-language', 'en');
+    const session = { access_token: 'career-result-test-token', user: { id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa' } };
+    window.supabase = { auth: {
+      getSession: async () => ({ data: { session }, error: null }),
+      onAuthStateChange: () => ({ data: { subscription: { unsubscribe() {} } } }),
+      getUser: async () => ({ data: { user: session.user }, error: null })
+    } };
+  });
+  await context.route('**/*', route => {
+    const hostname = new URL(route.request().url()).hostname;
+    return hostname === '127.0.0.1' ? route.continue() : route.abort();
+  });
+  await context.route('**/cdn.jsdelivr.net/**', route => route.fulfill({ status: 200, contentType: 'text/javascript', body: '' }));
+
+  let submission = null;
+  await context.route('**/api/**', route => {
+    const request = route.request();
+    const path = new URL(request.url()).pathname;
+    if (path === '/api/career-test' && request.method() === 'GET') {
+      return route.fulfill({ status: 404, contentType: 'application/json', body: JSON.stringify({ error: 'NO_COMPLETED_CAREER_ASSESSMENT' }) });
+    }
+    if (path === '/api/questions') {
+      const questions = Array.from({ length: 32 }, (_, index) => ({
+        id: `00000000-0000-4000-8000-${String(index + 1).padStart(12, '0')}`,
+        text: `Question ${index + 1}`,
+        category: dimensions[index % dimensions.length],
+        options: [1, 2, 3, 4, 5].map(value => ({ value, text: String(value) }))
+      }));
+      return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(questions) });
+    }
+    if (path === '/api/career-test' && request.method() === 'POST') {
+      submission = request.postDataJSON();
+      return route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ result: assessmentResult('Data Scientist') })
+      });
+    }
+    if (path === '/api/courses') return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ courses: [] }) });
+    return route.fulfill({ status: 404, contentType: 'application/json', body: '{}' });
+  });
+
+  const page = await context.newPage();
+  page.on('dialog', dialog => dialog.accept());
+  await page.goto(`${origin}/career-test.html`, { waitUntil: 'domcontentloaded' });
+  await page.locator('#options-container .answer-choice').first().waitFor();
+
+  for (let index = 0; index < 25; index++) {
+    await page.locator('#options-container .answer-choice').first().click();
+    if (index < 24) await page.locator('#next-btn').click();
+  }
+  await page.locator('#submit-btn').click();
+  await page.locator('#results-container').waitFor({ state: 'visible' });
+
+  assert.equal(submission?.assessment_version, 'career-profile-v1');
+  assert.equal(submission?.completed, true);
+  assert.equal(submission?.question_ids.length, 25);
+  assert.equal(new Set(submission.question_ids).size, 25);
+  assert.equal(Object.keys(submission.answers).length, 25);
+  assert.ok(Object.values(submission.answers).every(value => Number.isInteger(value) && value >= 1 && value <= 5));
+  assert.match(await page.locator('#results-content').innerText(), /Data Science & Analytics/);
+  await context.close();
+});

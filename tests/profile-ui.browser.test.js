@@ -80,6 +80,11 @@ test('profile photo crop supports zoom, reposition, square JPEG save, and cancel
 
   await page.locator('#profile-avatar-file').setInputFiles(file);
   await page.locator('#avatar-crop-dialog[open]').waitFor();
+  await page.waitForFunction(() => {
+    const image = document.getElementById('avatar-crop-image');
+    return image.complete && image.naturalWidth === 800 && image.naturalHeight === 400;
+  });
+  assert.equal(await page.locator('#avatar-crop-image').isVisible(), true, 'selected photo is visible in the crop preview before saving');
   await page.locator('#avatar-crop-zoom').fill('1.7');
   const beforeDrag = await page.locator('#avatar-crop-image').evaluate(image => image.style.left);
   const viewport = page.locator('#avatar-crop-viewport');

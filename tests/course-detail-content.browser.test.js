@@ -11,6 +11,7 @@ test('course detail renders the lesson learning sequence at mobile widths and in
   const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
   let savedEnrollment = null;
   let enrollRequest = null;
+  let failExamLookup = false;
   await context.addInitScript(() => {
     localStorage.setItem('token', 'course-detail-token'); localStorage.setItem('aicareer-language', 'ar');
     const session = { access_token: 'course-detail-token', user: { id: 'test-user' } };
@@ -26,7 +27,9 @@ test('course detail renders the lesson learning sequence at mobile widths and in
     { id: 'lesson-2', module_id: 'module-1', title: 'How does machine learning work?', content, lesson_order: 2 }
   ] }) }));
   await context.route('**/api/courses/intro_to_ai/progress/lessons', route => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ completedLessons: [] }) }));
-  await context.route('**/api/exams?course_id=intro_to_ai', route => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ exams: [] }) }));
+  await context.route('**/api/exams?course_id=intro_to_ai', route => failExamLookup
+    ? route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'Unavailable' }) })
+    : route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ exams: [] }) }));
   await context.route('**/api/enrollments/intro_to_ai', route => route.fulfill(savedEnrollment
     ? { status: 200, contentType: 'application/json', body: JSON.stringify(savedEnrollment) }
     : { status: 404, contentType: 'application/json', body: JSON.stringify({ error: 'NOT_ENROLLED' }) }));
@@ -42,6 +45,7 @@ test('course detail renders the lesson learning sequence at mobile widths and in
   const page = await context.newPage();
   await page.goto(`http://127.0.0.1:${server.address().port}/course-detail.html?id=intro_to_ai`, { waitUntil: 'domcontentloaded' });
   await page.locator('.lesson-item').first().waitFor();
+  assert.equal(await page.locator('.course-detail-meta span').count(), 1, 'course detail omits the unverified duration estimate');
   assert.equal(await page.locator('#btn-enroll-free').isVisible(), true, 'an explicitly available course keeps its enrollment action');
   await page.evaluate(() => localStorage.setItem('token', 'stale-token'));
   await page.locator('#btn-enroll-free').click();
@@ -101,7 +105,12 @@ test('course detail renders the lesson learning sequence at mobile widths and in
     status: 200, contentType: 'application/json',
     body: JSON.stringify({ course_id: 'intro_to_ai', progress: 0 })
   }));
+  let completionRequests = 0;
   await page.route('**/api/lessons/lesson-1/complete', route => {
+    completionRequests++;
+    if (completionRequests === 1) {
+      return route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'Unavailable' }) });
+    }
     persistedCompletedLessons = ['lesson-1'];
     return route.fulfill({
       status: 200, contentType: 'application/json',
@@ -141,8 +150,17 @@ test('course detail renders the lesson learning sequence at mobile widths and in
   assert.equal(await page.locator('.lesson-content-title').innerText(), 'How does machine learning work?');
   await page.goForward();
   await page.waitForFunction(() => new URL(location.href).searchParams.get('lesson') === '0');
-  await page.locator('#btn-mark-complete').click();
+  await page.locator('#btn-mark-complete').evaluate(button => {
+    button.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    button.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+  });
+  const completionErrorText = await page.evaluate(async () => (await (await fetch('locales/ar.json')).json()).coverage.failedComplete);
+  await page.locator('#lesson-completion-feedback[role="alert"]').getByText(completionErrorText).waitFor();
+  assert.equal(completionRequests, 1, 'duplicate clicks during a failed request produce only one completion request');
+  assert.equal(await page.locator('#btn-mark-complete').isDisabled(), false, 'failed completion can be retried');
+  await page.locator('#btn-mark-complete').evaluate(button => button.dispatchEvent(new MouseEvent('click', { bubbles: true })));
   await page.locator('.lesson-completion-state').waitFor();
+  assert.equal(completionRequests, 2, 'retry sends one new completion request');
   assert.equal(await page.locator('#btn-mark-complete').isDisabled(), true);
   assert.equal(await page.locator('.module-progress-label').innerText(), '1/2 completed');
   assert.equal(await page.locator('#course-progress').innerText().then(text => /50%/.test(text)), true);
@@ -200,6 +218,16 @@ test('course detail renders the lesson learning sequence at mobile widths and in
   await page.goto(`${courseUrl}&module=0&lesson=0`, { waitUntil: 'domcontentloaded' });
   await page.locator('a[href="certificate.html?certificateId=certificate-1"]').waitFor();
   assert.equal(await page.locator('a[href="certificate.html?certificateId=certificate-1"]').count(), 1, 'the issued certificate is retrieved and displayed after reload');
+  await page.unroute('**/api/exams?course_id=intro_to_ai');
+  failExamLookup = true;
+  await page.goto(`${courseUrl}&module=0&lesson=0`, { waitUntil: 'domcontentloaded' });
+  const examLoadErrorText = await page.evaluate(async () => (await (await fetch('locales/ar.json')).json()).coverage.examLoadError);
+  await page.locator('#exam-button-container [role="alert"]').getByText(examLoadErrorText).waitFor();
+  assert.equal(await page.locator('#btn-retry-exam-load').count(), 1, 'exam lookup failure has an actionable retry');
+  failExamLookup = false;
+  await page.locator('#btn-retry-exam-load').click();
+  const noExamText = await page.evaluate(async () => (await (await fetch('locales/ar.json')).json()).coverage.noExam);
+  await page.locator('#exam-button-container').getByText(noExamText).waitFor();
   await page.route('**/api/courses/intro_to_ai/progress/lessons', route => route.fulfill({
     status: 500, contentType: 'application/json', body: JSON.stringify({ error: 'Database error' })
   }));
