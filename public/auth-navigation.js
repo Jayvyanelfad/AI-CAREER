@@ -448,7 +448,11 @@
     'courses', 'courses.html', 'course-detail.html', 'programming', 'programming.html',
     'dashboard.html', 'profile.html', 'career-test.html', 'exam.html', 'certificate.html'
   ]);
-  window.careerPathAuthReady = protectedPages.has(currentPage)
+  // Public certificate verification links (?verify=<id>) must stay reachable
+  // without an account; only the private certificate views require sign-in.
+  const isPublicCertificateVerification = currentPage === 'certificate.html'
+    && new URLSearchParams(window.location.search).has('verify');
+  window.careerPathAuthReady = (protectedPages.has(currentPage) && !isPublicCertificateVerification)
     ? requireAuthenticatedPage()
     : Promise.resolve(null);
 

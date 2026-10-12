@@ -63,6 +63,10 @@ class Chatbot {
 
   createChatbotHTML() {
     if (document.getElementById("chatbot")) return;
+    // The dedicated chatbot page already ships a complete static window;
+    // building the floating widget there would duplicate every control ID
+    // (chatbot-window, chatbot-body, chat-input, send-message).
+    if (document.getElementById("chatbot-window")) return;
 
     const html = `
       <div id="chatbot">

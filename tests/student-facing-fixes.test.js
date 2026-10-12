@@ -47,6 +47,20 @@ test('exam logout is a real button, not a javascript: pseudo-link', () => {
   assert.match(nav, /closest\('\[data-logout\]'\)/);
 });
 
+test('public certificate verification bypasses the auth gate', () => {
+  const fs = require('node:fs');
+  const path = require('node:path');
+  const nav = fs.readFileSync(path.join(__dirname, '..', 'public', 'auth-navigation.js'), 'utf8');
+  // certificate.html stays protected by default ...
+  assert.match(nav, /'certificate\.html'/);
+  // ... but ?verify= links remain publicly reachable.
+  assert.match(nav, /isPublicCertificateVerification/);
+  assert.match(nav, /URLSearchParams\(window\.location\.search\)\.has\('verify'\)/);
+  // The certificate page itself supports the public path without a token.
+  const page = fs.readFileSync(path.join(__dirname, '..', 'public', 'certificate.js'), 'utf8');
+  assert.match(page, /\/api\/certificate\/verify\//);
+});
+
 test('about anchors resolve to a real section', () => {
   const index = read('index.html');
   assert.match(index, /id="about"/);
@@ -65,6 +79,8 @@ test('chatbot controls are named, live, and closable', () => {
   assert.match(html, /<button class="floating-chatbot" id="floating-chatbot"[^>]*>/);
   assert.match(js, /getElementById\("chatbot-close-btn"\)/);
   assert.match(js, /getElementById\("floating-chatbot"\)/);
+  // The floating widget must not duplicate the dedicated page's static window.
+  assert.match(js, /if \(document\.getElementById\("chatbot-window"\)\) return;/);
   assert.match(js, /aria-label="Type your message"/);
   assert.match(js, /aria-label="Send message"/);
   assert.match(js, /role="log" aria-live="polite"/);
