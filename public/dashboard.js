@@ -60,6 +60,19 @@ async function initializeDashboard() {
   if (user.avatarUrl) { avatarImage.src = user.avatarUrl; avatarImage.onload = () => { avatarImage.hidden = false; }; avatarImage.onerror = () => { avatarImage.hidden = true; }; }
   window.updateCareerPathProfileIdentity?.(user);
 
+  // Reveal the admin shortcut only after the server confirms membership.
+  // Fail-closed: any non-200 response (or network failure) leaves it hidden.
+  // This is discovery only; /api/admin still enforces requireAdmin per request.
+  try {
+    const adminCheck = await fetch(`${API_BASE}/admin/overview`, { headers: { Authorization: `Bearer ${token}` } }).catch(() => null);
+    if (adminCheck && adminCheck.ok) {
+      const adminShortcut = $('#admin-shortcut');
+      if (adminShortcut) adminShortcut.hidden = false;
+    }
+  } catch (_adminError) {
+    // Stay hidden; the admin console remains reachable by direct URL.
+  }
+
   const careerSummary = $('#career-summary');
   if (!assessment) {
     const empty = el('div', 'empty-panel');

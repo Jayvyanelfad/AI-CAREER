@@ -1,0 +1,8 @@
+{
+  "_meta": {"version": 1, "code": "ha", "name": "Hausa", "nativeName": "Hausa", "dir": "ltr", "langTag": "ha"},
+  "nav": {"home": "Gida", "careerTest": "Gwajin sana'a", "courses": "Darussa", "programming": "Shirye-shirye", "dashboard": "Allon bayani", "profile": "Bayananka", "login": "Shiga", "register": "Yi rajista", "logout": "Fita"},
+  "common": {"start": "Fara", "continue": "Ci gaba", "back": "Komawa", "next": "Na gaba", "previous": "Na baya", "save": "Ajiye", "cancel": "Soke", "loading": "Ana lodawa…", "error": "Wani abu ya faru", "tryAgain": "Sake gwadawa", "pleaseSignIn": "Da fatan za a shiga"},
+  "settings": {"language": "Harshe"},
+  "programming": {"runCode": "Gudanar da lamba", "running": "Ana gudanarwa…", "output": "Sakamako", "stdinLabel": "Shigar daidaitacciya (na zaɓi)", "unavailable": "Gudanar da lamba ba ya samuwa yanzu.", "timedOut": "Gudanarwar ta ƙare da lokaci."},
+  "notifications": {"eyebrow": "SABUNTAWA", "title": "Sanarwa", "loading": "Ana loda sanarwa…", "empty": "Ba ka da sanarwa tukuna.", "unavailable": "Sanarwa ba ta samuwa yanzu.", "markAll": "Sanya duka an karanta", "markRead": "Sanya an karanta", "open": "Buɗe", "update": "Sabuntawa"}
+}

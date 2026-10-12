@@ -65,6 +65,29 @@ test('profile renders identity, saves editable fields, and stays within supporte
   assert.deepEqual(await page.evaluate(() => window.CareerPathProfilePhoto.validateProfilePhoto({ type: 'image/png', size: 5 * 1024 * 1024 + 1 })), { valid: false, reason: 'size' });
 });
 
+test('profile persists a selectable partial-locale preference', async t => {
+  const page = await fixture(t);
+  let savedBody;
+  await page.route('**/api/profile', async route => {
+    if (route.request().method() === 'PUT') {
+      savedBody = route.request().postDataJSON();
+      return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({
+        id: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', email: 'asha@example.test', full_name: 'Asha Example',
+        career_goal: 'Data Scientist', preferred_language: savedBody.preferredLanguage
+      }) });
+    }
+    return route.fallback();
+  });
+  const preferenceRequest = page.waitForRequest(request => (
+    request.url().endsWith('/api/profile') && request.method() === 'PUT'
+  ));
+  await page.locator('#language-preference').selectOption('pcm');
+  await preferenceRequest;
+  await page.waitForFunction(() => window.getCareerPathLanguage() === 'pcm');
+  assert.deepEqual(savedBody, { preferredLanguage: 'pcm' });
+  assert.equal(await page.evaluate(() => window.getCareerPathLanguage()), 'pcm');
+});
+
 test('profile photo crop supports zoom, reposition, square JPEG save, and cancel', async t => {
   const page = await fixture(t);
   const imageData = await page.evaluate(() => {

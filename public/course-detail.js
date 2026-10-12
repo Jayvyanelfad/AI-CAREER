@@ -1141,6 +1141,7 @@ async function fetchCompletedLessons() {
                 <h2 class="lesson-content-title">${lesson.title}</h2>
                 <p class="lesson-content-module">${t('coverage.moduleNumber', 'Module {current}:', { current: currentModuleIndex + 1 })} ${module.title}</p>
                 <div class="lesson-content-text">
+                    ${window.renderLessonVisual ? window.renderLessonVisual({ title: lesson.title, content: lesson.content || lesson.description || '', id: lesson.id }) : ''}
                     ${lesson.content || (lesson.description ? `<p>${lesson.description}</p>` : `<p>${t('coverage.lessonContentEmpty', 'No lesson content available.')}</p>`)}
                     ${lesson.video_url ? `<div class="video-container"><iframe src="${lesson.video_url}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>` : ''}
                 </div>

@@ -27,6 +27,8 @@ body.dashboard-home { --dash-paper:#f5f0e8; --dash-ink:#203c33; --dash-terra:#b8
 .path-card+.path-card { border-left:1px solid rgba(32,60,51,.2); }
 .path-number { color:var(--dash-terra,#b86649); font-size:.78rem; font-weight:700; letter-spacing:.1em; }
 .path-icon { float:right; color:var(--dash-terra,#b86649); font-size:1.15rem; }
+html[dir="rtl"] .path-icon { float:left; }
+.path-card:focus-visible { outline:2px solid var(--dash-terra,#b86649); outline-offset:3px; }
 .path-card h3 { margin:25px 0 8px; font:400 1.55rem/1.15 var(--font-display,Georgia,serif); }
 .path-card p { min-height:48px; margin:0; color:var(--text-muted,#65716b); line-height:1.5; }
 .path-link { display:block; margin-top:20px; color:var(--dash-terra,#9f5037); font-size:.9rem; font-weight:650; }
@@ -41,7 +43,7 @@ body.dashboard-home { --dash-paper:#f5f0e8; --dash-ink:#203c33; --dash-terra:#b8
 .signals li { position:relative; margin:8px 0; color:var(--text-primary,#203c33); }
 .signals li::before { content:""; position:absolute; top:.65em; left:-15px; width:5px; height:5px; border-radius:50%; background:var(--dash-terra,#b86649); }
 .insight-panel .button { grid-column:1/-1; justify-self:start; }
-.empty-panel { display:flex; align-items:center; justify-content:space-between; gap:20px; padding:24px 0; border-top:1px solid rgba(32,60,51,.16); color:var(--text-muted,#65716b); }
+.empty-panel { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:20px; padding:24px 0; border-top:1px solid rgba(32,60,51,.16); color:var(--text-muted,#65716b); }
 #courses-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; }
 .learning-card,.explore-card,.certificate-card { min-width:0; padding:23px; border-top:2px solid rgba(184,102,73,.7); background:var(--surface,#fffdf8); }
 .learning-card h3,.explore-card h3,.certificate-card h3 { margin:4px 0 12px; color:var(--text-primary,#203c33); font:400 1.45rem/1.2 var(--font-display,Georgia,serif); overflow-wrap:anywhere; }
@@ -81,3 +83,17 @@ html[dir="rtl"] .insight-panel { border-left:0; border-right:3px solid var(--das
 }
 @media(min-width:701px) and (max-width:900px) { .explore-grid,.certificates-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
 @media(max-width:360px) { .dashboard-home .dashboard-shell { width:calc(100% - 24px); } .welcome-panel { padding:25px 18px; } .welcome-actions { flex-direction:column; align-items:stretch; } .dashboard-home .button { width:100%; } }
+@media(max-width:400px) { .welcome-panel h1 { font-size:2.15rem; } }
+/* Persistent notifications: textual, responsive, and keyboard-operable. */
+.notifications-panel { min-width: 0; }
+#notifications-status { min-height: 1.4em; color: var(--text-muted); }
+#notifications-list { display: grid; gap: var(--space-3); }
+.notification-item { border: 1px solid var(--border-light); border-inline-start: 4px solid transparent; border-radius: var(--radius-sm); padding: var(--space-4); background: var(--surface); }
+.notification-item.is-unread { border-inline-start-color: var(--green_light); }
+.notification-item h3 { margin: 0 0 var(--space-2); color: var(--bege_light); }
+.notification-item p { margin: 0; color: var(--text-muted); }
+.notification-actions { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; margin-top: var(--space-3); }
+.notification-actions time { margin-inline-end: auto; color: var(--text-muted); font-size: .875rem; }
+.notification-actions a, .notification-actions button, #notifications-mark-all { border: 0; background: transparent; color: var(--green_light); font: inherit; cursor: pointer; padding: 0; text-decoration: underline; text-underline-offset: .2em; }
+.notification-actions :focus-visible, #notifications-mark-all:focus-visible { outline: 3px solid var(--bege); outline-offset: 3px; }
+@media (max-width: 560px) { .notification-actions time { flex-basis: 100%; } }

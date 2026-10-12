@@ -9,9 +9,26 @@ const { randomInt } = require('crypto');
 const courseCatalogConfig = require('./course-catalog-config.json');
 const { createAdminRouter } = require('./admin-api');
 const { createProfileRouter, publicAvatarUrl } = require('./profile-api');
+const { fetchLatestCareerAttempt } = require('./career-assessment-store');
+const { createProgrammingExecutionRouter } = require('./programming-execution-api');
+const { createNotificationRouter, createNotification } = require('./notification-api');
+const { createProgressRouter } = require('./progress-api');
+const { createAuthRouter } = require('./auth-api');
+const { createCertificateRouter } = require('./certificate-api');
+const { createChatRouter } = require('./chat-api');
+const { persistLessonCompletion } = require('./lesson-progress-store');
+const { recoverConcurrentEnrollment } = require('./enrollment-store');
 
 // Load environment variables
 dotenv.config();
+
+// Fail fast with a clear message instead of crashing later inside clients.
+const REQUIRED_ENV = ['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'SUPABASE_ANON_KEY'];
+const missingEnv = REQUIRED_ENV.filter(key => !process.env[key]);
+if (missingEnv.length > 0) {
+  console.error(`Missing required environment variables: ${missingEnv.join(', ')}. Copy .env.example to .env and fill them in.`);
+  process.exit(1);
+}
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -231,34 +248,20 @@ async function recomputeEnrollmentProgress(userId, courseId) {
 // career_test table is retained as historical data but is NOT surfaced as the
 // user's current result (it holds pre-CS-assessment results).
 async function getLatestCareerAssessment(userId, completedOnly = false) {
-  let attemptQuery = supabase
-    .from('career_test_attempts')
-    .select('id, top_careers, score_data, completed, created_at')
-    .eq('user_id', userId);
-  if (completedOnly) attemptQuery = attemptQuery.eq('completed', true);
-
-  const { data: attempts, error: attemptError } = await attemptQuery
-    .order('created_at', { ascending: false })
-    .limit(1);
-
-  if (attemptError) {
-    console.error('Error fetching career assessment:', attemptError);
-    return null;
-  }
-
-  if (!attempts || attempts.length === 0) return null;
+  const attempt = await fetchLatestCareerAttempt(supabase, userId, completedOnly);
+  if (!attempt) return null;
 
   // strengths live inside score_data (career_test_attempts has no strengths column)
-  const scoreData = parseJsonField(attempts[0].score_data, {}) || {};
+  const scoreData = parseJsonField(attempt.score_data, {}) || {};
 
   return {
-    attemptId: attempts[0].id,
-    completed: Boolean(attempts[0].completed),
-    topCareers: normalizeTopCareers(attempts[0].top_careers),
+    attemptId: attempt.id,
+    completed: Boolean(attempt.completed),
+    topCareers: normalizeTopCareers(attempt.top_careers),
     strengths: Array.isArray(scoreData.strengths) ? scoreData.strengths : [],
     assessmentVersion: scoreData.assessment_version || null,
     dimensionScores: scoreData.dimension_scores || null,
-    completedAt: attempts[0].created_at
+    completedAt: attempt.created_at
   };
 }
 
@@ -348,6 +351,10 @@ app.use('/api/admin', createAdminRouter({
   authenticateToken: (req, res, next) => authenticateToken(req, res, next, { skipProfileLookup: true })
 }));
 app.use('/api/profile', createProfileRouter({ supabase, authenticateToken }));
+// Programming Studio: secure code execution. Runs only through a configured
+// external sandbox provider; never executes code inside this process.
+app.use('/api/programming', createProgrammingExecutionRouter({ authenticateToken }));
+app.use('/api/notifications', createNotificationRouter({ supabase, authenticateToken }));
 
 // Initialize database tables (Supabase handles this, but we'll keep the function for compatibility)
 function initializeDatabase() {
@@ -356,9 +363,16 @@ function initializeDatabase() {
   // But for now, we assume tables are set up in Supabase dashboard
 }
 
-// Health check endpoint
+// Health check endpoint (booleans only; never exposes values or secrets)
 app.get('/api/health', (_req, res) => {
-  res.json({ status: 'ok', message: 'Server is running' });
+  res.json({
+    status: 'ok',
+    message: 'Server is running',
+    configured: {
+      gemini: Boolean(process.env.GEMINI_API_KEY),
+      programmingExecution: Boolean(process.env.PROGRAMMING_EXECUTION_PROVIDER && process.env.PISTON_BASE_URL)
+    }
+  });
 });
 
 // Get all questions for the career test
@@ -408,96 +422,8 @@ app.get('/api/questions', authenticateToken, async (_req, res) => {
   }
 });
 
-// Auth endpoints
-app.post('/api/auth/register', async (req, res) => {
-  try {
-    const { email, password, name, careerGoal } = req.body;
-    const authClient = createAuthClient();
-
-    if (!email || !password || !name) {
-      return res.status(400).json({ error: 'Email, password, and name are required' });
-    }
-
-    // Use provided careerGoal or default to 'undecided'
-    const goal = careerGoal || 'undecided';
-
-    // Register user with Supabase Auth
-    const { data, error } = await authClient.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: getAuthCallbackUrl(),
-        data: {
-          // We'll store minimal data in auth.user_metadata, but our main data is in public.users
-          // This is just for basic auth user info
-          full_name: name
-        }
-      }
-    });
-
-    if (error) {
-      if (error.message.includes('User already registered')) {
-        return res.status(400).json({ error: 'User already exists' });
-      }
-      return res.status(400).json({ error: error.message });
-    }
-
-    const { user } = data;
-
-    // Supabase can return a user with no identities for a duplicate email when
-    // it suppresses the explicit "already registered" error. Do not turn that
-    // duplicate registration into a password login below.
-    if (user && Array.isArray(user.identities) && user.identities.length === 0) {
-      return res.status(400).json({ error: 'User already exists' });
-    }
-
-    // Insert user metadata into our public.users table
-    const { error: metadataError } = await supabase
-      .from('users')
-      .insert({
-        id: user.id,
-        full_name: name,
-        career_goal: goal
-      });
-
-    if (metadataError) {
-      console.error('Error inserting user metadata:', metadataError);
-      // We don't fail the registration if metadata insert fails, but we should log it
-      // In a production system, we might want to rollback the auth user creation
-    }
-
-    // Try to create a session immediately (if email confirmation is not required)
-    const { data: sessionData, error: sessionError } = await authClient.auth.signInWithPassword({
-      email,
-      password
-    });
-
-    if (sessionError) {
-      // If we can't create session immediately (e.g., email confirmation required),
-      // still return success but without token - frontend should handle this
-      return res.status(201).json({
-        message: 'User created successfully. Please check your email to confirm your account.',
-        user: { id: user.id, email: user.email, name, careerGoal: goal }
-      });
-    }
-
-    const { session } = sessionData;
-
-    res.status(201).json({
-      token: session.access_token,
-      refresh_token: session.refresh_token,
-      user: {
-        id: user.id,
-        email: user.email,
-        name,
-        careerGoal: goal
-      }
-    });
-  } catch (error) {
-    console.error('Registration error:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
+// Registration endpoints live in auth-api.js (honest profile completion).
+app.use('/api', createAuthRouter({ supabase, authenticateToken, createAuthClient, getAuthCallbackUrl }));
 
 app.post('/api/auth/login', async (req, res) => {
   try {
@@ -558,30 +484,6 @@ app.post('/api/auth/login', async (req, res) => {
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
-// Create or repair the application's profile row after browser-side signup or
-// email confirmation. The authenticated Supabase user is the source of truth.
-app.post('/api/auth/complete-registration', authenticateToken, async (req, res) => {
-  try {
-    const { error } = await supabase
-      .from('users')
-      .upsert({
-        id: req.user.id,
-        full_name: req.user.name,
-        career_goal: req.user.careerGoal || 'undecided'
-      }, { onConflict: 'id', ignoreDuplicates: true });
-
-    if (error) {
-      console.error('Error completing registration profile:', error);
-      return res.status(500).json({ error: 'Could not complete account setup' });
-    }
-
-    return res.status(204).end();
-  } catch (error) {
-    console.error('Error completing registration profile:', error);
-    return res.status(500).json({ error: 'Could not complete account setup' });
   }
 });
 
@@ -768,7 +670,10 @@ app.get('/api/career-test', authenticateToken, async (req, res) => {
   try {
     const assessment = await getLatestCareerAssessment(req.user.id, true);
     if (!assessment || !assessment.completed) {
-      return res.status(404).json({ error: 'No career test found' });
+      return res.status(404).json({
+        error: 'No completed career assessment',
+        code: 'NO_COMPLETED_CAREER_ASSESSMENT'
+      });
     }
 
     res.json({
@@ -785,209 +690,18 @@ app.get('/api/career-test', authenticateToken, async (req, res) => {
       strengths: assessment.strengths
     });
   } catch (error) {
-    console.error('Career test error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error('Career test retrieval error:', error);
+    res.status(500).json({
+      error: 'Could not load career assessment',
+      code: 'CAREER_ASSESSMENT_READ_FAILED'
+    });
   }
 });
 
 // Certificates are issued only from server-verified enrollment, lesson, and
-// latest final-exam attempt records. The certificates row's UUID is also its
-// stable public verification identifier.
-async function certificatePresentation(certificate) {
-  const { data: learner, error } = await supabase
-    .from('users')
-    .select('full_name')
-    .eq('id', certificate.user_id)
-    .maybeSingle();
-  if (error) throw error;
-  return {
-    certificateId: certificate.id,
-    learnerName: learner?.full_name || 'CareerPath AI Learner',
-    courseId: certificate.course_id,
-    courseTitle: certificate.course_name,
-    issuedAt: certificate.earned_at,
-    status: 'issued',
-    valid: true
-  };
-}
-
-async function getCertificateForUser(certificateId, userId) {
-  const { data, error } = await supabase
-    .from('certificates')
-    .select('id, user_id, course_id, course_name, earned_at')
-    .eq('id', certificateId)
-    .eq('user_id', userId)
-    .maybeSingle();
-  if (error) throw error;
-  return data;
-}
-
-app.get('/api/certificate/verify/:certificateId', async (req, res) => {
-  try {
-    if (!isUuid(req.params.certificateId)) {
-      return res.status(400).json({ valid: false, status: 'invalid_id' });
-    }
-    const { data: certificate, error } = await supabase
-      .from('certificates')
-      .select('id, user_id, course_id, course_name, earned_at')
-      .eq('id', req.params.certificateId)
-      .maybeSingle();
-    if (error) throw error;
-    if (!certificate) return res.status(404).json({ valid: false, status: 'not_found' });
-    return res.json(await certificatePresentation(certificate));
-  } catch (error) {
-    console.error('Certificate verification error:', error);
-    return res.status(500).json({ error: 'Certificate verification is unavailable' });
-  }
-});
-
-app.get('/api/certificate/id/:certificateId', authenticateToken, async (req, res) => {
-  try {
-    if (!isUuid(req.params.certificateId)) return res.status(404).json({ error: 'Certificate not found' });
-    const certificate = await getCertificateForUser(req.params.certificateId, req.user.id);
-    if (!certificate) return res.status(404).json({ error: 'Certificate not found' });
-    return res.json(await certificatePresentation(certificate));
-  } catch (error) {
-    console.error('Certificate retrieval error:', error);
-    return res.status(500).json({ error: 'Failed to load certificate' });
-  }
-});
-
-app.get('/api/certificate/:courseId', authenticateToken, async (req, res) => {
-  try {
-    const { data: certificate, error } = await supabase
-      .from('certificates')
-      .select('id, user_id, course_id, course_name, earned_at')
-      .eq('course_id', req.params.courseId)
-      .eq('user_id', req.user.id)
-      .maybeSingle();
-    if (error) throw error;
-    if (!certificate) return res.status(404).json({ error: 'Certificate not found' });
-    return res.json(await certificatePresentation(certificate));
-  } catch (error) {
-    console.error('Certificate retrieval error:', error);
-    return res.status(500).json({ error: 'Failed to load certificate' });
-  }
-});
-
-app.post('/api/certificate/:courseId/issue', authenticateToken, async (req, res) => {
-  try {
-    if (Object.keys(req.body || {}).length) {
-      return res.status(400).json({ error: 'Certificate issuance does not accept client-provided result data' });
-    }
-    const userId = req.user.id;
-    const courseId = req.params.courseId;
-
-    const { data: course, error: courseError } = await supabase
-      .from('courses')
-      .select('id, title')
-      .eq('id', courseId)
-      .maybeSingle();
-    if (courseError) throw courseError;
-    if (!course) return res.status(404).json({ error: 'Course not found' });
-
-    const { data: enrollment, error: enrollmentError } = await supabase
-      .from('enrollments')
-      .select('id')
-      .eq('user_id', userId)
-      .eq('course_id', courseId)
-      .maybeSingle();
-    if (enrollmentError) throw enrollmentError;
-    if (!enrollment) return res.status(403).json({ error: 'Enroll in this course before requesting its certificate' });
-
-    const { data: modules, error: moduleError } = await supabase
-      .from('modules')
-      .select('id')
-      .eq('course_id', courseId);
-    if (moduleError) throw moduleError;
-    const moduleIds = (modules || []).map(module => module.id);
-    if (!moduleIds.length) return res.status(409).json({ error: 'The course has no required lessons' });
-    const { data: lessons, error: lessonError } = await supabase
-      .from('lessons')
-      .select('id')
-      .in('module_id', moduleIds);
-    if (lessonError) throw lessonError;
-    const lessonIds = (lessons || []).map(lesson => lesson.id);
-    if (!lessonIds.length) return res.status(409).json({ error: 'The course has no required lessons' });
-    const { data: progress, error: progressError } = await supabase
-      .from('lesson_progress')
-      .select('lesson_id')
-      .eq('user_id', userId)
-      .eq('completed', true)
-      .in('lesson_id', lessonIds);
-    if (progressError) throw progressError;
-    const completedIds = new Set((progress || []).map(row => row.lesson_id));
-    if (lessonIds.some(id => !completedIds.has(id))) {
-      return res.status(409).json({ error: 'Complete every required course lesson before requesting its certificate' });
-    }
-
-    const { data: courseExams, error: examError } = await supabase
-      .from('exams')
-      .select('id, title')
-      .eq('course_id', courseId);
-    if (examError) throw examError;
-    const eligibleExams = [];
-    for (const candidate of courseExams || []) {
-      const { count, error } = await supabase
-        .from('exam_questions')
-        .select('id', { count: 'exact', head: true })
-        .eq('exam_id', candidate.id);
-      if (error) throw error;
-      // The current live schema has no final-exam discriminator. Its existing
-      // exam records identify the final assessment in the title; section quizzes
-      // are deliberately excluded here.
-      if (count > 0 && /\bfinal\s+exam\b/i.test(candidate.title || '')) eligibleExams.push(candidate);
-    }
-    if (eligibleExams.length !== 1) {
-      return res.status(409).json({ error: 'A single configured final exam is required for certificate issuance' });
-    }
-
-    const { data: latestAttempt, error: attemptError } = await supabase
-      .from('exam_attempts')
-      .select('id, submitted_at, passed, attempt_number')
-      .eq('exam_id', eligibleExams[0].id)
-      .eq('user_id', userId)
-      .order('attempt_number', { ascending: false })
-      .limit(1)
-      .maybeSingle();
-    if (attemptError) throw attemptError;
-    if (!latestAttempt || !latestAttempt.submitted_at || latestAttempt.passed !== true) {
-      return res.status(403).json({ error: 'Pass the latest submitted final exam attempt before requesting a certificate' });
-    }
-
-    const { data: existing, error: existingError } = await supabase
-      .from('certificates')
-      .select('id, user_id, course_id, course_name, earned_at')
-      .eq('user_id', userId)
-      .eq('course_id', courseId)
-      .maybeSingle();
-    if (existingError) throw existingError;
-    if (existing) return res.json({ success: true, certificate: await certificatePresentation(existing) });
-
-    const { data: created, error: insertError } = await supabase
-      .from('certificates')
-      .insert({ user_id: userId, course_id: courseId, course_name: course.title })
-      .select('id, user_id, course_id, course_name, earned_at')
-      .single();
-    if (insertError) {
-      if (insertError.code === '23505') {
-        const { data: concurrentCertificate, error: concurrentError } = await supabase
-          .from('certificates')
-          .select('id, user_id, course_id, course_name, earned_at')
-          .eq('user_id', userId)
-          .eq('course_id', courseId)
-          .maybeSingle();
-        if (concurrentError) throw concurrentError;
-        if (concurrentCertificate) return res.json({ success: true, certificate: await certificatePresentation(concurrentCertificate) });
-      }
-      throw insertError;
-    }
-    return res.status(201).json({ success: true, certificate: await certificatePresentation(created) });
-  } catch (error) {
-    console.error('Certificate issuance error:', error);
-    return res.status(500).json({ error: 'Failed to issue certificate' });
-  }
-});
+// latest final-exam attempt records (see certificate-api.js). The server,
+// via its service-role client, is the sole writer to public.certificates.
+app.use('/api', createCertificateRouter({ supabase, authenticateToken, createNotification, isUuid }));
 
 // Dashboard endpoint
 app.get('/api/dashboard', authenticateToken, async (req, res) => {
@@ -1831,6 +1545,18 @@ app.post('/api/enroll', authenticateToken, async (req, res) => {
       .single();
 
     if (insertError) {
+      const recovery = await recoverConcurrentEnrollment(supabase, {
+        userId,
+        courseId,
+        insertError
+      });
+      if (recovery.error) {
+        console.error('Error recovering concurrent enrollment:', recovery.error);
+        return res.status(500).json({ error: 'Failed to enroll in course' });
+      }
+      if (recovery.recovered) {
+        return res.status(400).json({ error: 'Already enrolled in this course' });
+      }
       console.error('Error inserting enrollment:', insertError);
       return res.status(500).json({ error: 'Failed to enroll in course' });
     }
@@ -1845,46 +1571,7 @@ app.post('/api/enroll', authenticateToken, async (req, res) => {
   }
 });
 
-app.post('/api/progress', authenticateToken, async (req, res) => {
-  try {
-    const { enrollmentId, progress, completedHours } = req.body;
-
-    if (enrollmentId === undefined || progress === undefined) {
-      return res.status(400).json({ error: 'Enrollment ID and progress are required' });
-    }
-
-    // Update progress
-    const { error: updateError } = await supabase
-      .from('enrollments')
-      .update({
-        progress: progress,
-        completedHours: completedHours || 0
-      })
-      .eq('id', enrollmentId)
-      .eq('userId', req.user.id);
-
-    if (updateError) {
-      console.error('Error updating progress:', updateError);
-      return res.status(500).json({ error: 'Failed to update progress' });
-    }
-
-    // Check if any rows were updated
-    const { count } = await supabase
-      .from('enrollments')
-      .select('id', { count: 'exact' })
-      .eq('id', enrollmentId)
-      .eq('userId', req.user.id);
-
-    if (count === 0) {
-      return res.status(404).json({ error: 'Enrollment not found' });
-    }
-
-    res.json({ message: 'Progress updated successfully' });
-  } catch (error) {
-    console.error('Progress error:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
+app.use('/api/progress', createProgressRouter({ supabase, authenticateToken }));
 
 app.get('/api/enrollments', authenticateToken, async (req, res) => {
   try {
@@ -2010,7 +1697,7 @@ app.post('/api/lessons/:lessonId/complete', authenticateToken, async (req, res) 
     // The user must be enrolled in the course that owns this lesson
     const { data: enrollment, error: enrollError } = await supabase
       .from('enrollments')
-      .select('id')
+      .select('id, course_name')
       .eq('user_id', userId)
       .eq('course_id', module.course_id)
       .maybeSingle();
@@ -2024,46 +1711,26 @@ app.post('/api/lessons/:lessonId/complete', authenticateToken, async (req, res) 
       return res.status(403).json({ error: 'You are not enrolled in this course' });
     }
 
-    // Record completion (server-authoritative). Update the existing row if there
-    // is one, otherwise insert a new one.
-    const { data: existingRow, error: existingError } = await supabase
-      .from('lesson_progress')
-      .select('id')
-      .eq('user_id', userId)
-      .eq('lesson_id', lessonId)
-      .maybeSingle();
-
-    if (existingError) {
-      console.error('Error checking lesson progress:', existingError);
-      return res.status(500).json({ error: 'Database error' });
-    }
-
+    // Record completion (server-authoritative). A concurrent duplicate request
+    // is treated as the same idempotent completion, not as a server failure.
     const now = new Date().toISOString();
+    const persistence = await persistLessonCompletion(supabase, {
+      userId,
+      lessonId,
+      completedAt: now
+    });
 
-    if (existingRow) {
-      const { error: updateError } = await supabase
-        .from('lesson_progress')
-        .update({ completed: true, completed_at: now, updated_at: now })
-        .eq('id', existingRow.id);
-
-      if (updateError) {
-        console.error('Error updating lesson progress:', updateError);
+    if (persistence.error) {
+      if (persistence.operation === 'read') {
+        console.error('Error checking lesson progress:', persistence.error);
+        return res.status(500).json({ error: 'Database error' });
+      }
+      if (persistence.operation === 'update' || persistence.operation === 'concurrent-update') {
+        console.error('Error updating lesson progress:', persistence.error);
         return res.status(500).json({ error: 'Failed to update lesson progress' });
       }
-    } else {
-      const { error: insertError } = await supabase
-        .from('lesson_progress')
-        .insert({
-          user_id: userId,
-          lesson_id: lessonId,
-          completed: true,
-          completed_at: now
-        });
-
-      if (insertError) {
-        console.error('Error inserting lesson progress:', insertError);
-        return res.status(500).json({ error: 'Failed to save lesson progress' });
-      }
+      console.error('Error inserting lesson progress:', persistence.error);
+      return res.status(500).json({ error: 'Failed to save lesson progress' });
     }
 
     // Recalculate and persist the enrollment's progress from real lesson data
@@ -2081,6 +1748,22 @@ app.post('/api/lessons/:lessonId/complete', authenticateToken, async (req, res) 
     if (progressUpdateError) {
       console.error('Error updating enrollment progress:', progressUpdateError);
       // The lesson completion itself succeeded, so do not fail the request.
+    }
+
+    if (summary.totalLessons > 0 && summary.completedLessons === summary.totalLessons) {
+      try {
+        await createNotification(supabase, {
+          userId,
+          type: 'course_completed',
+          title: 'Course completed',
+          body: `You completed ${enrollment.course_name || module.course_id}.`,
+          href: `/course-detail.html?id=${encodeURIComponent(module.course_id)}`,
+          dedupeKey: `course_completed:${module.course_id}`
+        });
+      } catch (notificationError) {
+        // Completion is authoritative even before the notification migration is applied.
+        console.error('Course completion notification error:', notificationError);
+      }
     }
 
     res.json({
@@ -2159,16 +1842,10 @@ app.put('/api/user/profile', authenticateToken, async (req, res) => {
 });
 
 // AI Chatbot endpoints (keep same logic)
-app.post('/api/ai/chat', authenticateToken, async (req, res) => {
-  console.log('AI chat endpoint hit');
-  try {
-    const { message } = req.body;
-    const userId = req.user.id;
-
-    if (!message) {
-      return res.status(400).json({ error: 'Message is required' });
-    }
-
+app.use('/api', createChatRouter({
+  supabase,
+  authenticateToken,
+  generateReply: async (message) => {
     // Create prompt with context
     const prompt = `
       You are CareerPath AI, an helpful career advisor. The user is asking: "${message}"
@@ -2181,74 +1858,9 @@ app.post('/api/ai/chat', authenticateToken, async (req, res) => {
       model: 'gemini-pro-latest',
       contents: prompt
     });
-    const text = result.text();
-
-    // Save chat history using Supabase
-    const { error: chatError } = await supabase
-      .from('chat_history')
-      .insert({
-        userId: userId,
-        message: message,
-        response: text
-      });
-
-    if (chatError) {
-      console.warn('Failed to save chat history:', chatError);
-    }
-
-    res.json({ reply: text });
-  } catch (error) {
-    console.error('AI chat error:', error);
-    if ((error.error && error.error.code === 429) || error.status === 429) {
-      return res.status(503).json({ error: 'AI service temporarily unavailable due to quota exceeded. Please try again later.' });
-    }
-    res.status(500).json({ error: 'Failed to generate response' });
+    return result.text();
   }
-});
-
-app.get('/api/chat/history', authenticateToken, async (req, res) => {
-  try {
-    const { data, error } = await supabase
-      .from('chat_history')
-      .select('*')
-      .eq('userId', req.user.id)
-      .order('created_at', { ascending: false })
-      .limit(50);
-
-    if (error) {
-      return res.status(500).json({ error: 'Database error' });
-    }
-
-    res.json({
-      history: data.map(chat => ({
-        message: chat.message,
-        response: chat.response,
-        timestamp: chat.createdAt
-      }))
-    });
-  } catch (error) {
-    console.error('Chat history error:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
-app.delete('/api/chat/clear', authenticateToken, async (req, res) => {
-  try {
-    const { error } = await supabase
-      .from('chat_history')
-      .delete()
-      .eq('userId', req.user.id);
-
-    if (error) {
-      return res.status(500).json({ error: 'Failed to clear chat history' });
-    }
-
-    res.json({ message: 'Chat history cleared' });
-  } catch (error) {
-    console.error('Clear chat error:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
+}));
 
 // Start server
 app.listen(PORT, HOST, () => {

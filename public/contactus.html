@@ -87,8 +87,8 @@
             <span class="btn-text">Send Message</span>
           </button>
         </form>
-        <div id="contact-success" style="display: none; margin-top: var(--space-4); padding: var(--space-4); background: rgba(139, 191, 159, 0.12); color: var(--success); border-radius: var(--radius-sm); text-align: center; border-left: 2px solid var(--success);">
-          <i class="fas fa-check-circle"></i> Message sent successfully! We'll get back to you soon.
+        <div id="contact-success" style="display: none; margin-top: var(--space-4); padding: var(--space-4); background: rgba(139, 191, 159, 0.12); color: var(--success); border-radius: var(--radius-sm); text-align: center; border-left: 2px solid var(--success);" role="status">
+          <i class="fas fa-check-circle"></i> Opening your email app with this message addressed to support@aicareer.com. Nothing is sent until you press Send there.
         </div>
       </div>
     </section>
@@ -104,16 +104,18 @@
   <script>
     document.getElementById('contact-form').addEventListener('submit', function(e) {
       e.preventDefault();
-      const btn = document.getElementById('contact-submit');
-      btn.disabled = true;
-      btn.innerHTML = '<span class="spinner"><i class="fas fa-spinner fa-spin"></i></span> Sending...';
-
-      setTimeout(() => {
-        document.getElementById('contact-success').style.display = 'block';
-        btn.disabled = false;
-        btn.innerHTML = '<span class="btn-text">Send Message</span>';
-        this.reset();
-      }, 1500);
+      // There is no contact-message endpoint: compose an email in the user's
+      // own mail app instead of pretending the message was delivered.
+      const name = document.getElementById('contact-name').value.trim();
+      const email = document.getElementById('contact-email').value.trim();
+      const subject = document.getElementById('contact-subject').value.trim();
+      const message = document.getElementById('contact-message').value.trim();
+      const mailto = 'mailto:support@aicareer.com'
+        + `?subject=${encodeURIComponent(`[CareerPath AI] ${subject}`)}`
+        + `&body=${encodeURIComponent(`From: ${name} <${email}>\n\n${message}`)}`;
+      window.location.href = mailto;
+      document.getElementById('contact-success').style.display = 'block';
+      this.reset();
     });
   </script>
 </body>

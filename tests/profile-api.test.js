@@ -11,6 +11,9 @@ test('profile input accepts supported fields and rejects unsafe or invalid value
   assert.deepEqual(parseProfileUpdates({ fullName: ' Asha ', bio: ' Hello ', preferredLanguage: 'ar', themePreference: 'dark' }, USER_ID), {
     updates: { full_name: 'Asha', bio: 'Hello', preferred_language: 'ar', theme_preference: 'dark' }
   });
+  assert.deepEqual(parseProfileUpdates({ preferredLanguage: 'pcm' }, USER_ID).updates, { preferred_language: 'pcm' });
+  assert.deepEqual(parseProfileUpdates({ preferredLanguage: 'wo' }, USER_ID).updates, { preferred_language: 'wo' });
+  assert.deepEqual(parseProfileUpdates({ preferredLanguage: 'ha' }, USER_ID).updates, { preferred_language: 'ha' });
   assert.equal(parseProfileUpdates({ id: OTHER_ID, fullName: 'Asha' }, USER_ID).error, 'Unsupported profile field');
   assert.equal(parseProfileUpdates({ preferredLanguage: 'fon' }, USER_ID).error, 'Unsupported language preference');
   assert.equal(parseProfileUpdates({ themePreference: 'blue' }, USER_ID).error, 'Unsupported theme preference');

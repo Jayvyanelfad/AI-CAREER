@@ -313,6 +313,10 @@ button {
   transform-origin: left;
 }
 
+html[dir="rtl"] .nav-item::after {
+  transform-origin: right;
+}
+
 .nav-item:hover::after {
   transform: scaleX(1);
 }
@@ -1093,6 +1097,7 @@ button {
   .nav-wrapper.auth-nav-responsive > .menu-button.auth-nav-toggle {
     display: inline-flex !important;
     margin-left: auto;
+    margin-inline-start: auto;
   }
 
   header.auth-nav-responsive {
@@ -1150,6 +1155,7 @@ button {
   header.auth-nav-responsive > .auth-nav-toggle {
     display: inline-flex;
     margin-left: auto;
+    margin-inline-start: auto;
   }
 }
 
@@ -3628,6 +3634,10 @@ body:has(#free-courses) .cta-section { background: var(--surface); }
 .course-detail-container .module-title { padding-top: 22px !important; margin: 0 0 12px !important; font-size: clamp(1.4rem, 2.7vw, 1.8rem) !important; }
 .course-detail-container .lesson-item { min-height: 50px; padding: 12px 14px !important; border: 1px solid var(--border-light); border-radius: 8px !important; background: var(--surface) !important; }
 .course-detail-container .lesson-item:hover,.course-detail-container .lesson-item.active { border-color: var(--accent); background: var(--surface-elevated) !important; }
+.course-detail-container .lesson-item.active { box-shadow: inset 3px 0 0 var(--accent); }
+html[dir="rtl"] .course-detail-container .lesson-item.active { box-shadow: inset -3px 0 0 var(--accent); }
+.course-detail-container .lesson-item.completed.active { opacity: 1; }
+.course-detail-container .lesson-item:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .course-detail-container .lesson-content-area { max-width: 850px; margin: 26px auto 0 !important; padding: 20px 0 !important; border: 0 !important; border-top: 1px solid var(--border) !important; border-bottom: 1px solid var(--border) !important; border-radius: 0 !important; background: transparent !important; }
 .course-detail-container .lesson-content-text { max-width: 76ch; color: var(--text-secondary); line-height: 1.75; }
 .course-detail-container .lesson-actions { max-width: 850px; margin: 18px auto 0 !important; }
@@ -5968,8 +5978,300 @@ html[data-theme="light"] {
   line-height: 1.6;
 }
 
+/* ==========================================================================
+   PHASE 3 — Course learning visual polish (presentation only).
+   All behavior (completion, progress values, enrollment, exam gating,
+   certificates) is owned by the learning-system agent. These rules only
+   style the states the existing markup/JS already exposes.
+   ========================================================================== */
+
+/* ---- 1. Lesson states: completed check chip, calm incomplete marker ---- */
+body:has(.course-detail-container) .lesson-status {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+  font-size: 0.75rem;
+}
+body:has(.course-detail-container) .lesson-status.completed {
+  border: 1px solid var(--success);
+  background: color-mix(in srgb, var(--success) 18%, transparent);
+  color: var(--success);
+}
+body:has(.course-detail-container) .lesson-status.incomplete {
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+}
+/* Completed lessons read as done, not disabled: no strikethrough, calm text.
+   Overrides course-detail.html fallback (higher specificity, same meaning). */
+body:has(.course-detail-container) .lesson-item.completed .lesson-text {
+  text-decoration: none;
+  color: var(--text-secondary);
+}
+body:has(.course-detail-container) .lesson-item.completed { opacity: 1; }
+body:has(.course-detail-container) .lesson-item.completed.active .lesson-text {
+  color: var(--text);
+}
+/* Module header: lesson-count pill, calm disclosure target. */
+body:has(.course-detail-container) .module-lesson-count {
+  padding: 4px 10px;
+  border: 1px solid var(--border-light);
+  border-radius: 999px;
+  white-space: nowrap;
+}
+/* NOTE: LOCKED / NOT STARTED / IN PROGRESS lesson classes are not exposed by
+   course-detail.js (only .completed / .active / aria-current). Styling them is
+   OUT OF SCOPE until the learning-system agent adds those states. */
+
+/* ---- 2. Course progress + exam/enrollment callouts (values from logic) ---- */
+body:has(.course-detail-container) #exam-button-container p[role="status"] {
+  margin: 0 0 14px;
+  padding: 12px 16px;
+  border: 1px solid var(--border-light);
+  border-inline-start: 3px solid var(--accent);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text-secondary);
+  font-size: 0.92rem;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+body:has(.course-detail-container) #exam-button-container .component-button {
+  margin: 4px 8px 4px 0;
+}
+body:has(.course-detail-container) #enrollment-status-message[role="alert"] {
+  margin: 10px 0 0;
+  padding: 12px 16px;
+  border: 1px solid var(--border-light);
+  border-inline-start: 3px solid var(--danger);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+body:has(.course-detail-container) #enrollment-status-message[hidden] { display: none; }
+
+/* ---- 3. Lesson reading experience (DB-driven markup, style descendants) ---- */
+body:has(.course-detail-container) .lesson-content-text p { margin: 0 0 1.1em; }
+body:has(.course-detail-container) .lesson-content-text h2,
+body:has(.course-detail-container) .lesson-content-text h3,
+body:has(.course-detail-container) .lesson-content-text h4 {
+  margin: 1.6em 0 0.6em;
+  color: var(--text);
+  font-family: var(--font-display);
+  font-weight: 400;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+body:has(.course-detail-container) .lesson-content-text h3 { font-size: 1.35rem; }
+body:has(.course-detail-container) .lesson-content-text h4 { font-size: 1.1rem; }
+body:has(.course-detail-container) .lesson-content-text ul,
+body:has(.course-detail-container) .lesson-content-text ol {
+  margin: 0 0 1.1em;
+  padding-inline-start: 1.4rem;
+  line-height: 1.7;
+}
+body:has(.course-detail-container) .lesson-content-text li + li { margin-top: 0.4em; }
+body:has(.course-detail-container) .lesson-content-text pre {
+  max-width: 100%;
+  margin: 0 0 1.2em;
+  padding: 16px;
+  overflow-x: auto;
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.35);
+  color: var(--text);
+  font: 0.82rem/1.7 "IBM Plex Mono", Consolas, monospace;
+  tab-size: 2;
+  direction: ltr;
+  text-align: left;
+}
+body:has(.course-detail-container) .lesson-content-text code {
+  font-family: "IBM Plex Mono", Consolas, monospace;
+  font-size: 0.88em;
+}
+body:has(.course-detail-container) .lesson-content-text blockquote {
+  margin: 0 0 1.1em;
+  padding: 12px 16px;
+  border-inline-start: 2px solid var(--accent);
+  background: var(--surface);
+  border-radius: 0 8px 8px 0;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+body:has(.course-detail-container) .lesson-content-text table {
+  width: 100%;
+  margin: 0 0 1.2em;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+body:has(.course-detail-container) .lesson-content-text th,
+body:has(.course-detail-container) .lesson-content-text td {
+  padding: 10px 12px;
+  border: 1px solid var(--border-light);
+  text-align: start;
+  vertical-align: top;
+}
+body:has(.course-detail-container) .lesson-content-text th {
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 600;
+}
+body:has(.course-detail-container) .lesson-content-text img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+body:has(.course-detail-container) .video-container {
+  position: relative;
+  width: 100%;
+  margin: 0 0 1.2em;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  background: #000;
+}
+body:has(.course-detail-container) .video-container iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+/* ---- 4. Lesson controls hierarchy: Previous = secondary, Next = primary ---- */
+body:has(.course-detail-container) #btn-prev-lesson {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+body:has(.course-detail-container) #btn-prev-lesson:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: transparent;
+  box-shadow: none;
+  transform: none;
+}
+body:has(.course-detail-container) .btn-lesson:disabled {
+  box-shadow: none;
+  transform: none;
+}
+
+/* ---- 5. Courses catalog: filters, coming-soon, enrolled, modal surface ---- */
+body:has(#free-courses) .filter-btn {
+  min-height: 44px;
+  padding: 10px 18px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+}
+body:has(#free-courses) .filter-btn:hover { border-color: var(--accent); color: var(--text); }
+body:has(#free-courses) .filter-btn.active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #1b1714;
+}
+body:has(#free-courses) .filter-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+body:has(#free-courses) .course-btn[disabled] {
+  cursor: not-allowed;
+  opacity: 0.55;
+  transform: none;
+  box-shadow: none;
+}
+body:has(#free-courses) .course-btn.enrolled {
+  border-color: var(--success);
+  background: color-mix(in srgb, var(--success) 16%, transparent);
+  color: var(--success);
+  opacity: 1;
+}
+body:has(#free-courses) .course-btn.enrolled:hover {
+  background: color-mix(in srgb, var(--success) 16%, transparent);
+  color: var(--success);
+  transform: none;
+  box-shadow: none;
+}
+body:has(#free-courses) .course-btn:focus-visible,
+body:has(#free-courses) .course-title-link:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+/* Enrollment modal: theme-aware surface (overrides white inline fallback). */
+body:has(#free-courses) #enroll-modal > div {
+  background: var(--surface-elevated, var(--surface));
+  color: var(--text);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-md, 0 18px 50px rgba(0, 0, 0, 0.45));
+}
+body:has(#free-courses) #enroll-modal .modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+body:has(#free-courses) #enroll-modal .modal-header h3 { margin: 0; color: var(--text); }
+body:has(#free-courses) #enroll-modal .close-modal {
+  min-width: 44px;
+  min-height: 44px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text);
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+}
+body:has(#free-courses) #enroll-modal .modal-body { color: var(--text-secondary); line-height: 1.6; }
+body:has(#free-courses) #enroll-modal .modal-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+body:has(#free-courses) #enroll-modal .modal-footer .course-btn { margin: 0; }
+
+/* Shared coming-soon chip (dashboard explore cards, career recommendations). */
+.course-availability {
+  display: inline-block;
+  margin: 8px 0 0;
+  padding: 4px 10px;
+  border: 1px dashed var(--border);
+  border-radius: 999px;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+/* Profile edit actions: calm row that wraps on narrow screens. */
+#profile-edit-form > .component-button,
+#profile-edit-form > .btn-outline { margin: 0 8px 10px 0; }
+#profile-edit-form > .btn-outline:last-child { margin-inline-end: 0; }
+
 @media (max-width: 900px) {
   .home-project-layout {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+/* Lesson diagrams use conceptual labels only; they do not imply measured data. */
+.lesson-visual { margin: 1.5rem 0; padding: 1rem; border: 1px solid var(--border-light); border-radius: var(--radius-sm); background: color-mix(in srgb, var(--green_dark) 72%, transparent); }
+.lesson-visual__plot { display: flex; align-items: stretch; gap: .55rem; overflow-x: auto; padding-bottom: .25rem; }
+.lesson-visual__step { flex: 1 1 10rem; min-width: 9.5rem; display: grid; gap: .45rem; padding: .8rem; border-radius: .4rem; background: var(--surface); color: var(--bege_light); }
+.lesson-visual__step > span { color: var(--green_light); font-size: .8rem; letter-spacing: .08em; }
+.lesson-visual__arrow { align-self: center; color: var(--green_light); font-size: 1.4rem; }
+.lesson-visual figcaption { margin-top: .7rem; color: var(--text-muted); font-size: .9rem; }
+html[dir="rtl"] .lesson-visual__arrow { transform: scaleX(-1); }
+@media (max-width: 600px) { .lesson-visual__plot { align-items: center; } .lesson-visual__step { min-width: 12rem; } }

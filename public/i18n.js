@@ -1,7 +1,8 @@
 (function () {
   'use strict';
 
-  // Wave-1A supported languages. English is canonical and the fallback.
+  // English is canonical and the fallback. New community locales intentionally
+  // expose only their initial translated UI strings; missing strings fall back visibly to English.
   // Fon is intentionally NOT selectable (fon.json has no translations yet).
   const STORAGE_KEY = 'aicareer-language';
   const SUPPORTED = [
@@ -9,7 +10,10 @@
     { code: 'fr', name: 'French', nativeName: 'Français' },
     { code: 'hinglish', name: 'Hinglish', nativeName: 'Hinglish' },
     { code: 'sw', name: 'Swahili', nativeName: 'Kiswahili' },
-    { code: 'ar', name: 'Arabic', nativeName: 'العربية' }
+    { code: 'ar', name: 'Arabic', nativeName: 'العربية' },
+    { code: 'pcm', name: 'Nigerian Pidgin', nativeName: 'Naijá' },
+    { code: 'wo', name: 'Gambian Wolof', nativeName: 'Wolof' },
+    { code: 'ha', name: 'Hausa', nativeName: 'Hausa' }
   ];
   const SUPPORTED_CODES = SUPPORTED.map(entry => entry.code);
   const cache = new Map();

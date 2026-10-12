@@ -2,7 +2,9 @@ const express = require('express');
 
 const AVATAR_BUCKET = 'profile-avatars';
 const PROFILE_FIELDS = 'id, full_name, career_goal, avatar_path, bio, preferred_language, theme_preference, created_at, updated_at';
-const SUPPORTED_LANGUAGES = new Set(['en', 'fr', 'hinglish', 'sw', 'ar']);
+// These match the selectable locales in public/i18n.js. pcm, wo, and ha are
+// intentionally partial translations but remain valid saved preferences.
+const SUPPORTED_LANGUAGES = new Set(['en', 'fr', 'hinglish', 'sw', 'ar', 'pcm', 'wo', 'ha']);
 const SUPPORTED_THEMES = new Set(['system', 'light', 'dark']);
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 

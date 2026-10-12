@@ -39,6 +39,24 @@ class Chatbot {
       });
     }
 
+    // Dedicated-page controls: the close button hides the window and reveals
+    // the floating reopen button; both are guarded so other pages are unaffected.
+    const closeBtn = document.getElementById("chatbot-close-btn");
+    const floatingBtn = document.getElementById("floating-chatbot");
+    const chatWindow = document.getElementById("chatbot-window");
+    if (closeBtn && floatingBtn && chatWindow) {
+      closeBtn.addEventListener("click", () => {
+        chatWindow.style.display = "none";
+        floatingBtn.hidden = false;
+        floatingBtn.focus();
+      });
+      floatingBtn.addEventListener("click", () => {
+        chatWindow.style.display = "flex";
+        floatingBtn.hidden = true;
+        if (input) input.focus();
+      });
+    }
+
     this.addMessage("bot", t("coverage.chatbotWelcome", "👋 Hi! I'm CareerPath AI Assistant. I can help with career advice, courses, resume tips, and interview prep. What would you like to know?"));
     this.showQuickReplies();
   }
@@ -48,21 +66,21 @@ class Chatbot {
 
     const html = `
       <div id="chatbot">
-        <button class="chatbot-button" onclick="window.bot.toggleChat()">
-          <i class="fas fa-robot"></i> AI Assistant
+        <button class="chatbot-button" onclick="window.bot.toggleChat()" aria-label="Open chat with CareerPath AI">
+          <i class="fas fa-robot" aria-hidden="true"></i> AI Assistant
         </button>
         <div class="chatbox" id="chatbot-window" style="display: none;">
           <div class="chat-header">
-            <h3><i class="fas fa-robot"></i> Career Assistant</h3>
-            <button onclick="window.bot.toggleChat()">
-              <i class="fas fa-times"></i>
+            <h3><i class="fas fa-robot" aria-hidden="true"></i> Career Assistant</h3>
+            <button onclick="window.bot.toggleChat()" aria-label="Close chat">
+              <i class="fas fa-times" aria-hidden="true"></i>
             </button>
           </div>
-          <div class="chat-body" id="chatbot-body"></div>
+          <div class="chat-body" id="chatbot-body" role="log" aria-live="polite" aria-label="Chat messages"></div>
           <div id="quick-replies" class="quick-replies"></div>
           <div class="chat-input-container">
-            <input type="text" id="chat-input" placeholder="Ask about careers, courses, resume..." />
-            <button id="send-message"><i class="fas fa-paper-plane"></i></button>
+            <input type="text" id="chat-input" placeholder="Ask about careers, courses, resume..." aria-label="Type your message" />
+            <button id="send-message" aria-label="Send message"><i class="fas fa-paper-plane" aria-hidden="true"></i></button>
           </div>
         </div>
       </div>

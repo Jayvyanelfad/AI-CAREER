@@ -109,6 +109,7 @@ async function fetchCourses(token) {
     const cancelEnroll = document.getElementById('cancel-enroll');
     const confirmEnroll = document.getElementById('confirm-enroll');
     const modalCourseName = document.getElementById('modal-course-name');
+    const modalPrompt = document.getElementById('modal-enroll-prompt');
 
     // Only proceed if user is authenticated and modal exists
     if (!isAuthenticated || !enrollModal) {
@@ -117,16 +118,29 @@ async function fetchCourses(token) {
 
     // Open enrollment modal when enroll button is clicked
     const freeCoursesContainer = document.getElementById('course-list');
+    if (!freeCoursesContainer) {
+      return;
+    }
     freeCoursesContainer.addEventListener('click', function(e) {
       const btn = e.target.closest('.enroll-btn');
       if (!btn) return;
       const courseCard = btn.closest('.course-card');
+      if (!courseCard) return;
       const courseId = courseCard.dataset.courseId;
       const courseName = courseCard.dataset.courseName || courseCard.querySelector('h3').textContent;
+      const title = t(`courseMetadata.${courseId}.title`, courseName);
 
-      modalCourseName.textContent = t(`courseMetadata.${courseId}.title`, courseName);
-      confirmEnroll.dataset.courseId = courseId;
-      confirmEnroll.dataset.courseName = courseName;
+      // #modal-course-name does not exist in the current modal markup; the
+      // visible prompt is #modal-enroll-prompt. Guard both so a missing node
+      // can never throw and block the modal from opening.
+      if (modalCourseName) modalCourseName.textContent = title;
+      if (modalPrompt) {
+        modalPrompt.textContent = t('coverage.enrollModalQuestion', `Are you sure you want to enroll in ${title}?`, { course: title });
+      }
+      if (confirmEnroll) {
+        confirmEnroll.dataset.courseId = courseId;
+        confirmEnroll.dataset.courseName = courseName;
+      }
 
       enrollModal.style.display = 'flex';
     });

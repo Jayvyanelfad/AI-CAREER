@@ -68,8 +68,15 @@ test('Programming Studio keeps its learning path, RTL code, and responsive layou
   assert.equal(await python.locator('.programming-mini-build > p:not(.programming-eyebrow)').innerText(), 'A command-line study session planner that validates a duration and summarizes a plan.');
   const editor = python.locator('[data-practice-editor]').first();
   assert.equal(await editor.evaluate(element => getComputedStyle(element).direction), 'ltr');
-  assert.equal(await python.locator('button').filter({ hasText: /Run|تشغيل/i }).count(), 0);
-  assert.match(await python.innerText(), /لا ينفذ|لا يشغّل|does not execute/i);
+  assert.ok((await python.locator('button').filter({ hasText: /Run|Exécuter|Chalao|Endesha|شغّل/i }).count()) > 0,
+    'Python practices expose a Run Code control');
+  assert.ok((await python.locator('[data-output-panel]').count()) > 0, 'Python practices expose an output panel');
+  assert.match(await python.innerText(), /sandbox|بيئة|salama/i);
+  const javaTrack = page.locator('.programming-track[data-track-id="java"]');
+  await javaTrack.locator(':scope > summary').click();
+  assert.equal(await javaTrack.locator('button').filter({ hasText: /Run|Exécuter|Chalao|Endesha|شغّل/i }).count(), 0,
+    'unsupported languages never show a Run Code control');
+  assert.ok((await javaTrack.locator('.programming-coming-soon').count()) > 0, 'Java shows a coming soon badge');
 
   for (const locale of ['en', 'fr', 'hinglish', 'sw', 'ar']) {
     await page.evaluate(async language => {

@@ -53,7 +53,7 @@ CREATE TABLE IF NOT EXISTS public.exam_crossword_clues (
   clue_text TEXT NOT NULL,
   answer TEXT NOT NULL,
   row INTEGER NOT NULL CHECK (row >= 0),
-  column INTEGER NOT NULL CHECK (column >= 0),
+  "column" INTEGER NOT NULL CHECK ("column" >= 0),
   direction TEXT NOT NULL CHECK (direction IN ('across', 'down')),
   points INTEGER NOT NULL DEFAULT 1 CHECK (points > 0),
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -124,8 +124,8 @@ INSERT INTO public.exam_crosswords (exam_id, title, grid_rows, grid_columns)
 VALUES ('intro_to_ai_exam_1', 'AI & Machine Learning Concepts', 6, 21)
 ON CONFLICT (exam_id) DO NOTHING;
 
-INSERT INTO public.exam_crossword_clues (crossword_id, clue_number, clue_text, answer, row, column, direction, points)
-SELECT crossword.id, clues.clue_number, clues.clue_text, clues.answer, clues.row, clues.column, clues.direction, 1
+INSERT INTO public.exam_crossword_clues (crossword_id, clue_number, clue_text, answer, row, "column", direction, points)
+SELECT crossword.id, clues.clue_number, clues.clue_text, clues.answer, clues.row, clues."column", clues.direction, 1
 FROM public.exam_crosswords crossword
 CROSS JOIN (VALUES
   (1, 'A connected structure of computational units that process information.', 'NETWORK', 0, 9, 'across'),
@@ -135,7 +135,7 @@ CROSS JOIN (VALUES
   (5, 'An algorithm that adjusts parameters to reduce a loss function.', 'OPTIMIZER', 4, 9, 'across'),
   (6, 'A mechanism that weights relevant input tokens or positions.', 'ATTENTION', 5, 1, 'across'),
   (7, 'A basic computational unit that combines inputs and applies an activation.', 'NEURON', 0, 9, 'down')
-) AS clues(clue_number, clue_text, answer, row, column, direction)
+) AS clues(clue_number, clue_text, answer, row, "column", direction)
 WHERE crossword.exam_id = 'intro_to_ai_exam_1'
 ON CONFLICT (crossword_id, clue_number) DO NOTHING;
 

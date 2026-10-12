@@ -118,6 +118,11 @@
   text-align: center;
 }
 
+.career-course-step a:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
 .career-course-empty {
   grid-column: 1 / -1;
   margin: 0;
@@ -131,6 +136,7 @@
 }
 
 .career-assessment-detail > summary {
+  min-height: 44px;
   padding: 1rem 1.2rem;
   color: var(--text);
   cursor: pointer;

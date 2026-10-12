@@ -22,6 +22,7 @@ function programmingTrackText(track, field) {
 
 function renderLessonContent(track, module, lesson, moduleIndex) {
   const id = `studio-${track.id}-practice-${moduleIndex + 1}`;
+  const runnableLanguage = track.id === 'python' ? 'python' : (track.id === 'javascript' ? 'javascript' : null);
   return `
     <article class="programming-lesson" aria-labelledby="${id}-title">
       <p class="programming-lesson-stage">${escapeProgrammingText(t('coverage.lessonStageLabel', 'LESSON {number} / {language}', { number: String(moduleIndex + 1).padStart(2, '0'), language: track.language }))}</p>
@@ -37,8 +38,25 @@ function renderLessonContent(track, module, lesson, moduleIndex) {
       <section class="programming-practice" id="${id}">
         <div class="programming-lesson-section"><h5>${escapeProgrammingText(t('common.practice', 'Practice'))}</h5><p>${escapeProgrammingText(lesson.practice)}</p></div>
         <label for="${id}-draft">${escapeProgrammingText(t('coverage.editableDraft', 'Your editable {language} draft', { language: track.language }))}</label>
-        <textarea id="${id}-draft" class="programming-practice-editor" data-practice-editor spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off">${escapeProgrammingText(lesson.example)}</textarea>
-        <p class="programming-practice-note">${t('coverage.practiceRuntimeNote', 'Edit the starter code and try the task in your own environment. This page does not execute or save code; your draft lasts only until this page is refreshed.')}</p>
+        <textarea id="${id}-draft" class="programming-practice-editor" data-practice-editor data-starter-code="${escapeProgrammingText(lesson.example)}" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off">${escapeProgrammingText(lesson.example)}</textarea>
+        <div class="programming-code-actions">
+          ${runnableLanguage
+            ? `<button type="button" class="programming-run-button" data-run-code data-language="${runnableLanguage}" data-target="${id}" data-lesson-id="${escapeProgrammingText(track.id)}-${moduleIndex + 1}">${escapeProgrammingText(t('programming.runCode', 'Run Code'))}</button>`
+            : `<span class="programming-coming-soon">${escapeProgrammingText(t('programming.comingSoon', 'Coming soon'))}</span>`}
+          <button type="button" class="programming-reset-button" data-reset-code data-target="${id}">${escapeProgrammingText(t('programming.resetCode', 'Reset code'))}</button>
+        </div>
+        <p class="programming-practice-note">${escapeProgrammingText(t('coverage.practiceRuntimeNote', 'Edit the starter code, then use Run Code to try it in a secure sandbox for Python and JavaScript. Your draft lasts until this page is refreshed.'))}</p>
+        ${runnableLanguage ? `
+        <label for="${id}-stdin">${escapeProgrammingText(t('programming.stdinLabel', 'Standard input (optional)'))}</label>
+        <textarea id="${id}-stdin" class="programming-stdin-editor" data-stdin-editor spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" rows="3"></textarea>
+        <section class="programming-output" data-output-panel hidden>
+          <div class="programming-output-head">
+            <h5>${escapeProgrammingText(t('programming.output', 'Output'))}</h5>
+            <span class="programming-output-status" data-output-status role="status" aria-live="polite"></span>
+            <button type="button" class="programming-clear-button" data-clear-output data-target="${id}">${escapeProgrammingText(t('programming.clearOutput', 'Clear output'))}</button>
+          </div>
+          <pre class="programming-output-body" data-output-body tabindex="0"></pre>
+        </section>` : ''}
       </section>
       <section class="programming-lesson-section programming-challenge"><h5>${escapeProgrammingText(t('ui.challenge', 'Challenge'))}</h5><p>${escapeProgrammingText(lesson.challenge)}</p></section>
       <section class="programming-lesson-section programming-takeaway"><h5>${escapeProgrammingText(t('ui.takeaway', 'Takeaway'))}</h5><p>${escapeProgrammingText(lesson.takeaway)}</p></section>
@@ -130,6 +148,131 @@ function renderProgrammingTrack(track, index) {
   </details>`;
 }
 
+function setProgrammingOutput(panel, { state, statusText, body }) {
+  panel.hidden = false;
+  panel.dataset.state = state;
+  const statusEl = panel.querySelector('[data-output-status]');
+  const bodyEl = panel.querySelector('[data-output-body]');
+  if (statusEl) statusEl.textContent = statusText;
+  if (bodyEl) bodyEl.textContent = body;
+}
+
+function combineProgrammingStreams(result) {
+  let body = typeof result.stdout === 'string' ? result.stdout : '';
+  const stderr = typeof result.stderr === 'string' ? result.stderr : '';
+  if (stderr) body += `${body && !body.endsWith('\n') ? '\n' : ''}${stderr}`;
+  return body;
+}
+
+async function runProgrammingCode(button) {
+  const practice = button.closest('.programming-practice');
+  if (!practice) return;
+  const editor = document.getElementById(`${button.dataset.target}-draft`);
+  const stdinEditor = document.getElementById(`${button.dataset.target}-stdin`);
+  const panel = practice.querySelector('[data-output-panel]');
+  if (!editor || !panel) return;
+
+  const originalLabel = button.textContent;
+  button.disabled = true;
+  button.textContent = t('programming.running', 'Running…');
+  setProgrammingOutput(panel, { state: 'running', statusText: t('programming.running', 'Running…'), body: '' });
+
+  try {
+    const token = localStorage.getItem('token') || '';
+    const response = await fetch(`${window.API_BASE || '/api'}/programming/run`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({
+        language: button.dataset.language,
+        code: editor.value,
+        stdin: stdinEditor ? stdinEditor.value : '',
+        lessonId: button.dataset.lessonId
+      })
+    });
+    const payload = await response.json().catch(() => null);
+
+    if (response.status === 401) {
+      setProgrammingOutput(panel, { state: 'error', statusText: t('programming.error', 'Error'), body: t('programming.signInToRun', 'Sign in to run code.') });
+      return;
+    }
+    if (response.status === 429) {
+      setProgrammingOutput(panel, { state: 'error', statusText: t('programming.error', 'Error'), body: t('programming.tooMany', 'Too many code executions. Please wait a moment and try again.') });
+      return;
+    }
+    if (response.status === 503) {
+      setProgrammingOutput(panel, { state: 'error', statusText: t('programming.error', 'Error'), body: t('programming.unavailable', 'Code execution is temporarily unavailable.') });
+      return;
+    }
+    if (!payload || payload.ok !== true || !payload.result) {
+      const message = payload && payload.error && payload.error.message
+        ? payload.error.message
+        : t('programming.failedRequest', 'Code execution failed. Please try again later.');
+      setProgrammingOutput(panel, { state: 'error', statusText: t('programming.error', 'Error'), body: message });
+      return;
+    }
+
+    const result = payload.result;
+    if (result.timedOut) {
+      setProgrammingOutput(panel, {
+        state: 'timeout',
+        statusText: t('programming.timedOut', 'Execution timed out.'),
+        body: `${combineProgrammingStreams(result)}${combineProgrammingStreams(result) ? '\n' : ''}${t('programming.timedOut', 'Execution timed out.')}`
+      });
+      return;
+    }
+    if (typeof result.exitCode === 'number' && result.exitCode !== 0) {
+      setProgrammingOutput(panel, {
+        state: 'error',
+        statusText: t('programming.runtimeError', 'Runtime error'),
+        body: combineProgrammingStreams(result)
+      });
+      return;
+    }
+    setProgrammingOutput(panel, {
+      state: 'success',
+      statusText: t('programming.success', 'Finished'),
+      body: combineProgrammingStreams(result)
+    });
+  } catch (_error) {
+    setProgrammingOutput(panel, {
+      state: 'error',
+      statusText: t('programming.error', 'Error'),
+      body: t('programming.failedRequest', 'Code execution failed. Please try again later.')
+    });
+  } finally {
+    button.disabled = false;
+    button.textContent = originalLabel;
+  }
+}
+
+async function checkProgrammingExecutionStatus(container) {
+  const token = localStorage.getItem('token') || '';
+  if (!token) return;
+  try {
+    const response = await fetch(`${window.API_BASE || '/api'}/programming/status`, { headers: { Authorization: `Bearer ${token}` } });
+    const status = await response.json();
+    if (!response.ok || status.available) return;
+    const unavailableMessage = status.blocker || t('programming.unavailable', 'Code execution is temporarily unavailable.');
+    const localRuntimeMessage = t('coverage.localRuntimeNote', 'Use a local language runtime to execute your code.');
+    container.querySelectorAll('[data-run-code]').forEach(button => {
+      button.disabled = true;
+      button.title = unavailableMessage;
+      const note = document.createElement('p');
+      note.className = 'programming-provider-note';
+      note.setAttribute('role', 'status');
+      note.textContent = unavailableMessage;
+      button.closest('.programming-code-actions')?.after(note);
+      // The static practice note promises a sandbox. Rewrite it wherever Run
+      // is disabled so the page never advertises execution it cannot provide.
+      const practiceNote = button.closest('.programming-practice')?.querySelector('.programming-practice-note');
+      if (practiceNote) practiceNote.textContent = `${unavailableMessage} ${localRuntimeMessage}`;
+    });
+  } catch (_error) {
+    // A status-check failure does not claim execution works; the run request
+    // remains the source of truth and reports an unavailable/error response.
+  }
+}
+
 function renderProgrammingStudio() {
   const config = window.PROGRAMMING_STUDIO_CONFIG;
   const container = document.getElementById('programming-track-list');
@@ -137,6 +280,7 @@ function renderProgrammingStudio() {
   if (!config || !container) return;
 
   container.innerHTML = config.tracks.map(renderProgrammingTrack).join('');
+  checkProgrammingExecutionStatus(container);
   if (presentation) {
     presentation.innerHTML = config.presentationFields.map((field, index) => `
       <li><span>${String(index + 1).padStart(2, '0')}</span>${escapeProgrammingText(presentationPrompt(index, field))}</li>`).join('');
@@ -166,18 +310,52 @@ function renderProgrammingStudio() {
       }
 
       const button = event.target.closest('[data-copy-draft]');
-      if (!button) return;
-      const editor = document.getElementById(`${button.dataset.copyDraft}-draft`);
-      if (!editor) return;
-      try {
-        await navigator.clipboard.writeText(editor.value);
-        const original = button.textContent;
-        button.textContent = t('coverage.copied', 'Copied');
-        window.setTimeout(() => { button.textContent = original; }, 1400);
-      } catch (_error) {
-        editor.focus();
-        editor.select();
-        button.textContent = t('coverage.selectCopy', 'Select and copy');
+      if (button) {
+        const editor = document.getElementById(`${button.dataset.copyDraft}-draft`);
+        if (editor) {
+          try {
+            await navigator.clipboard.writeText(editor.value);
+            const original = button.textContent;
+            button.textContent = t('coverage.copied', 'Copied');
+            window.setTimeout(() => { button.textContent = original; }, 1400);
+          } catch (_error) {
+            editor.focus();
+            editor.select();
+            button.textContent = t('coverage.selectCopy', 'Select and copy');
+          }
+        }
+        return;
+      }
+
+      const runButton = event.target.closest('[data-run-code]');
+      if (runButton) {
+        runProgrammingCode(runButton);
+        return;
+      }
+
+      const resetButton = event.target.closest('[data-reset-code]');
+      if (resetButton) {
+        const editor = document.getElementById(`${resetButton.dataset.target}-draft`);
+        if (editor) {
+          editor.value = editor.defaultValue;
+          editor.focus();
+        }
+        return;
+      }
+
+      const clearButton = event.target.closest('[data-clear-output]');
+      if (clearButton) {
+        const practice = clearButton.closest('.programming-practice');
+        const panel = practice ? practice.querySelector('[data-output-panel]') : null;
+        if (panel) {
+          panel.hidden = true;
+          panel.removeAttribute('data-state');
+          const statusEl = panel.querySelector('[data-output-status]');
+          const bodyEl = panel.querySelector('[data-output-body]');
+          if (statusEl) statusEl.textContent = '';
+          if (bodyEl) bodyEl.textContent = '';
+        }
+        return;
       }
     });
   }

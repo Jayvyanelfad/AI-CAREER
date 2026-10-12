@@ -1,0 +1,8 @@
+{
+  "_meta": {"version": 1, "code": "pcm", "name": "Nigerian Pidgin", "nativeName": "Naijá", "dir": "ltr", "langTag": "pcm"},
+  "nav": {"home": "Home", "careerTest": "Career Test", "courses": "Courses", "programming": "Programming", "dashboard": "Dashboard", "profile": "Profile", "login": "Log in", "register": "Register", "logout": "Log out"},
+  "common": {"start": "Start", "continue": "Continue", "back": "Go back", "next": "Next", "previous": "Previous", "save": "Save", "cancel": "Cancel", "loading": "E dey load…", "error": "Something no work", "tryAgain": "Try again", "pleaseSignIn": "Abeg log in"},
+  "settings": {"language": "Language"},
+  "programming": {"runCode": "Run code", "running": "E dey run…", "output": "Output", "stdinLabel": "Standard input (if you need am)", "unavailable": "Code execution no dey available now.", "timedOut": "Execution take too long."},
+  "notifications": {"eyebrow": "UPDATES", "title": "Notifications", "loading": "E dey load notifications…", "empty": "You never get notification.", "unavailable": "Notifications no dey available now.", "markAll": "Mark all as read", "markRead": "Mark as read", "open": "Open", "update": "Update"}
+}
