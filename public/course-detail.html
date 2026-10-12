@@ -42,6 +42,8 @@
         .lesson-content-module { color: var(--green_light); font-size: 0.9rem; margin-bottom: var(--space-2); }
         .lesson-content-text { line-height: 1.7; color: var(--bege_light); }
         .lesson-actions { display: flex; gap: var(--space-4); margin-top: var(--space-6); flex-wrap: wrap; }
+        .lesson-completion-feedback { flex-basis: 100%; margin: 0; color: var(--danger); }
+        .lesson-completion-feedback[hidden] { display: none; }
         .btn-lesson { flex: 1; min-width: 120px; }
         .btn-lesson:disabled { opacity: 0.5; cursor: not-allowed; }
         .empty-state { text-align: center; padding: var(--space-24); color: var(--text-muted); }
@@ -132,6 +134,7 @@
                 <button id="btn-prev-lesson" class="btn-lesson component-button" data-i18n="common.previous" data-i18n-fallback="Previous Lesson">Previous Lesson</button>
                 <button id="btn-mark-complete" class="btn-lesson component-button" data-i18n="common.complete" data-i18n-fallback="Mark as Complete">Mark as Complete</button>
                 <button id="btn-next-lesson" class="btn-lesson component-button" data-i18n="common.next" data-i18n-fallback="Next Lesson">Next Lesson</button>
+                <p class="lesson-completion-feedback" id="lesson-completion-feedback" role="status" aria-live="polite" hidden></p>
             </div>
         </div>
     </section>

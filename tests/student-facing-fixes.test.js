@@ -8,12 +8,16 @@ const read = name => fs.readFileSync(path.join(__dirname, '..', 'public', name),
 test('enrollment modal never throws on missing nodes and shows a prompt', () => {
   const js = read('courses.js');
   const html = read('courses.html');
-  // The missing #modal-course-name node is guarded.
-  assert.match(js, /if \(modalCourseName\) modalCourseName\.textContent/);
-  // The existing prompt element carries the localized confirm question.
+  // The missing #modal-course-name node is gone entirely: the visible prompt
+  // carries the localized confirm question, with feedback + confirm guards.
+  assert.doesNotMatch(js, /modalCourseName/);
+  // The visible prompt carries the localized confirm question; the feedback
+  // node and confirm button are guarded so a missing node can never throw.
   assert.match(js, /getElementById\('modal-enroll-prompt'\)/);
-  assert.match(js, /coverage\.enrollModalQuestion/);
+  assert.match(js, /coverage\.confirmEnrollPrompt/);
+  assert.match(js, /getElementById\('enrollment-feedback'\)/);
   assert.match(html, /id="modal-enroll-prompt"/);
+  assert.match(html, /id="enrollment-feedback"/);
   // Containers and buttons are null-guarded before listeners attach.
   assert.match(js, /if \(!freeCoursesContainer\)/);
   assert.match(js, /if \(!courseCard\) return/);

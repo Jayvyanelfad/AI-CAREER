@@ -71,7 +71,10 @@ test('Programming Studio keeps its learning path, RTL code, and responsive layou
   assert.ok((await python.locator('button').filter({ hasText: /Run|Exécuter|Chalao|Endesha|شغّل/i }).count()) > 0,
     'Python practices expose a Run Code control');
   assert.ok((await python.locator('[data-output-panel]').count()) > 0, 'Python practices expose an output panel');
-  assert.match(await python.innerText(), /sandbox|بيئة|salama/i);
+  const practiceNote = await python.locator('.programming-practice-note').first().innerText();
+  const expectedPracticeNote = await page.evaluate(() => window.t('coverage.practiceRuntimeNote', ''));
+  assert.ok(practiceNote.length > 0, 'Python practices show an execution-environment note');
+  assert.equal(practiceNote, expectedPracticeNote, 'practice note follows the localized execution guidance');
   const javaTrack = page.locator('.programming-track[data-track-id="java"]');
   await javaTrack.locator(':scope > summary').click();
   assert.equal(await javaTrack.locator('button').filter({ hasText: /Run|Exécuter|Chalao|Endesha|شغّل/i }).count(), 0,

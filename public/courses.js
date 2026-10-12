@@ -2,6 +2,20 @@
 let allCourses = [];
 let coursesMap = new Map(); // Map of courseId -> course data
 const API_BASE = window.API_BASE || '/api';
+const enrolledCourseIds = new Set();
+
+function reflectEnrolledCourses() {
+  document.querySelectorAll('.course-card[data-course-id]').forEach(courseCard => {
+    if (!enrolledCourseIds.has(courseCard.dataset.courseId)) return;
+    const enrollButton = courseCard.querySelector('.enroll-btn');
+    if (!enrollButton) return;
+    enrollButton.textContent = t('coverage.enrolled', 'Enrolled');
+    enrollButton.classList.add('enrolled');
+    enrollButton.disabled = true;
+  });
+}
+
+document.addEventListener('careerpath:catalog-rendered', reflectEnrolledCourses);
 
 // Fetch courses from backend API
 async function fetchCourses(token) {
@@ -50,8 +64,6 @@ async function fetchCourses(token) {
 
   const token = await window.careerPathAuthReady;
   if (!token) return;
-  await fetchCourses(token);
-
   // Remote catalog images can occasionally expire or reject a request. Keep
   // the course card intact and turn the image area into a deliberate fallback.
   const courseList = document.getElementById('course-list');
@@ -82,19 +94,11 @@ async function fetchCourses(token) {
 
       const data = await response.json();
       const enrolledCourses = data.enrollments || [];
-
-      // Update UI for enrolled courses
+      enrolledCourseIds.clear();
       enrolledCourses.forEach(enrollment => {
-        const courseCard = document.querySelector(`.course-card[data-course-id="${enrollment.courseId}"]`);
-        if (courseCard) {
-          const enrollBtn = courseCard.querySelector('.enroll-btn');
-          if (enrollBtn) {
-            enrollBtn.textContent = t('coverage.enrolled', 'Enrolled');
-            enrollBtn.classList.add('enrolled');
-            enrollBtn.disabled = true;
-          }
-        }
+        if (typeof enrollment.courseId === 'string') enrolledCourseIds.add(enrollment.courseId);
       });
+      reflectEnrolledCourses();
 
     } catch (error) {
       console.error('Error loading course data:', error);
@@ -108,8 +112,9 @@ async function fetchCourses(token) {
     const closeModal = document.querySelector('.close-modal');
     const cancelEnroll = document.getElementById('cancel-enroll');
     const confirmEnroll = document.getElementById('confirm-enroll');
-    const modalCourseName = document.getElementById('modal-course-name');
     const modalPrompt = document.getElementById('modal-enroll-prompt');
+    const enrollmentFeedback = document.getElementById('enrollment-feedback');
+    let triggeringEnrollButton = null;
 
     // Only proceed if user is authenticated and modal exists
     if (!isAuthenticated || !enrollModal) {
@@ -128,28 +133,34 @@ async function fetchCourses(token) {
       if (!courseCard) return;
       const courseId = courseCard.dataset.courseId;
       const courseName = courseCard.dataset.courseName || courseCard.querySelector('h3').textContent;
-      const title = t(`courseMetadata.${courseId}.title`, courseName);
 
-      // #modal-course-name does not exist in the current modal markup; the
-      // visible prompt is #modal-enroll-prompt. Guard both so a missing node
-      // can never throw and block the modal from opening.
-      if (modalCourseName) modalCourseName.textContent = title;
       if (modalPrompt) {
-        modalPrompt.textContent = t('coverage.enrollModalQuestion', `Are you sure you want to enroll in ${title}?`, { course: title });
+        modalPrompt.textContent = t('coverage.confirmEnrollPrompt', 'Enroll in {course}?', {
+          course: t(`courseMetadata.${courseId}.title`, courseName)
+        }, true);
+      }
+      if (enrollmentFeedback) {
+        enrollmentFeedback.hidden = true;
+        enrollmentFeedback.textContent = '';
       }
       if (confirmEnroll) {
+        confirmEnroll.disabled = false;
+        confirmEnroll.textContent = t('common.enrollFree', 'Enroll Free');
         confirmEnroll.dataset.courseId = courseId;
         confirmEnroll.dataset.courseName = courseName;
       }
+      triggeringEnrollButton = btn;
 
       enrollModal.style.display = 'flex';
-    });
+      confirmEnroll.focus();
+    }, true);
 
     // Close modal function
     function closeEnrollmentModal() {
       if (enrollModal) {
         enrollModal.style.display = 'none';
       }
+      if (triggeringEnrollButton?.isConnected) triggeringEnrollButton.focus();
     }
 
     // Close modal when clicking close button or cancel button
@@ -167,6 +178,9 @@ async function fetchCourses(token) {
           closeEnrollmentModal();
         }
       });
+      enrollModal.addEventListener('keydown', event => {
+        if (event.key === 'Escape') closeEnrollmentModal();
+      });
     }
 
     // Confirm enrollment
@@ -176,10 +190,15 @@ async function fetchCourses(token) {
         const courseName = confirmEnroll.dataset.courseName;
 
         if (!courseId || !courseName) {
-          alert(t('coverage.courseInfoMissing', 'Course information missing'));
+          enrollmentFeedback.textContent = t('coverage.courseInfoMissing', 'Course information is unavailable. Close this dialog and try again.');
+          enrollmentFeedback.hidden = false;
           return;
         }
 
+        confirmEnroll.disabled = true;
+        enrollmentFeedback.setAttribute('role', 'status');
+        enrollmentFeedback.textContent = t('coverage.enrolling', 'Enrolling...');
+        enrollmentFeedback.hidden = false;
         try {
           const response = await fetch(`${API_BASE}/enroll`, {
             method: 'POST',
@@ -187,17 +206,19 @@ async function fetchCourses(token) {
               'Content-Type': 'application/json',
               'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify({
-              courseId,
-              courseName,
-              totalHours: 40 // Default hours
-            })
+            body: JSON.stringify({ courseId })
           });
 
-          const data = await response.json();
+          await response.json().catch(() => ({}));
 
           if (!response.ok) {
-            throw new Error(data.error || t('coverage.enrollmentFailedAlert', 'Enrollment failed'));
+            if (response.status === 401) {
+              throw new Error(t('coverage.signInEnroll', 'Please sign in to enroll in this course.'));
+            }
+            if (response.status === 404 || response.status === 409) {
+              throw new Error(t('coverage.enrollmentUnavailable', 'This course is not currently available for enrollment.'));
+            }
+            throw new Error(t('coverage.enrollmentFailed', 'Enrollment failed. Please try again.'));
           }
 
           // Update UI - change button state
@@ -210,15 +231,20 @@ async function fetchCourses(token) {
               enrollBtn.disabled = true;
             }
           }
+          enrolledCourseIds.add(courseId);
 
-          closeEnrollmentModal();
-          alert(t('coverage.enrollmentSuccess', 'Successfully enrolled in {course}!', {
+          enrollmentFeedback.setAttribute('role', 'status');
+          enrollmentFeedback.textContent = t('coverage.enrollmentSuccess', 'You are enrolled in {course}.', {
             course: t(`courseMetadata.${courseId}.title`, courseName)
-          }));
+          });
+          confirmEnroll.textContent = t('coverage.enrolled', 'Enrolled');
+          confirmEnroll.disabled = true;
 
         } catch (error) {
           console.error('Enrollment error:', error);
-          alert(t('coverage.enrollmentError', 'We could not enroll you right now. Please try again.'));
+          enrollmentFeedback.setAttribute('role', 'alert');
+          enrollmentFeedback.textContent = error.message || t('coverage.enrollmentFailed', 'Enrollment failed. Please try again.');
+          confirmEnroll.disabled = false;
         }
       });
     }

@@ -23,13 +23,30 @@ async function openCourses(t, authenticated, catalog = { categories: ['Software 
     };
   }, { isAuthenticated: authenticated, language: options.language });
   await context.route('**/cdn.jsdelivr.net/**', route => route.fulfill({ status: 200, contentType: 'text/javascript', body: '' }));
+  let catalogRequestCount = 0;
   await context.route('**/api/courses', route => route.fulfill({
-    status: 200, contentType: 'application/json', body: JSON.stringify(catalog)
+    status: 200, contentType: 'application/json', body: JSON.stringify(catalog),
+    headers: (() => { catalogRequestCount++; return {}; })()
   }));
   await context.route('**/api/enrollments', route => route.fulfill({
     status: 200, contentType: 'application/json', body: JSON.stringify({ enrollments: [] })
   }));
+  const enrollmentRequests = [];
+  await context.route('**/api/enroll', route => {
+    enrollmentRequests.push({
+      method: route.request().method(),
+      body: route.request().postDataJSON()
+    });
+    const success = options.enrollStatus !== 500;
+    return route.fulfill({
+      status: options.enrollStatus || 201,
+      contentType: 'application/json',
+      body: JSON.stringify(success ? { enrollment: { courseId: 'available-course' } } : { error: 'database unavailable' })
+    });
+  });
   const page = await context.newPage();
+  page.getEnrollmentRequests = () => enrollmentRequests;
+  page.getCatalogRequestCount = () => catalogRequestCount;
   t.after(async () => { await browser.close(); await new Promise(resolve => server.close(resolve)); });
   await page.goto(`http://127.0.0.1:${server.address().port}/courses.html`, { waitUntil: 'domcontentloaded' });
   return page;
@@ -43,6 +60,7 @@ test('course catalog presents coming-soon status and blocks enrollment', async t
       { id: 'coming-course', title: 'Coming Course', description: '', image_url: '', level: 'beginner', duration_weeks: 4, category: 'Software Engineering', premium: false, status: 'coming_soon' }
     ]
   });
+
   await page.locator('[data-course-id="coming-course"]').waitFor();
   const comingSoon = page.locator('[data-course-id="coming-course"]');
   assert.match(await comingSoon.innerText(), /Coming soon/i);
@@ -50,6 +68,44 @@ test('course catalog presents coming-soon status and blocks enrollment', async t
   assert.equal(await comingSoon.locator('a').count(), 0);
   assert.equal(await comingSoon.getAttribute('onclick'), null);
   assert.equal(await page.locator('[data-course-id="available-course"] .enroll-btn').isEnabled(), true);
+});
+
+test('course enrollment modal confirms the selected course and updates its state once', async t => {
+  const page = await openCourses(t, true, {
+    categories: ['Software Engineering'],
+    courses: [
+      { id: 'available-course', title: 'Available Course', description: '', image_url: '', level: 'beginner', duration_weeks: 4, category: 'Software Engineering', premium: false, status: 'available' }
+    ]
+  });
+  const card = page.locator('[data-course-id="available-course"]');
+  await card.locator('.enroll-btn').click();
+  const modal = page.locator('#enroll-modal');
+  await modal.waitFor({ state: 'visible' });
+  assert.equal(await modal.getAttribute('role'), 'dialog');
+  assert.match(await page.locator('#modal-enroll-prompt').innerText(), /Available Course/);
+  await page.locator('#confirm-enroll').click();
+  await page.locator('#enrollment-feedback').getByText(/enrolled in Available Course/i).waitFor();
+  assert.equal(await card.locator('.enroll-btn').isDisabled(), true);
+  assert.deepEqual(page.getEnrollmentRequests(), [{
+    method: 'POST',
+    body: { courseId: 'available-course' }
+  }]);
+  assert.equal(page.getCatalogRequestCount(), 1, 'the page loads course catalog data once');
+});
+
+test('enrollment API failures remain visible and do not mark the course enrolled', async t => {
+  const page = await openCourses(t, true, {
+    categories: ['Software Engineering'],
+    courses: [
+      { id: 'available-course', title: 'Available Course', description: '', image_url: '', level: 'beginner', duration_weeks: 4, category: 'Software Engineering', premium: false, status: 'available' }
+    ]
+  }, { enrollStatus: 500 });
+  const card = page.locator('[data-course-id="available-course"]');
+  await card.locator('.enroll-btn').click();
+  await page.locator('#confirm-enroll').click();
+  await page.locator('#enrollment-feedback[role="alert"]').getByText(/Enrollment failed/).waitFor();
+  assert.equal(await card.locator('.enroll-btn').isDisabled(), false);
+  assert.equal(await page.locator('#confirm-enroll').isDisabled(), false);
 });
 
 test('anonymous course catalog uses the existing authentication redirect', async t => {

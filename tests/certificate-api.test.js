@@ -229,6 +229,17 @@ test('final-exam discriminator migration is narrowly scoped', () => {
   assert.doesNotMatch(migration, /ALTER TABLE public\.(?!exams)/);
 });
 
+test('certificate issuance requires a real profile name', async t => {
+  const state = baseState();
+  state.users = [{ id: alice, full_name: '   ' }];
+  const db = makeDb(state);
+  const base = await start(t, db);
+  const res = await post(base, 'intro_to_ai', 'alice');
+  assert.equal(res.status, 409);
+  assert.deepEqual(await res.json(), { error: 'Add your name to your profile before requesting a certificate' });
+  assert.deepEqual(db.seen.inserts, []);
+});
+
 test('verification and owned reads keep working', async t => {
   const state = baseState();
   state.certificates = [{ id: 'cccccccc-cccc-4ccc-8ccc-cccccccccccc', user_id: alice, course_id: 'intro_to_ai', course_name: 'Introduction to AI', earned_at: '2026-02-02T00:00:00Z' }];

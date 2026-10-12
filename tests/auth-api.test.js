@@ -144,6 +144,26 @@ test('duplicate emails and missing fields are rejected', async t => {
     signIn: () => { throw new Error('must not sign in'); }
   }));
   assert.equal((await register(okBase, { email: 'a@example.test' })).status, 400);
+  assert.equal((await register(okBase, { email: '  ', password: 'secret12', name: 'Asha' })).status, 400);
+  assert.equal((await register(okBase, { email: 'a@example.test', password: 'secret12', name: '   ' })).status, 400);
+});
+
+test('provider errors map to safe statuses without leaking details', async t => {
+  const limited = await start(t, makeDb([]), authClientScript({
+    signUp: () => ({ data: { user: null }, error: { message: 'Too many requests, rate limit exceeded' } }),
+    signIn: () => { throw new Error('must not sign in'); }
+  }));
+  const limitedRes = await register(limited, { email: 'a@example.test', password: 'secret12', name: 'Asha' });
+  assert.equal(limitedRes.status, 429);
+  assert.deepEqual(await limitedRes.json(), { error: 'Too many registration attempts. Please try again later.' });
+
+  const badMail = await start(t, makeDb([]), authClientScript({
+    signUp: () => ({ data: { user: null }, error: { message: 'Invalid email address format' } }),
+    signIn: () => { throw new Error('must not sign in'); }
+  }));
+  const mailRes = await register(badMail, { email: 'x', password: 'secret12', name: 'Asha' });
+  assert.equal(mailRes.status, 400);
+  assert.deepEqual(await mailRes.json(), { error: 'A valid email address is required' });
 });
 
 test('complete-registration inserts a missing profile row', async t => {

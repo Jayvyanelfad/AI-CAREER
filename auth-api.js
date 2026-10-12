@@ -11,10 +11,11 @@ function createAuthRouter({ supabase, authenticateToken, createAuthClient, getAu
   // Auth endpoints
   router.post('/auth/register', async (req, res) => {
     try {
-      const { email, password, name, careerGoal } = req.body;
+      const { email, password, name, careerGoal } = req.body || {};
       const authClient = createAuthClient();
 
-      if (!email || !password || !name) {
+      if (typeof email !== 'string' || typeof password !== 'string' ||
+          typeof name !== 'string' || !email.trim() || !password || !name.trim()) {
         return res.status(400).json({ error: 'Email, password, and name are required' });
       }
 
@@ -23,7 +24,7 @@ function createAuthRouter({ supabase, authenticateToken, createAuthClient, getAu
 
       // Register user with Supabase Auth
       const { data, error } = await authClient.auth.signUp({
-        email,
+        email: email.trim(),
         password,
         options: {
           emailRedirectTo: getAuthCallbackUrl(),
@@ -36,10 +37,17 @@ function createAuthRouter({ supabase, authenticateToken, createAuthClient, getAu
       });
 
       if (error) {
-        if (error.message.includes('User already registered')) {
+        const message = String(error.message || '').toLowerCase();
+        if (/already registered|already exists/.test(message)) {
           return res.status(400).json({ error: 'User already exists' });
         }
-        return res.status(400).json({ error: error.message });
+        if (/rate limit|too many requests/.test(message)) {
+          return res.status(429).json({ error: 'Too many registration attempts. Please try again later.' });
+        }
+        if (/email/.test(message)) return res.status(400).json({ error: 'A valid email address is required' });
+        if (/password/.test(message)) return res.status(400).json({ error: 'Password does not meet the account requirements' });
+        console.error('Registration provider error:', error.status || error.code || 'unknown error');
+        return res.status(Number(error.status) >= 500 ? 503 : 400).json({ error: 'Could not create account' });
       }
 
       const { user } = data;
@@ -74,7 +82,7 @@ function createAuthRouter({ supabase, authenticateToken, createAuthClient, getAu
 
       // Try to create a session immediately (if email confirmation is not required)
       const { data: sessionData, error: sessionError } = await authClient.auth.signInWithPassword({
-        email,
+        email: email.trim(),
         password
       });
 

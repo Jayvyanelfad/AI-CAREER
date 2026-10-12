@@ -16,9 +16,12 @@ function createCertificateRouter({ supabase, authenticateToken, createNotificati
       .eq('id', certificate.user_id)
       .maybeSingle();
     if (error) throw error;
+    // Reads must never fail on older rows whose owner profile is missing: fall
+    // back to a generic learner name. New issuance separately requires a real
+    // name (see the profile check in the issue route below).
     return {
       certificateId: certificate.id,
-      learnerName: learner?.full_name || 'CareerPath AI Learner',
+      learnerName: (typeof learner?.full_name === 'string' && learner.full_name.trim()) ? learner.full_name.trim() : 'CareerPath AI Learner',
       courseId: certificate.course_id,
       courseTitle: certificate.course_name,
       issuedAt: certificate.earned_at,
@@ -93,6 +96,17 @@ function createCertificateRouter({ supabase, authenticateToken, createNotificati
       }
       const userId = req.user.id;
       const courseId = req.params.courseId;
+
+      // Idempotent fast path: an existing certificate is returned without
+      // re-running eligibility.
+      const { data: existing, error: existingError } = await supabase
+        .from('certificates')
+        .select('id, user_id, course_id, course_name, earned_at')
+        .eq('user_id', userId)
+        .eq('course_id', courseId)
+        .maybeSingle();
+      if (existingError) throw existingError;
+      if (existing) return res.json({ success: true, certificate: await certificatePresentation(existing) });
 
       const { data: course, error: courseError } = await supabase
         .from('courses')
@@ -187,14 +201,17 @@ function createCertificateRouter({ supabase, authenticateToken, createNotificati
         return res.status(403).json({ error: 'Pass the latest submitted final exam attempt before requesting a certificate' });
       }
 
-      const { data: existing, error: existingError } = await supabase
-        .from('certificates')
-        .select('id, user_id, course_id, course_name, earned_at')
-        .eq('user_id', userId)
-        .eq('course_id', courseId)
+      // A certificate is a credential document: it must carry the learner's
+      // real name. Missing names are repaired via POST /api/auth/complete-registration.
+      const { data: learner, error: learnerError } = await supabase
+        .from('users')
+        .select('full_name')
+        .eq('id', userId)
         .maybeSingle();
-      if (existingError) throw existingError;
-      if (existing) return res.json({ success: true, certificate: await certificatePresentation(existing) });
+      if (learnerError) throw learnerError;
+      if (typeof learner?.full_name !== 'string' || !learner.full_name.trim()) {
+        return res.status(409).json({ error: 'Add your name to your profile before requesting a certificate' });
+      }
 
       const { data: created, error: insertError } = await supabase
         .from('certificates')

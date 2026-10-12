@@ -161,50 +161,6 @@
   "settings": {
     "language": "Language"
   },
-  "notifications": {
-    "eyebrow": "UPDATES",
-    "title": "Notifications",
-    "loading": "Loading notifications…",
-    "empty": "You have no notifications yet.",
-    "unavailable": "Notifications are temporarily unavailable.",
-    "markAll": "Mark all as read",
-    "markRead": "Mark as read",
-    "open": "Open",
-    "update": "Update"
-  },
-  "lessonVisual": {
-    "caption": "Concept diagram — a relationship to inspect, not measured data.",
-    "algorithm": {
-      "title": "An algorithm loop",
-      "step1": "Define the input",
-      "step2": "Apply ordered steps",
-      "step3": "Check the result"
-    },
-    "python": {
-      "title": "Python control flow",
-      "step1": "Read a value",
-      "step2": "Test a condition",
-      "step3": "Choose or repeat a step"
-    },
-    "aiml": {
-      "title": "Machine-learning workflow",
-      "step1": "Representative examples",
-      "step2": "Train or tune a model",
-      "step3": "Evaluate on separate cases"
-    },
-    "rag": {
-      "title": "Retrieval-augmented generation",
-      "step1": "Question",
-      "step2": "Retrieve relevant sources",
-      "step3": "Grounded response with checks"
-    },
-    "agent": {
-      "title": "Agent task loop",
-      "step1": "Goal and context",
-      "step2": "Choose a bounded tool action",
-      "step3": "Observe, check, and continue or stop"
-    }
-  },
   "page": {
     "dashboardEyebrow": "YOUR CAREER + LEARNING JOURNEY",
     "welcomeBack": "Welcome back,",
@@ -262,6 +218,8 @@
     "openLanguageLearn": "Open a language to study a focused lesson, edit its code example, solve a challenge, and plan a project."
   },
   "ui": {
+    "mainNavigation": "Main navigation",
+    "examples": "Examples",
     "discoverDirection": "Discover your direction.",
     "learnStories": "Learn modern tech through stories.",
     "practiceLearn": "Practice what you learn.",
@@ -304,7 +262,7 @@
     "calculatingPath": "Calculating your career path...",
     "programmingEyebrow": "CAREERPATH AI / PROGRAMMING STUDIO",
     "chooseStarting": "Choose your starting point",
-    "languageTrack": "Open a language to study a focused lesson, edit its code example, solve a challenge, and plan a project. The Studio explains and organizes practice; Python and JavaScript code runs in its secure sandbox.",
+    "languageTrack": "Open a language to study a focused lesson, edit its code example, solve a challenge, and plan a project. The Studio explains and organizes practice; use a local language runtime to execute your code.",
     "learn": "Learn",
     "understand": "Understand",
     "solve": "Solve",
@@ -367,6 +325,14 @@
     "signInRequired": "Sign in required"
   },
   "coverage": {
+    "signInToBrowseCourses": "Sign in to load the course catalog.",
+    "lxpStageCounter": "Stage {current} of {total}",
+    "interactiveLesson": "Interactive lesson",
+    "aiIntroLessonTitle": "What is Artificial Intelligence?",
+    "thisIsAI": "This is AI",
+    "fixedRules": "Fixed rules",
+    "whatItDoes": "What it does",
+    "whyItIsAI": "Why it is AI",
     "programHeroTitle": "Learn the language.",
     "programHeroTitle2": "Build something real.",
     "programHeroCopy": "Understand how a language thinks. Practice its ideas, solve real problems, build a project, and learn to present your work.",
@@ -494,6 +460,9 @@
     "categoryCyberDesc": "Study security concepts and ways to protect digital systems.",
     "categoryDesignDesc": "Explore user experience, product thinking, and digital design.",
     "categoryTechnicalDesc": "Explore courses in this technical field.",
+    "confirmEnrollment": "Confirm Enrollment",
+    "confirmEnrollPrompt": "Enroll in {course}?",
+    "enrollmentUnavailable": "This course is not currently available for enrollment.",
     "enrolled": "Enrolled",
     "homeEyebrow": "CAREER DISCOVERY × STORY-DRIVEN TECH LEARNING",
     "homeHeroDescription": "Explore technology directions, then learn the skills behind them through short stories, clear explanations, examples, and hands-on challenges.",
@@ -832,15 +801,15 @@
     "projectPresentation": "Project Presentation",
     "presentationCopy": "A useful build has a story. The studio is designed to give learners a clear way to share what they made and what they learned.",
     "presentationStatus": "A GUIDE FOR YOUR OWN PROJECT DEMO",
-    "honestyNote": "Lessons and editable practice drafts are available. Python and JavaScript code runs in a secure sandbox; saved drafts, completion tracking, and project review are guidance only and are neither stored nor scored.",
+    "honestyNote": "Lessons and editable practice drafts are available. Code execution, saved drafts, completion tracking, and project review are not available in this Studio.",
     "firstStepReal": "A FIRST STEP IS STILL A REAL STEP",
     "pickLanguage": "Pick a language.",
     "makeNextThing": "Make the next thing.",
     "studioFooter": "PROGRAMMING STUDIO · LEARN BY MAKING",
     "projectLearnSentence": "Each lesson connects an idea to code you can inspect and change.",
-    "challengeRuntime": "Run each task with Run Code where supported. The challenge asks you to change code or make a design decision; it does not mark or save completion.",
+    "challengeRuntime": "Try each task in your own runtime. The challenge asks you to change code or make a design decision; it does not mark or save completion.",
     "presentationUseGuide": "Use this guide to explain your decisions and demonstrate a real result. Programming Studio does not collect or score project submissions.",
-    "practiceRuntimeNote": "Edit the starter code, then use Run Code to try it in a secure sandbox for Python and JavaScript. Your draft lasts until this page is refreshed.",
+    "practiceRuntimeNote": "Edit the starter code and try the task in your own environment. This page does not execute or save code; your draft lasts only until this page is refreshed.",
     "trackLessons": "Your {language} lessons",
     "languageCodeAria": "{language} code example",
     "languageJourneyAria": "Explore the {language} learning journey",
@@ -1341,5 +1310,49 @@
     "viewCourse": "View course",
     "courseFallback": "Course",
     "catalogUnavailable": "Browse the course catalog to find a place to begin."
+  },
+  "notifications": {
+    "eyebrow": "UPDATES",
+    "title": "Notifications",
+    "loading": "Loading notifications…",
+    "empty": "You have no notifications yet.",
+    "unavailable": "Notifications are temporarily unavailable.",
+    "markAll": "Mark all as read",
+    "markRead": "Mark as read",
+    "open": "Open",
+    "update": "Update"
+  },
+  "lessonVisual": {
+    "caption": "Concept diagram — a relationship to inspect, not measured data.",
+    "algorithm": {
+      "title": "An algorithm loop",
+      "step1": "Define the input",
+      "step2": "Apply ordered steps",
+      "step3": "Check the result"
+    },
+    "python": {
+      "title": "Python control flow",
+      "step1": "Read a value",
+      "step2": "Test a condition",
+      "step3": "Choose or repeat a step"
+    },
+    "aiml": {
+      "title": "Machine-learning workflow",
+      "step1": "Representative examples",
+      "step2": "Train or tune a model",
+      "step3": "Evaluate on separate cases"
+    },
+    "rag": {
+      "title": "Retrieval-augmented generation",
+      "step1": "Question",
+      "step2": "Retrieve relevant sources",
+      "step3": "Grounded response with checks"
+    },
+    "agent": {
+      "title": "Agent task loop",
+      "step1": "Goal and context",
+      "step2": "Choose a bounded tool action",
+      "step3": "Observe, check, and continue or stop"
+    }
   }
 }
