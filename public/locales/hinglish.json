@@ -16,7 +16,8 @@
     "profile": "Profile",
     "login": "Login",
     "register": "Sign up",
-    "logout": "Logout"
+    "logout": "Logout",
+    "admin": "Admin"
   },
   "common": {
     "start": "Shuru karo",
@@ -321,7 +322,8 @@
     "comingSoon": "Jaldi aa raha hai",
     "notAvailable": "Abhi available nahi",
     "pleaseSignIn": "Please sign in karo",
-    "signInRequired": "Sign in required"
+    "signInRequired": "Sign in required",
+    "copyrightProject": "© CareerPath AI · B.Tech Final Year Project"
   },
   "coverage": {
     "signInToBrowseCourses": "Course catalog load karne ke liye sign in karo.",
@@ -1090,7 +1092,14 @@
     "About - CareerPath AI": "About - CareerPath AI",
     "AI Career Mentor - CareerPath AI": "AI Career Guide - CareerPath AI",
     "Contact Us - CareerPath AI": "Contact Us - CareerPath AI",
-    "Exam - CareerPath AI": "Exam - CareerPath AI"
+    "Exam - CareerPath AI": "Exam - CareerPath AI",
+    "recoverCertificate": "Exam pass ho gaya lekin certificate nahi mila? Phir se try karein",
+    "certificateRetrying": "Certificate eligibility check ho rahi hai…",
+    "certificateRetryFailed": "Certificate issue nahi ho saka. Baad mein phir se try karein.",
+    "moduleProgress": "{completed}/{total} poore hue",
+    "localRuntimeNote": "Apna code chalane ke liye local language runtime use karein.",
+    "examNotConfigured": "Is course ke liye abhi tak final exam configure nahi hua hai, isliye certificate issue nahi ho sakta.",
+    "chatbotGuidePrefix": "AI assistant abhi uplabdh nahi hai, lekin main aapko sahi jagah bata sakta hoon."
   },
   "careerResult": {
     "eyebrow": "AAPKI CAREER DIRECTION",
@@ -1309,5 +1318,19 @@
     "viewCourse": "Course dekhein",
     "courseFallback": "Course",
     "catalogUnavailable": "Shuru karne ke liye course catalog dekhein."
+  },
+  "notifications": {
+    "eyebrow": "UPDATES",
+    "title": "Notifications",
+    "markAll": "Sabhi ko padha hua mark karein",
+    "loading": "Notifications load ho rahi hain…",
+    "empty": "Abhi aapke paas koi notification nahi hai.",
+    "unavailable": "Notifications abhi uplabdh nahi hain.",
+    "markRead": "Padha hua mark karein",
+    "open": "Kholein",
+    "update": "Update"
+  },
+  "lessonVisual": {
+    "caption": "Concept diagram — dekhne-wala sambandh, mapa hua data nahi."
   }
 }

@@ -137,5 +137,8 @@
   "careerAssessment": "Tathmini ya taaluma",
   "noRetests": "Hakuna majaribio upya bado.",
   "logout": "Ondoka",
-  "bio": "Kuhusu"
+  "bio": "Kuhusu",
+  "recentRegistrations": "Usajili wa hivi karibuni",
+  "recentRegistrationsNote": "Akaunti mpya kwanza, kutoka kwenye orodha ya watumiaji.",
+  "noRecentRegistrations": "Hakuna watumiaji waliosajiliwa bado."
 }

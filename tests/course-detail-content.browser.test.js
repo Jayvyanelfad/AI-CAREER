@@ -144,7 +144,7 @@ test('course detail renders the lesson learning sequence at mobile widths and in
   await page.locator('#btn-mark-complete').click();
   await page.locator('.lesson-completion-state').waitFor();
   assert.equal(await page.locator('#btn-mark-complete').isDisabled(), true);
-  assert.equal(await page.locator('.module-progress-label').innerText(), '1/2 completed');
+  assert.equal(await page.locator('.module-progress-label').innerText(), await page.evaluate(() => window.t('coverage.moduleProgress', '1/2 completed', { completed: 1, total: 2 })));
   assert.equal(await page.locator('#course-progress').innerText().then(text => /50%/.test(text)), true);
   assert.equal(await page.locator('.lesson-item.completed.active').count(), 1, 'completion remains distinct from the current lesson state');
   assert.equal(await page.locator('#exam-button-container a[href^="exam.html"]').count(), 0, 'partial completion keeps the exam locked');

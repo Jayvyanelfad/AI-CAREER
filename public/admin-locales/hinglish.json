@@ -137,5 +137,8 @@
   "careerAssessment": "Career assessment",
   "noRetests": "Abhi koi retest nahi hua.",
   "logout": "Log out",
-  "bio": "About"
+  "bio": "About",
+  "recentRegistrations": "Naye registrations",
+  "recentRegistrationsNote": "User directory se, sabse naye accounts pehle.",
+  "noRecentRegistrations": "Abhi tak koi registered user nahi hai."
 }

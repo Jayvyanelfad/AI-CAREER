@@ -16,7 +16,8 @@
     "profile": "Profil",
     "login": "Connexion",
     "register": "Créer un compte",
-    "logout": "Déconnexion"
+    "logout": "Déconnexion",
+    "admin": "Admin"
   },
   "common": {
     "start": "Commencer",
@@ -321,7 +322,8 @@
     "comingSoon": "Bientôt disponible",
     "notAvailable": "Indisponible",
     "pleaseSignIn": "Veuillez vous connecter",
-    "signInRequired": "Connexion requise"
+    "signInRequired": "Connexion requise",
+    "copyrightProject": "© CareerPath AI · Projet de fin d’études B.Tech"
   },
   "coverage": {
     "signInToBrowseCourses": "Connectez-vous pour charger le catalogue des cours.",
@@ -1090,7 +1092,14 @@
     "About - CareerPath AI": "À propos - CareerPath AI",
     "AI Career Mentor - CareerPath AI": "Mentor en carrière IA - CareerPath AI",
     "Contact Us - CareerPath AI": "Contact - CareerPath AI",
-    "Exam - CareerPath AI": "Évaluation - CareerPath AI"
+    "Exam - CareerPath AI": "Évaluation - CareerPath AI",
+    "recoverCertificate": "Examen réussi mais pas de certificat ? Réessayer",
+    "certificateRetrying": "Vérification de l’éligibilité au certificat…",
+    "certificateRetryFailed": "Le certificat n’a pas pu être délivré. Vous pourrez réessayer plus tard.",
+    "moduleProgress": "{completed}/{total} terminées",
+    "localRuntimeNote": "Utilisez un environnement d’exécution local pour exécuter votre code.",
+    "examNotConfigured": "Aucun examen final n’a encore été configuré pour ce cours, donc aucun certificat ne peut être délivré pour le moment.",
+    "chatbotGuidePrefix": "L’assistant IA est momentanément indisponible, mais je peux vous orienter."
   },
   "careerResult": {
     "eyebrow": "VOTRE ORIENTATION PROFESSIONNELLE",
@@ -1309,5 +1318,19 @@
     "viewCourse": "Voir le cours",
     "courseFallback": "Cours",
     "catalogUnavailable": "Parcourez le catalogue pour trouver un point de depart."
+  },
+  "notifications": {
+    "eyebrow": "MISES À JOUR",
+    "title": "Notifications",
+    "markAll": "Tout marquer comme lu",
+    "loading": "Chargement des notifications…",
+    "empty": "Vous n’avez aucune notification pour le moment.",
+    "unavailable": "Les notifications sont temporairement indisponibles.",
+    "markRead": "Marquer comme lu",
+    "open": "Ouvrir",
+    "update": "Mise à jour"
+  },
+  "lessonVisual": {
+    "caption": "Schéma conceptuel — une relation à examiner, pas des données mesurées."
   }
 }

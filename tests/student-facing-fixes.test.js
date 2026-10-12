@@ -81,6 +81,10 @@ test('chatbot controls are named, live, and closable', () => {
   assert.match(js, /getElementById\("floating-chatbot"\)/);
   // The floating widget must not duplicate the dedicated page's static window.
   assert.match(js, /if \(document\.getElementById\("chatbot-window"\)\) return;/);
+  // Offline fallback: deterministic navigation help from verified routes only.
+  assert.match(js, /guideReply\(message\)/);
+  assert.match(js, /coverage\.chatbotGuidePrefix/);
+  assert.doesNotMatch(js, /['"]admin\.html['"]/);
   assert.match(js, /aria-label="Type your message"/);
   assert.match(js, /aria-label="Send message"/);
   assert.match(js, /role="log" aria-live="polite"/);
@@ -121,4 +125,17 @@ test('server fails fast on missing env and reports config without secrets', () =
   assert.match(healthBlock, /Boolean\(process\.env\./);
   assert.doesNotMatch(healthBlock, /\$\{process\.env\./);
   assert.ok(!/apiKey:\s*process\.env/.test(healthBlock) && !/process\.env\.[A-Z_]+\s*[,}]/.test(healthBlock.replace(/Boolean\(process\.env\.[A-Z_]+\)/g, '')), 'health must not return raw env values');
+});
+
+test('course page prefers the flagged final and explains a missing one', () => {
+  const fs = require('node:fs');
+  const path = require('node:path');
+  const detail = fs.readFileSync(path.join(__dirname, '..', 'public', 'course-detail.js'), 'utf8');
+  // Never present a section quiz as the final exam.
+  assert.doesNotMatch(detail, /currentExam = finalExam \|\| data\.exams\[0\]/);
+  assert.match(detail, /data\.exams\.find\(exam => exam\.is_final === true\)/);
+  assert.match(detail, /examNotConfigured/);
+  const server = fs.readFileSync(path.join(__dirname, '..', 'server.js'), 'utf8');
+  assert.match(server, /is_final: exam\.is_final === true/);
+  assert.match(server, /duration_minutes, is_final'\)/);
 });

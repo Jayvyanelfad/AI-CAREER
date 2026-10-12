@@ -90,6 +90,8 @@ test('admin screens render API data without sensitive answer fields', async t =>
   const page = await fixture(t);
   await page.locator('#access-state').waitFor({ state: 'hidden' });
   await page.getByText('17', { exact: true }).waitFor();
+  await page.getByText('Recent registrations').waitFor();
+  await page.getByText('asha@example.test').waitFor();
   await page.goto(new URL('/admin.html#users', page.url()).href);
   await page.getByText('Asha Example').waitFor();
   assert.equal(await page.locator('.user-identity .user-avatar img').getAttribute('src'), user.avatarUrl);

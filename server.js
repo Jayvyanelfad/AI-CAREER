@@ -736,7 +736,8 @@ function examMetadata(exam, questionCount) {
     passing_score: exam.passing_score,
     duration_minutes: exam.duration_minutes,
     max_attempts: exam.max_attempts,
-    question_count: questionCount
+    question_count: questionCount,
+    is_final: exam.is_final === true
   };
 }
 
@@ -925,11 +926,21 @@ app.get('/api/exams', authenticateToken, async (req, res) => {
     if (typeof courseId !== 'string' || !courseId.trim()) {
       return res.status(400).json({ error: 'course_id is required' });
     }
-    const { data: exams, error } = await supabase
+    // Prefer the explicit is_final discriminator; fall back to the legacy
+    // column set on schemas where the migration has not been applied yet.
+    let examsQuery = supabase
       .from('exams')
-      .select('id, course_id, title, description, passing_score, max_attempts, duration_minutes')
+      .select('id, course_id, title, description, passing_score, max_attempts, duration_minutes, is_final')
       .eq('course_id', courseId)
       .order('created_at', { ascending: true });
+    let { data: exams, error } = await examsQuery;
+    if (error && /is_final|does not exist|unknown column/i.test(error.message || '')) {
+      ({ data: exams, error } = await supabase
+        .from('exams')
+        .select('id, course_id, title, description, passing_score, max_attempts, duration_minutes')
+        .eq('course_id', courseId)
+        .order('created_at', { ascending: true }));
+    }
     if (error) throw error;
 
     const safeExams = await Promise.all((exams || []).map(async exam => {

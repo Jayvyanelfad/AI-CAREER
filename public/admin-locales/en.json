@@ -137,5 +137,8 @@
   "careerAssessment": "Career assessment",
   "noRetests": "No retests yet.",
   "logout": "Log out",
-  "bio": "About"
+  "bio": "About",
+  "recentRegistrations": "Recent registrations",
+  "recentRegistrationsNote": "Newest accounts first, from the user directory.",
+  "noRecentRegistrations": "No registered users yet."
 }

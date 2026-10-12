@@ -137,5 +137,8 @@
   "careerAssessment": "?valuation professionnelle",
   "noRetests": "Aucune nouvelle tentative pour le moment.",
   "logout": "Se d?connecter",
-  "bio": "? propos"
+  "bio": "? propos",
+  "recentRegistrations": "Inscriptions récentes",
+  "recentRegistrationsNote": "Comptes les plus récents en premier, depuis le répertoire.",
+  "noRecentRegistrations": "Aucun utilisateur inscrit pour le moment."
 }

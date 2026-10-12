@@ -173,16 +173,44 @@ class Chatbot {
 
       if (response.ok && data.reply) {
         this.addMessage("bot", data.reply);
+      } else if (!response.ok) {
+        // The AI provider is unavailable or refused the request. Offer
+        // deterministic navigation help from a fixed, verified route map
+        // instead of pretending the AI answered. Never links admin pages.
+        const guide = this.guideReply(message);
+        this.addMessage("bot", guide || data.error || t("coverage.chatbotUnknown", "❌ Sorry, I couldn't understand. Can you rephrase?"));
       } else {
         this.addMessage("bot", data.error || t("coverage.chatbotUnknown", "❌ Sorry, I couldn't understand. Can you rephrase?"));
       }
     } catch (error) {
       console.error("Chat error:", error);
       typingDiv.remove();
-      this.addMessage("bot", t("coverage.chatbotConnectionError", "⚠️ Connection error. Please try again."));
+      const guide = this.guideReply((document.getElementById("chat-input") || {}).value || '');
+      this.addMessage("bot", guide || t("coverage.chatbotConnectionError", "⚠️ Connection error. Please try again."));
     }
 
     this.showQuickReplies();
+  }
+
+  // Deterministic website guide used only when the AI provider cannot answer.
+  // Returns a short navigation hint or null when nothing matches. Routes are
+  // hard-coded to real pages; admin and private records are never referenced.
+  guideReply(message) {
+    const text = String(message || '').toLowerCase();
+    if (!text.trim()) return null;
+    const prefix = t('coverage.chatbotGuidePrefix', 'The AI assistant is unavailable right now, but I can still point you the right way.');
+    const topics = [
+      { keys: ['assessment', 'test', 'result', 'career'], label: t('nav.careerTest', 'Career Test'), route: 'career-test.html' },
+      { keys: ['course', 'enrol', 'catalog', 'lesson', 'module', 'learn'], label: t('nav.courses', 'Courses'), route: 'courses.html' },
+      { keys: ['certificate', 'verify'], label: 'Certificate verification', route: 'certificate.html' },
+      { keys: ['dashboard', 'progress', 'journey'], label: t('nav.dashboard', 'Dashboard'), route: 'dashboard.html' },
+      { keys: ['profile', 'avatar', 'photo', 'account', 'password'], label: t('nav.profile', 'Profile'), route: 'profile.html' },
+      { keys: ['programming', 'code', 'python', 'javascript', 'run'], label: t('nav.programming', 'Programming'), route: 'programming.html' },
+      { keys: ['login', 'sign in', 'register', 'sign up'], label: t('nav.login', 'Login'), route: 'login.html' }
+    ];
+    const hit = topics.find(topic => topic.keys.some(keyword => text.includes(keyword)));
+    if (!hit) return null;
+    return `${prefix} ${hit.label}: ${hit.route}`;
   }
 }
 

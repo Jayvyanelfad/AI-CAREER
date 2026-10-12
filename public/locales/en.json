@@ -322,7 +322,8 @@
     "comingSoon": "Coming soon",
     "notAvailable": "Not available",
     "pleaseSignIn": "Please sign in",
-    "signInRequired": "Sign in required"
+    "signInRequired": "Sign in required",
+    "copyrightProject": "© CareerPath AI · B.Tech Final Year Project"
   },
   "coverage": {
     "signInToBrowseCourses": "Sign in to load the course catalog.",
@@ -1091,7 +1092,14 @@
     "About - CareerPath AI": "About - CareerPath AI",
     "AI Career Mentor - CareerPath AI": "AI Career Mentor - CareerPath AI",
     "Contact Us - CareerPath AI": "Contact Us - CareerPath AI",
-    "Exam - CareerPath AI": "Exam - CareerPath AI"
+    "Exam - CareerPath AI": "Exam - CareerPath AI",
+    "recoverCertificate": "Passed the exam but no certificate? Retry",
+    "certificateRetrying": "Checking certificate eligibility…",
+    "certificateRetryFailed": "Certificate could not be issued. You can retry later.",
+    "moduleProgress": "{completed}/{total} completed",
+    "localRuntimeNote": "Use a local language runtime to execute your code.",
+    "examNotConfigured": "No final exam has been configured for this course yet, so a certificate cannot be issued right now.",
+    "chatbotGuidePrefix": "The AI assistant is unavailable right now, but I can still point you the right way."
   },
   "careerResult": {
     "eyebrow": "YOUR CAREER DIRECTION",

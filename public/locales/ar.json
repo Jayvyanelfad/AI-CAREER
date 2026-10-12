@@ -16,7 +16,8 @@
     "profile": "الملف الشخصي",
     "login": "تسجيل الدخول",
     "register": "إنشاء حساب",
-    "logout": "تسجيل الخروج"
+    "logout": "تسجيل الخروج",
+    "admin": "الإدارة"
   },
   "common": {
     "start": "ابدأ",
@@ -321,7 +322,8 @@
     "comingSoon": "قريباً",
     "notAvailable": "غير متاح",
     "pleaseSignIn": "يرجى تسجيل الدخول",
-    "signInRequired": "تسجيل الدخول مطلوب"
+    "signInRequired": "تسجيل الدخول مطلوب",
+    "copyrightProject": "© CareerPath AI · مشروع التخرج B.Tech"
   },
   "coverage": {
     "signInToBrowseCourses": "???? ?????? ?????? ????? ???????.",
@@ -1090,7 +1092,14 @@
     "About - CareerPath AI": "حول - CareerPath AI",
     "AI Career Mentor - CareerPath AI": "مرشد المسار المهني للذكاء الاصطناعي - CareerPath AI",
     "Contact Us - CareerPath AI": "تواصل معنا - CareerPath AI",
-    "Exam - CareerPath AI": "الاختبار - CareerPath AI"
+    "Exam - CareerPath AI": "الاختبار - CareerPath AI",
+    "recoverCertificate": "نجحت في الامتحان لكن لا توجد شهادة؟ أعد المحاولة",
+    "certificateRetrying": "جارٍ التحقق من أهلية الشهادة…",
+    "certificateRetryFailed": "تعذّر إصدار الشهادة. يمكنك إعادة المحاولة لاحقًا.",
+    "moduleProgress": "{completed}/{total} مكتملة",
+    "localRuntimeNote": "استخدم بيئة تشغيل محلية لتنفيذ التعليمات البرمجية.",
+    "examNotConfigured": "لم يتم إعداد اختبار نهائي لهذه الدورة بعد، لذلك لا يمكن إصدار شهادة في الوقت الحالي.",
+    "chatbotGuidePrefix": "مساعد الذكاء الاصطناعي غير متاح حاليًا، لكن يمكنني إرشادك."
   },
   "project": {
     "eyebrow": "أُنجز كمشروع بكالوريوس في التقنية",
@@ -1309,5 +1318,19 @@
     "viewCourse": "عرض الدورة",
     "courseFallback": "دورة",
     "catalogUnavailable": "تصفح كتالوج الدورات لاختيار نقطة بداية."
+  },
+  "notifications": {
+    "eyebrow": "التحديثات",
+    "title": "الإشعارات",
+    "markAll": "تعليم الكل كمقروء",
+    "loading": "جارٍ تحميل الإشعارات…",
+    "empty": "لا توجد إشعارات لديك بعد.",
+    "unavailable": "الإشعارات غير متاحة مؤقتًا.",
+    "markRead": "تعليم كمقروء",
+    "open": "فتح",
+    "update": "تحديث"
+  },
+  "lessonVisual": {
+    "caption": "مخطط مفاهيمي — علاقة للفحص، وليست بيانات مقاسة."
   }
 }

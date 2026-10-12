@@ -16,7 +16,8 @@
     "profile": "Wasifu",
     "login": "Ingia",
     "register": "Jisajili",
-    "logout": "Toka"
+    "logout": "Toka",
+    "admin": "Msimamizi"
   },
   "common": {
     "start": "Anza",
@@ -321,7 +322,8 @@
     "comingSoon": "Inakuja hivi karibuni",
     "notAvailable": "Haipatikani",
     "pleaseSignIn": "Tafadhali ingia",
-    "signInRequired": "Inahitaji kuingia"
+    "signInRequired": "Inahitaji kuingia",
+    "copyrightProject": "© CareerPath AI · Mradi wa Mwaka wa Mwisho wa B.Tech"
   },
   "coverage": {
     "signInToBrowseCourses": "Ingia ili kupakia orodha ya kozi.",
@@ -1090,7 +1092,14 @@
     "About - CareerPath AI": "Kuhusu - CareerPath AI",
     "AI Career Mentor - CareerPath AI": "Mshauri wa taaluma za AI - CareerPath AI",
     "Contact Us - CareerPath AI": "Wasiliana nasi - CareerPath AI",
-    "Exam - CareerPath AI": "Mtihani - CareerPath AI"
+    "Exam - CareerPath AI": "Mtihani - CareerPath AI",
+    "recoverCertificate": "Umefaulu mtihani lakini hakuna cheti? Jaribu tena",
+    "certificateRetrying": "Inathibitisha ustahiki wa cheti…",
+    "certificateRetryFailed": "Cheti haikuweza kutolewa. Unaweza kujaribu tena baadaye.",
+    "moduleProgress": "{completed}/{total} zimekamilika",
+    "localRuntimeNote": "Tumia runtime ya lugha ya ndani kutekeleza msimbo wako.",
+    "examNotConfigured": "Hakuna mtihani wa mwisho uliowekwa kwa kozi hii bado, kwa hivyo cheti hakiwezi kutolewa kwa sasa.",
+    "chatbotGuidePrefix": "Msaidizi wa AI hapatikani kwa sasa, lakini naweza kukuelekeza."
   },
   "project": {
     "eyebrow": "Umetengenezwa kama mradi wa B.Tech",
@@ -1309,5 +1318,19 @@
     "viewCourse": "Tazama kozi",
     "courseFallback": "Kozi",
     "catalogUnavailable": "Vinjari katalogi ya kozi ili kupata pa kuanzia."
+  },
+  "notifications": {
+    "eyebrow": "TAARIFA",
+    "title": "Arifa",
+    "markAll": "Weka zote kama zimesomwa",
+    "loading": "Inapakia arifa…",
+    "empty": "Huna arifa yoyote bado.",
+    "unavailable": "Arifa hazipatikani kwa muda.",
+    "markRead": "Weka kama imesomwa",
+    "open": "Fungua",
+    "update": "Taarifa"
+  },
+  "lessonVisual": {
+    "caption": "Mchoro wa dhana — uhusiano wa kuchunguza, si data iliyopimwa."
   }
 }

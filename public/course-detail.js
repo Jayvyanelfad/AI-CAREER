@@ -205,9 +205,12 @@ async function fetchCompletedLessons() {
             const data = await response.json();
             // We expect { exams: [ ... ] }
             if (data.exams && data.exams.length > 0) {
-                // Find the exam with 'Final' in the title, otherwise use the first one
-                const finalExam = data.exams.find(exam => exam.title.toLowerCase().includes('final'));
-                currentExam = finalExam || data.exams[0];
+                // Prefer the explicit final-exam flag; fall back to the title
+                // heuristic. Never present a section quiz as the final: an
+                // unflagged, untitled exam means none is configured.
+                currentExam = data.exams.find(exam => exam.is_final === true)
+                    || data.exams.find(exam => (exam.title || '').toLowerCase().includes('final'))
+                    || null;
             } else {
                 currentExam = null;
             }
@@ -1059,9 +1062,9 @@ async function fetchCompletedLessons() {
         }
 
         if (html === '') {
-            // This should not happen because we have completed all lessons and are enrolled.
-            // But if there is no exam and not eligible for certificate (shouldn't happen), show a message.
-            examButtonContainer.innerHTML = enrollmentNotice + `<p>${t('coverage.noExam', 'No exam available and not eligible for certificate.')}</p>`;
+            // Enrolled with all lessons complete, but no final exam is
+            // configured: say so plainly instead of implying one exists.
+            examButtonContainer.innerHTML = enrollmentNotice + `<p role="status">${t('coverage.examNotConfigured', 'No final exam has been configured for this course yet, so a certificate cannot be issued right now.')}</p>`;
         } else {
             examButtonContainer.innerHTML = enrollmentNotice + html;
             const recoverButton = document.getElementById('btn-recover-certificate');

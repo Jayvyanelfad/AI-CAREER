@@ -137,9 +137,13 @@
   async function renderOverview(data) {
     loading();
     try {
-      const [analytics, recent] = await Promise.all([api('analytics'), api('assessments?page=1&perPage=5&completed=true')]);
+      const [analytics, recent, directory] = await Promise.all([api('analytics'), api('assessments?page=1&perPage=5&completed=true'), api('users?page=1&perPage=10')]);
       const recentItems = recent.attempts || [];
       const recentHtml = recentItems.length ? `<div class="recent-list">${recentItems.map(item => `<article class="recent-item"><span class="recent-pin" aria-hidden="true"></span><div><strong>${esc(item.topCareers?.[0]?.career || tr('assessmentRecord'))}</strong><p>${esc(tr('learnerId'))}: ${esc(item.userId)}</p></div><time>${esc(date(item.completedAt))}</time></article>`).join('')}</div>` : empty(tr('noRecentAssessments'));
+      const recentUsers = [...(directory.users || [])]
+        .sort((a, b) => new Date(b.joinedAt || 0) - new Date(a.joinedAt || 0))
+        .slice(0, 5);
+      const recentRegistrationsHtml = recentUsers.length ? `<div class="recent-list">${recentUsers.map(user => `<article class="recent-item"><span class="recent-pin" aria-hidden="true"></span><div><strong>${esc(user.fullName || user.email || tr('noValue'))}</strong><p>${esc(user.email || tr('noValue'))}</p></div><div><a class="text-link" href="#journey/${encodeURIComponent(user.id)}">${esc(tr('journey'))} ↗</a><br><time>${esc(date(user.joinedAt))}</time></div></article>`).join('')}</div>` : empty(tr('noRecentRegistrations'));
       const careerChart = chart(analytics.careerDirectionDistribution || [], 'career', 'attempts');
       const courseRows = (analytics.courses || []).filter(course => Number(course.enrollments) > 0).slice(0, 5);
       const courseInsight = courseRows.length
@@ -153,6 +157,7 @@
         <div class="metric-grid">${metric(tr('totalUsers'), data.totalUsers, '◉')}${metric(tr('assessmentAttempts'), data.completedAssessmentAttempts, '✳', tr('uniqueLearners') + ': ' + number(data.usersWithCompletedAssessment))}${metric(tr('coursesStarted'), data.coursesStarted, '↗')}${metric(tr('lessonsCompleted'), data.lessonsCompleted, '▤')}${metric(tr('examsAttempted'), data.examsAttempted, '⌑')}${metric(tr('certificatesIssued'), data.certificatesIssued, '◇')}</div>
         <section class="insights-block"><div class="overview-section-label"><span>02</span><div><h2>${esc(tr('keyInsights'))}</h2><p>${esc(tr('insightsCopy'))}</p></div></div><div class="insight-grid"><article class="insight-card insight-card--career"><h3>${esc(tr('careerDistribution'))}</h3>${careerChart}</article><article class="insight-card insight-card--support"><h3>${esc(tr('courseEnrollments'))}</h3>${courseInsight}<div class="support-divider"></div><div class="support-exam"><strong>${esc(tr('examPassRate'))}</strong>${passInsight}</div><p class="small-note">${esc(tr('lessonsCompleted'))}: ${esc(number(analytics.lessonsCompleted))}</p></article></div></section>
         <section class="recent-section"><div class="overview-section-label"><span>03</span><div><h2>${esc(tr('recentAssessments'))}</h2><p>${esc(tr('recentAssessmentNote'))}</p></div><a class="text-link" href="#assessments">${esc(tr('viewAll'))} →</a></div>${recentHtml}</section>
+        <section class="recent-section"><div class="overview-section-label"><span>04</span><div><h2>${esc(tr('recentRegistrations'))}</h2><p>${esc(tr('recentRegistrationsNote'))}</p></div><a class="text-link" href="#users">${esc(tr('viewAll'))} →</a></div>${recentRegistrationsHtml}</section>
         <section class="data-notes-panel"><h3>${esc(tr('dataNotes'))}</h3><div class="data-notes"><p class="note-item">${esc(tr('attemptCountNote'))}</p><p class="note-item">${esc(tr('courseCountNote'))}</p><p class="note-item">${esc(tr('missingEventsNote'))}</p></div></section>`;
     } catch (error) { renderError(error); }
   }
