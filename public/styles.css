@@ -3888,6 +3888,9 @@ body:not(.home-page) .auth-mobile-open > .auth-responsive-nav {
   font: inherit;
   line-height: 1.25;
   cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .nav-language-selector:focus-visible {

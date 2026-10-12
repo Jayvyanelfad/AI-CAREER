@@ -1171,40 +1171,52 @@
   },
   "courseMetadata": {
     "intro_to_ai": {
-      "title": "Introduction to AI & ML"
+      "title": "Introduction to AI & ML",
+      "description": "Learn how AI and machine learning differ, how data and models produce predictions, and how to evaluate results responsibly. Progress from foundational terms and learning methods to neural networks, real-world applications, and a guided beginner project: a small classifier with a test plan and documented limitations. No prior AI experience is required."
     },
     "python_for_careers": {
-      "title": "Python for Career Development"
+      "title": "Python for Career Development",
+      "description": "Start with Python basics: values, conditions, and loops. Then use functions, collections, files, JSON, and a beginner API request. Finish by planning, building, safely testing, and presenting a local file-organization assistant. No programming experience is required."
     },
     "data_analytics_basics": {
-      "title": "Data Analytics Basics"
+      "title": "Data Analytics Basics",
+      "description": "Frame an analysis question, clean a small dataset, explore patterns with summaries and charts, and communicate a finding with its limits."
     },
     "web_dev": {
-      "title": "Web Development Fundamentals"
+      "title": "Web Development Fundamentals",
+      "description": "Build a semantic, responsive web page with HTML, CSS, and JavaScript. Practice accessible forms, client-side interactions, and the basics of publishing a frontend."
     },
     "dsa": {
-      "title": "Data Structures & Algorithms"
+      "title": "Data Structures & Algorithms",
+      "description": "Choose and apply core data structures and algorithms to common problems, compare time and space costs, and explain the trade-offs behind a solution."
     },
     "devops": {
-      "title": "DevOps & Cloud Basics"
+      "title": "DevOps & Cloud Basics",
+      "description": "Use Linux commands and shell scripts, package an application with Docker, and explain how cloud services support deployment and operations."
     },
     "cybersecurity": {
-      "title": "Cybersecurity Fundamentals"
+      "title": "Cybersecurity Fundamentals",
+      "description": "Recognize common threats, reduce basic web application risks, review security signals, and outline a responsible incident response in an authorized environment."
     },
     "ui_ux": {
-      "title": "UI/UX Design Principles"
+      "title": "UI/UX Design Principles",
+      "description": "Turn user needs into a simple flow and interface, prototype it, check accessibility basics, and refine the design using usability feedback."
     },
     "advanced_ml": {
-      "title": "Advanced Machine Learning"
+      "title": "Advanced Machine Learning",
+      "description": "Compare neural approaches for text and image tasks, reason about training and evaluation trade-offs, and explain how a model can be monitored after deployment."
     },
     "aws_architect": {
-      "title": "AWS Solutions Architect"
+      "title": "AWS Solutions Architect",
+      "description": "Select AWS compute, storage, database, networking, and security services to sketch a resilient architecture and explain its trade-offs. Hands-on cloud deployment is not assumed."
     },
     "data_science": {
-      "title": "Data Science Professional"
+      "title": "Data Science Professional",
+      "description": "Prepare and explore a dataset, build and evaluate an appropriate model, and communicate what the evidence supports and where it falls short."
     },
     "full_stack": {
-      "title": "Full Stack Web Development"
+      "title": "Full Stack Web Development",
+      "description": "Plan the parts of a full stack application, build responsive frontend interactions, connect server APIs to data, and explain the roles of testing and delivery workflows."
     },
     "prompt_engineering": {
       "title": "Prompt Engineering & LLM Workflows",

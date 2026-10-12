@@ -254,14 +254,17 @@ async function checkProgrammingExecutionStatus(container) {
     if (!response.ok || status.available) return;
     const unavailableMessage = status.blocker || t('programming.unavailable', 'Code execution is temporarily unavailable.');
     const localRuntimeMessage = t('coverage.localRuntimeNote', 'Use a local language runtime to execute your code.');
+    // One concise studio-level notice instead of a repeated note per lesson.
+    if (!container.querySelector('.programming-provider-note')) {
+      const banner = document.createElement('p');
+      banner.className = 'programming-provider-note';
+      banner.setAttribute('role', 'status');
+      banner.textContent = `${unavailableMessage} ${localRuntimeMessage}`;
+      container.prepend(banner);
+    }
     container.querySelectorAll('[data-run-code]').forEach(button => {
       button.disabled = true;
       button.title = unavailableMessage;
-      const note = document.createElement('p');
-      note.className = 'programming-provider-note';
-      note.setAttribute('role', 'status');
-      note.textContent = unavailableMessage;
-      button.closest('.programming-code-actions')?.after(note);
       // The static practice note promises a sandbox. Rewrite it wherever Run
       // is disabled so the page never advertises execution it cannot provide.
       const practiceNote = button.closest('.programming-practice')?.querySelector('.programming-practice-note');

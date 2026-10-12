@@ -137,7 +137,7 @@
   async function renderOverview(data) {
     loading();
     try {
-      const [analytics, recent, directory] = await Promise.all([api('analytics'), api('assessments?page=1&perPage=5&completed=true'), api('users?page=1&perPage=10')]);
+      const [analytics, recent, directory] = await Promise.all([api('analytics'), api('assessments?page=1&perPage=5&completed=true'), api('users?page=1&perPage=10&kind=human')]);
       const recentItems = recent.attempts || [];
       const recentHtml = recentItems.length ? `<div class="recent-list">${recentItems.map(item => `<article class="recent-item"><span class="recent-pin" aria-hidden="true"></span><div><strong>${esc(item.topCareers?.[0]?.career || tr('assessmentRecord'))}</strong><p>${esc(tr('learnerId'))}: ${esc(item.userId)}</p></div><time>${esc(date(item.completedAt))}</time></article>`).join('')}</div>` : empty(tr('noRecentAssessments'));
       const recentUsers = [...(directory.users || [])]
@@ -154,7 +154,8 @@
         : `<div class="insight-number">${esc(tr('percent', { value: analytics.examPassRate }))}</div><p class="muted">${esc(tr('examSummary', { passed: number(analytics.examsPassed), attempts: number(analytics.examAttempts) }))}</p>`;
       content.innerHTML = `<section class="overview-hero"><div class="overview-hero-copy"><p class="hero-kicker">${esc(tr('adminPerspective'))}</p><h2>${esc(tr('platformOverview'))}</h2><p>${esc(tr('overviewHeroCopy'))}</p><span class="hero-rule" aria-hidden="true"></span></div><span class="hero-index" aria-hidden="true">CP / 01</span></section>
         <div class="overview-section-label"><span>01</span><div><h2>${esc(tr('platformAtGlance'))}</h2><p>${esc(tr('overviewIntro'))}</p></div></div>
-        <div class="metric-grid">${metric(tr('totalUsers'), data.totalUsers, '◉')}${metric(tr('assessmentAttempts'), data.completedAssessmentAttempts, '✳', tr('uniqueLearners') + ': ' + number(data.usersWithCompletedAssessment))}${metric(tr('coursesStarted'), data.coursesStarted, '↗')}${metric(tr('lessonsCompleted'), data.lessonsCompleted, '▤')}${metric(tr('examsAttempted'), data.examsAttempted, '⌑')}${metric(tr('certificatesIssued'), data.certificatesIssued, '◇')}</div>
+        <div class="metric-grid">${metric(tr('totalUsers'), data.totalUsers, '◉')}${metric(tr('humanLearners'), data.humanUsers ?? 0, '●', tr('classifiedHumanOnly'))}${metric(tr('assessmentAttempts'), data.completedAssessmentAttempts, '✳', tr('uniqueLearners') + ': ' + number(data.usersWithCompletedAssessment))}${metric(tr('coursesStarted'), data.coursesStarted, '↗')}${metric(tr('lessonsCompleted'), data.lessonsCompleted, '▤')}${metric(tr('examsAttempted'), data.examsAttempted, '⌑')}${metric(tr('certificatesIssued'), data.certificatesIssued, '◇')}</div>
+        <div class="note-box">${esc(tr('reviewUnclassified', { count: number(data.unclassifiedUsers ?? 0) }))} <a class="text-link" href="#users">${esc(tr('reviewQueue'))} →</a></div>
         <section class="insights-block"><div class="overview-section-label"><span>02</span><div><h2>${esc(tr('keyInsights'))}</h2><p>${esc(tr('insightsCopy'))}</p></div></div><div class="insight-grid"><article class="insight-card insight-card--career"><h3>${esc(tr('careerDistribution'))}</h3>${careerChart}</article><article class="insight-card insight-card--support"><h3>${esc(tr('courseEnrollments'))}</h3>${courseInsight}<div class="support-divider"></div><div class="support-exam"><strong>${esc(tr('examPassRate'))}</strong>${passInsight}</div><p class="small-note">${esc(tr('lessonsCompleted'))}: ${esc(number(analytics.lessonsCompleted))}</p></article></div></section>
         <section class="recent-section"><div class="overview-section-label"><span>03</span><div><h2>${esc(tr('recentAssessments'))}</h2><p>${esc(tr('recentAssessmentNote'))}</p></div><a class="text-link" href="#assessments">${esc(tr('viewAll'))} →</a></div>${recentHtml}</section>
         <section class="recent-section"><div class="overview-section-label"><span>04</span><div><h2>${esc(tr('recentRegistrations'))}</h2><p>${esc(tr('recentRegistrationsNote'))}</p></div><a class="text-link" href="#users">${esc(tr('viewAll'))} →</a></div>${recentRegistrationsHtml}</section>
@@ -165,22 +166,23 @@
     const pages = Math.max(1, Math.ceil((Number(total) || 0) / PAGE_SIZE));
     return `<div class="pagination"><button class="page-btn" data-page-change="${page - 1}" ${page <= 1 ? 'disabled' : ''}>${esc(tr('previous'))}</button><span>${esc(tr('page', { page, pages }))}</span><button class="page-btn" data-page-change="${page + 1}" ${page >= pages ? 'disabled' : ''}>${esc(tr('next'))}</button></div>`;
   }
-  async function renderUsers(page = 1, query = '') {
-    state.page = page; state.query = query;
+  async function renderUsers(page = 1, query = '', kind = '') {
+    state.page = page; state.query = query; state.kind = kind;
     loading();
     try {
       const params = new URLSearchParams({ page, perPage: PAGE_SIZE });
       if (query) params.set('q', query);
+      if (kind) params.set('kind', kind);
       const result = await api(`users?${params}`);
       const headers = ['name', 'email', 'joined', 'assessmentCount', 'retestCount', 'courseCount', 'certificates', 'journey'].map(key => ({ label: tr(key) }));
       const rows = result.users.map(user => [
-        `<div class="user-identity">${avatarMarkup(user)}<span><span class="user-name">${esc(user.fullName || tr('noValue'))}</span><span class="subtext">${esc(user.id)}</span></span></div>`,
+        `<div class="user-identity">${avatarMarkup(user)}<span><span class="user-name">${esc(user.fullName || tr('noValue'))}</span><span class="subtext">${esc(user.id)}</span><span class="subtext">${esc(tr('kind' + String(user.accountKind || 'unclassified').replace(/^./, c => c.toUpperCase())))}</span></span></div>`,
         esc(user.email || tr('noValue')), esc(date(user.joinedAt)), esc(number(user.assessmentCount)), esc(number(user.retestCount)), esc(number(user.courseCount)), esc(number(user.certificateCount)),
         `<a class="table-actions" href="#journey/${encodeURIComponent(user.id)}">${esc(tr('journey'))} ↗</a>`
       ]);
-      content.innerHTML = `${sectionHeading(tr('userDirectory'), tr('usersIntro'))}<form class="toolbar search-panel" id="user-search"><span class="search-glyph" aria-hidden="true">⌕</span><input class="search-input" name="q" maxlength="80" minlength="2" placeholder="${esc(tr('searchHint'))}" value="${esc(query)}" aria-label="${esc(tr('searchHint'))}"><button class="btn" type="submit">${esc(tr('search'))} →</button></form>${table(headers, rows, tr('noUsers'))}${pagination(result.page, result.total)}`;
-      $('#user-search').addEventListener('submit', event => { event.preventDefault(); const term = new FormData(event.currentTarget).get('q').trim(); renderUsers(1, term); });
-      content.querySelectorAll('[data-page-change]').forEach(button => button.addEventListener('click', () => renderUsers(Number(button.dataset.pageChange), query)));
+      content.innerHTML = `${sectionHeading(tr('userDirectory'), tr('usersIntro'))}<form class="toolbar search-panel" id="user-search"><span class="search-glyph" aria-hidden="true">⌕</span><input class="search-input" name="q" maxlength="80" minlength="2" placeholder="${esc(tr('searchHint'))}" value="${esc(query)}" aria-label="${esc(tr('searchHint'))}"><select class="search-kind" name="kind" aria-label="${esc(tr('accountKind'))}">${['', 'human', 'test', 'demo', 'unclassified'].map(value => `<option value="${value}"${kind === value ? ' selected' : ''}>${esc(value ? tr('kind' + value[0].toUpperCase() + value.slice(1)) : tr('kindFilterAll'))}</option>`).join('')}</select><button class="btn" type="submit">${esc(tr('search'))} →</button></form>${table(headers, rows, tr('noUsers'))}${pagination(result.page, result.total)}`;
+      $('#user-search').addEventListener('submit', event => { event.preventDefault(); const form = new FormData(event.currentTarget); renderUsers(1, (form.get('q') || '').toString().trim(), (form.get('kind') || '').toString()); });
+      content.querySelectorAll('[data-page-change]').forEach(button => button.addEventListener('click', () => renderUsers(Number(button.dataset.pageChange), query, kind)));
     } catch (error) { renderError(error); }
   }
   function careerTags(items) {
@@ -215,7 +217,7 @@
       const examRows = exams.map(exam => [esc(exam.title || tr('unknownCourse')), esc(exam.courseId || tr('noValue')), esc(number(exam.attemptNumber)), esc(exam.score === null ? tr('noValue') : `${exam.score}%`), esc(exam.passed === true ? tr('passed') : exam.passed === false ? tr('failed') : tr('noValue')), esc(date(exam.startedAt)), esc(date(exam.submittedAt))]);
       const certificateHtml = certificates.length ? `<div class="cards-list">${certificates.map(certificate => `<article class="data-card"><h3>${esc(certificate.courseName || tr('unknownCourse'))}</h3><p>${esc(tr('certificateId'))}: ${esc(certificate.certificateId || tr('noValue'))}</p><p>${esc(tr('earned'))}: ${esc(date(certificate.earnedAt))}</p></article>`).join('')}</div>` : empty(tr('noCertificates'));
       content.innerHTML = `<div class="section-heading journey-page-heading"><div><a class="table-actions" href="#users">← ${esc(tr('backUsers'))}</a><div class="journey-identity">${avatarMarkup(account)}<div><p class="editorial-kicker">${esc(tr('journeyTitle'))}</p><h2>${esc(account.fullName || account.email || tr('journeyTitle'))}</h2></div></div></div></div>
-        <section class="journey-section journey-about"><h3>${esc(tr('aboutLearner'))}</h3><div class="account-grid">${accountField(tr('name'), account.fullName)}${accountField(tr('email'), account.email)}${accountField(tr('careerGoal'), account.careerGoal)}${accountField(tr('bio'), account.bio)}${accountField(tr('joined'), date(account.joinedAt))}${accountField(tr('lastSignIn'), date(account.lastSignInAt))}</div></section>
+        <section class="journey-section journey-about"><h3>${esc(tr('aboutLearner'))}</h3><div class="account-grid">${accountField(tr('name'), account.fullName)}${accountField(tr('email'), account.email)}${accountField(tr('careerGoal'), account.careerGoal)}${accountField(tr('accountKind'), tr('kind' + String(account.accountKind || 'unclassified').replace(/^./, c => c.toUpperCase())))}${accountField(tr('bio'), account.bio)}${accountField(tr('joined'), date(account.joinedAt))}${accountField(tr('lastSignIn'), date(account.lastSignInAt))}</div></section>
         <div class="journey-grid journey-story">
           <section class="journey-section wide"><span class="journey-step">01</span><h3>${esc(tr('discovered'))}</h3><p class="editorial-kicker">${esc(tr('latestProfile'))}</p>${careerProfile ? `${careerTags(careerProfile.topCareers)}${dimensions(careerProfile.dimensionScores)}<div class="strength-list">${(careerProfile.strengths || []).map(item => `<span class="tag">${esc(item)}</span>`).join('')}</div>` : empty(tr('noAssessmentHistory'))}<div class="journey-entry"><p class="editorial-kicker">${esc(tr('careerAssessment'))} · ${esc(tr('initialTest'))}</p>${initialAssessment}</div></section>
           <section class="journey-section wide"><span class="journey-step">02</span><h3>${esc(tr('refined'))}</h3>${retests || empty(tr('noRetests'))}</section>

@@ -2,6 +2,7 @@ const express = require('express');
 const { publicAvatarUrl } = require('./profile-api');
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const ACCOUNT_KINDS = ['human', 'test', 'demo', 'unclassified'];
 const PAGE_SIZE_MAX = 100;
 const PAGE_MAX = 100000;
 const SCAN_MAX = 10000;
@@ -33,6 +34,38 @@ function parsePagination(query = {}) {
     throw new ApiError(400, 'Invalid pagination parameters');
   }
   return { page, perPage: Math.min(requested, PAGE_SIZE_MAX) };
+}
+
+// Account classification for human-only reporting. Only rows explicitly marked
+// 'human' count as human learners; every unknown or missing value resolves to
+// 'unclassified' so no account is ever inferred human or automated.
+function normalizeAccountKind(value) {
+  return ACCOUNT_KINDS.includes(value) ? value : 'unclassified';
+}
+
+function parseAccountKind(query = {}) {
+  if (query.kind === undefined) return null;
+  if (!ACCOUNT_KINDS.includes(query.kind)) throw new ApiError(400, 'Invalid account kind');
+  return query.kind;
+}
+
+// Map user ids to their normalized kinds. Schemas predating the
+// account_kind column degrade to all-unclassified rather than failing.
+async function readAccountKinds(supabase, userIds) {
+  const kinds = new Map(userIds.map(id => [id, 'unclassified']));
+  if (!userIds.length) return kinds;
+  try {
+    const rows = await readCappedRows(() => supabase.from('users')
+      .select('id, account_kind').in('id', userIds));
+    for (const row of rows) kinds.set(row.id, normalizeAccountKind(row.account_kind));
+  } catch (error) {
+    if (/account_kind|does not exist|unknown column|column/i.test(error?.message || '') ||
+        /account_kind|does not exist|unknown column|column/i.test(error?.cause?.message || '')) {
+      return kinds;
+    }
+    throw error;
+  }
+  return kinds;
 }
 
 function parseJson(value, fallback) {
@@ -107,8 +140,17 @@ async function getAuthUsers(supabase, userIds) {
 async function getProfiles(supabase, userIds) {
   if (!userIds.length) return new Map();
   const { data, error } = await supabase.from('users')
-    .select('id, full_name, career_goal, avatar_path, bio, created_at')
+    .select('id, full_name, career_goal, avatar_path, bio, created_at, account_kind')
     .in('id', userIds);
+  if (error && /account_kind|does not exist|unknown column|column/i.test(error.message || '')) {
+    // Schemas predating the classification column keep working; kinds resolve
+    // to 'unclassified' through normalizeAccountKind.
+    const legacy = await supabase.from('users')
+      .select('id, full_name, career_goal, avatar_path, bio, created_at')
+      .in('id', userIds);
+    failQuery(legacy.error);
+    return new Map((legacy.data || []).map(row => [row.id, row]));
+  }
   failQuery(error);
   return new Map((data || []).map(row => [row.id, row]));
 }
@@ -122,7 +164,8 @@ function accountSummary(supabase, authUser, profile) {
     bio: profile?.bio || '',
     avatarUrl: publicAvatarUrl(supabase, profile?.avatar_path),
     joinedAt: authUser.created_at || profile?.created_at || null,
-    lastSignInAt: authUser.last_sign_in_at || null
+    lastSignInAt: authUser.last_sign_in_at || null,
+    accountKind: normalizeAccountKind(profile?.account_kind)
   };
 }
 
@@ -330,10 +373,29 @@ function createAdminRouter({ supabase, authenticateToken }) {
           .eq('completed', true))
       ]);
       const assessmentUsers = new Set(completedAttemptRows.map(row => row.user_id)).size;
+      // Human-only reporting: kinds come from explicit operator classification.
+      // Unknown or missing values resolve to 'unclassified' and never inflate
+      // the human counts. Schemas predating the column degrade gracefully.
+      const allIds = (await readCappedRows(() => supabase.from('users').select('id')))
+        .map(row => row.id);
+      const kindMap = await readAccountKinds(supabase, allIds);
+      const kindCounts = { human: 0, test: 0, demo: 0, unclassified: 0 };
+      const humanIds = new Set();
+      for (const [id, kind] of kindMap) {
+        kindCounts[kind]++;
+        if (kind === 'human') humanIds.add(id);
+      }
+      const humanCompletedAttempts = completedAttemptRows.filter(row => humanIds.has(row.user_id));
       return res.json({
         totalUsers,
+        humanUsers: kindCounts.human,
+        testAccounts: kindCounts.test,
+        demoAccounts: kindCounts.demo,
+        unclassifiedUsers: kindCounts.unclassified,
         completedAssessmentAttempts,
+        humanCompletedAssessmentAttempts: humanCompletedAttempts.length,
         usersWithCompletedAssessment: assessmentUsers,
+        usersWithCompletedHumanAssessment: new Set(humanCompletedAttempts.map(row => row.user_id)).size,
         coursesStarted,
         lessonsCompleted,
         examsAttempted,
@@ -342,6 +404,8 @@ function createAdminRouter({ supabase, authenticateToken }) {
         definitions: {
           completedAssessmentAttempts: 'attempt count',
           usersWithCompletedAssessment: 'distinct authenticated users',
+          humanUsers: 'accounts explicitly classified human by an operator; unclassified accounts are never counted here',
+          unclassifiedUsers: 'accounts awaiting operator review; start here to classify',
           coursesStarted: 'enrollment record count',
           lessonsCompleted: 'completed lesson_progress record count',
           assessmentCompletionRate: 'not available; assessment starts are not persisted'
@@ -353,6 +417,7 @@ function createAdminRouter({ supabase, authenticateToken }) {
   router.get('/users', async (req, res) => {
     try {
       const { page, perPage } = parsePagination(req.query);
+      const kind = parseAccountKind(req.query);
       const q = typeof req.query.q === 'string' ? req.query.q.trim() : '';
       let authUsers = [];
       let profiles = new Map();
@@ -386,10 +451,17 @@ function createAdminRouter({ supabase, authenticateToken }) {
       }
 
       const summaries = await userSummaryCounts(supabase, authUsers.map(user => user.id));
-      const users = authUsers.map(user => ({
+      const kindMap = await readAccountKinds(supabase, authUsers.map(user => user.id));
+      let users = authUsers.map(user => ({
         ...accountSummary(supabase, user, profiles.get(user.id)),
         ...(summaries.get(user.id) || { assessmentCount: 0, retestCount: 0, courseCount: 0, certificateCount: 0 })
       }));
+      // The kind filter applies after the directory lookup, so a filtered page
+      // may be shorter than perPage; the total counts only matching rows.
+      if (kind) {
+        users = users.filter(user => (kindMap.get(user.id) || 'unclassified') === kind);
+        return res.json({ users: users.slice((page - 1) * perPage, page * perPage), page, perPage, total: users.length, kind, searchFields: ['name', 'userId'] });
+      }
       return res.json({ users, page, perPage, total, searchFields: ['name', 'userId'] });
     } catch (error) { return safeQueryError(res, error); }
   });
@@ -406,6 +478,7 @@ function createAdminRouter({ supabase, authenticateToken }) {
   router.get('/assessments', async (req, res) => {
     try {
       const { page, perPage } = parsePagination(req.query);
+      const kind = parseAccountKind(req.query);
       if (req.query.userId !== undefined && !UUID_RE.test(String(req.query.userId))) {
         throw new ApiError(400, 'Invalid userId');
       }
@@ -425,6 +498,16 @@ function createAdminRouter({ supabase, authenticateToken }) {
         const version = String(req.query.version);
         if (!/^[a-zA-Z0-9._-]{1,80}$/.test(version)) throw new ApiError(400, 'Invalid version filter');
         query = query.filter('score_data->>assessment_version', 'eq', version);
+      }
+      if (kind) {
+        // Restrict authors to the requested classification before paging so
+        // totals stay accurate.
+        const authorIds = [...new Set((await readCappedRows(() => supabase.from('career_test_attempts')
+          .select('user_id'))).map(row => row.user_id))];
+        const kindMap = await readAccountKinds(supabase, authorIds);
+        const allowed = authorIds.filter(id => (kindMap.get(id) || 'unclassified') === kind);
+        if (!allowed.length) return res.json({ attempts: [], page, perPage, total: 0, kind });
+        query = query.in('user_id', allowed);
       }
       const { data, count, error } = await query.order('created_at', { ascending: false })
         .range((page - 1) * perPage, page * perPage - 1);
@@ -538,8 +621,9 @@ function createAdminRouter({ supabase, authenticateToken }) {
     } catch (error) { return safeQueryError(res, error); }
   });
 
-  router.get('/analytics', async (_req, res) => {
+  router.get('/analytics', async (req, res) => {
     try {
+      const kind = parseAccountKind(req.query);
       const [attemptRows, enrollments, courses, completedLessons, examAttempts, examPasses, certificates] = await Promise.all([
         readCappedRows(() => supabase.from('career_test_attempts').select('user_id, top_careers').eq('completed', true)),
         readCappedRows(() => supabase.from('enrollments').select('user_id, course_id, course_name')),
@@ -547,26 +631,67 @@ function createAdminRouter({ supabase, authenticateToken }) {
         exactCount(supabase, 'lesson_progress', q => q.eq('completed', true)),
         exactCount(supabase, 'exam_attempts'),
         exactCount(supabase, 'exam_attempts', q => q.eq('passed', true)),
-        readCappedRows(() => supabase.from('certificates').select('course_id'))
+        readCappedRows(() => supabase.from('certificates').select('user_id, course_id'))
       ]);
+      // Human-focused analytics exclude rows whose authors lack the requested
+      // classification. Without ?kind= the aggregates cover all accounts, and
+      // the response says so explicitly.
+      let scopedAttempts = attemptRows;
+      let scopedEnrollments = enrollments;
+      let scopedCertificates = certificates;
+      if (kind) {
+        const authorIds = [...new Set([
+          ...attemptRows.map(row => row.user_id),
+          ...enrollments.map(row => row.user_id),
+          ...certificates.map(row => row.user_id)
+        ].filter(Boolean))];
+        const kindMap = await readAccountKinds(supabase, authorIds);
+        const allowed = row => (kindMap.get(row.user_id) || 'unclassified') === kind;
+        scopedAttempts = attemptRows.filter(allowed);
+        scopedEnrollments = enrollments.filter(allowed);
+        scopedCertificates = certificates.filter(allowed);
+      }
       const careerCounts = new Map();
-      for (const attempt of attemptRows) {
+      for (const attempt of scopedAttempts) {
         const career = safeTopCareers(attempt.top_careers)[0]?.career;
         if (career) careerCounts.set(career, (careerCounts.get(career) || 0) + 1);
       }
       const enrollmentCounts = new Map();
-      for (const enrollment of enrollments) enrollmentCounts.set(enrollment.course_id,
+      for (const enrollment of scopedEnrollments) enrollmentCounts.set(enrollment.course_id,
         (enrollmentCounts.get(enrollment.course_id) || 0) + 1);
       const completedCourseRows = await deriveCourseProgress(supabase,
-        enrollments.map((row, index) => ({ ...row, id: `aggregate-${index}`, enrolled_at: null })));
+        scopedEnrollments.map((row, index) => ({ ...row, id: `aggregate-${index}`, enrolled_at: null })));
       const completionCounts = new Map();
       for (const enrollment of completedCourseRows) if (enrollment.completed) {
         completionCounts.set(enrollment.courseId, (completionCounts.get(enrollment.courseId) || 0) + 1);
       }
       const certificateCounts = new Map();
-      for (const certificate of certificates) certificateCounts.set(certificate.course_id,
+      for (const certificate of scopedCertificates) certificateCounts.set(certificate.course_id,
         (certificateCounts.get(certificate.course_id) || 0) + 1);
+      // Lesson and exam totals are global unless a kind is requested, in which
+      // case they are recomputed from the scoped authors so every number on
+      // the response shares the same scope.
+      let scopedLessonsCompleted = completedLessons;
+      let scopedExamAttempts = examAttempts;
+      let scopedExamPasses = examPasses;
+      if (kind) {
+        const scopedUserIds = [...new Set([
+          ...scopedAttempts.map(row => row.user_id),
+          ...scopedEnrollments.map(row => row.user_id),
+          ...scopedCertificates.map(row => row.user_id)
+        ].filter(Boolean))];
+        const [lessonRows, examRows] = await Promise.all([
+          scopedUserIds.length ? readCappedRows(() => supabase.from('lesson_progress')
+            .select('user_id').eq('completed', true).in('user_id', scopedUserIds)) : [],
+          readCappedRows(() => supabase.from('exam_attempts').select('user_id, passed'))
+        ]);
+        scopedLessonsCompleted = lessonRows.length;
+        const scopedExams = examRows.filter(row => scopedUserIds.includes(row.user_id));
+        scopedExamAttempts = scopedExams.length;
+        scopedExamPasses = scopedExams.filter(row => row.passed === true).length;
+      }
       return res.json({
+        ...(kind ? { kind } : {}),
         careerDirectionDistribution: [...careerCounts].map(([career, attempts]) => ({ career, attempts })),
         courses: courses.map(course => ({
           courseId: course.id,
@@ -575,17 +700,18 @@ function createAdminRouter({ supabase, authenticateToken }) {
           completedEnrollments: completionCounts.get(course.id) || 0,
           certificatesIssued: certificateCounts.get(course.id) || 0
         })),
-        lessonsCompleted: completedLessons,
-        examAttempts,
-        examsPassed: examPasses,
-        examPassRate: examAttempts ? Number((examPasses / examAttempts * 100).toFixed(2)) : null,
-        completedAssessmentAttempts: attemptRows.length,
-        usersWithCompletedAssessment: new Set(attemptRows.map(row => row.user_id)).size,
+        lessonsCompleted: scopedLessonsCompleted,
+        examAttempts: scopedExamAttempts,
+        examsPassed: scopedExamPasses,
+        examPassRate: scopedExamAttempts ? Number((scopedExamPasses / scopedExamAttempts * 100).toFixed(2)) : null,
+        completedAssessmentAttempts: scopedAttempts.length,
+        usersWithCompletedAssessment: new Set(scopedAttempts.map(row => row.user_id)).size,
         notes: {
           careerDistributionUnit: 'top career per completed attempt',
           courseCompletion: 'derived from all required lessons completed',
           activityMetrics: 'not available; reliable activity events are not persisted',
           assessmentCompletionRate: 'not available; assessment starts are not persisted',
+          accountScope: kind ? `restricted to accounts classified '${kind}'` : 'all accounts regardless of classification',
           aggregationLimit: SCAN_MAX
         }
       });

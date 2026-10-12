@@ -140,5 +140,15 @@
   "bio": "About",
   "recentRegistrations": "Recent registrations",
   "recentRegistrationsNote": "Newest accounts first, from the user directory.",
-  "noRecentRegistrations": "No registered users yet."
+  "noRecentRegistrations": "No registered users yet.",
+  "humanLearners": "Human learners",
+  "classifiedHumanOnly": "Counts only accounts explicitly classified as human.",
+  "reviewUnclassified": "{count} accounts awaiting classification review.",
+  "reviewQueue": "Review queue",
+  "accountKind": "Account kind",
+  "kindFilterAll": "All kinds",
+  "kindHuman": "Human",
+  "kindTest": "Test account",
+  "kindDemo": "Demo account",
+  "kindUnclassified": "Unclassified"
 }

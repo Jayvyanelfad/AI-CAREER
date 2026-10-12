@@ -140,5 +140,15 @@
   "bio": "? propos",
   "recentRegistrations": "Inscriptions récentes",
   "recentRegistrationsNote": "Comptes les plus récents en premier, depuis le répertoire.",
-  "noRecentRegistrations": "Aucun utilisateur inscrit pour le moment."
+  "noRecentRegistrations": "Aucun utilisateur inscrit pour le moment.",
+  "humanLearners": "Apprenants humains",
+  "classifiedHumanOnly": "Ne compte que les comptes explicitement classés comme humains.",
+  "reviewUnclassified": "{count} comptes en attente de vérification.",
+  "reviewQueue": "File de vérification",
+  "accountKind": "Type de compte",
+  "kindFilterAll": "Tous les types",
+  "kindHuman": "Humain",
+  "kindTest": "Compte de test",
+  "kindDemo": "Compte démo",
+  "kindUnclassified": "Non classé"
 }

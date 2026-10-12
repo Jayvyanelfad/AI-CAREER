@@ -140,5 +140,15 @@
   "bio": "????",
   "recentRegistrations": "التسجيلات الأخيرة",
   "recentRegistrationsNote": "أحدث الحسابات أولاً، من دليل المستخدمين.",
-  "noRecentRegistrations": "لا يوجد مستخدمون مسجلون بعد."
+  "noRecentRegistrations": "لا يوجد مستخدمون مسجلون بعد.",
+  "humanLearners": "المتعلمون البشريون",
+  "classifiedHumanOnly": "يحسب فقط الحسابات المصنفة صراحةً على أنها بشرية.",
+  "reviewUnclassified": "{count} حسابات بانتظار المراجعة.",
+  "reviewQueue": "قائمة المراجعة",
+  "accountKind": "نوع الحساب",
+  "kindFilterAll": "كل الأنواع",
+  "kindHuman": "بشري",
+  "kindTest": "حساب اختبار",
+  "kindDemo": "حساب تجريبي",
+  "kindUnclassified": "غير مصنف"
 }

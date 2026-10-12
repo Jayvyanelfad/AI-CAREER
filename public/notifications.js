@@ -27,7 +27,13 @@
       article.appendChild(footer); list.appendChild(article);
     });
   }
+  let inflight = null;
   async function load() {
+    if (inflight) return inflight;
+    inflight = doLoad().finally(() => { inflight = null; });
+    return inflight;
+  }
+  async function doLoad() {
     const auth = await headers(); if (!auth) return;
     status.textContent = label('notifications.loading', 'Loading notifications…');
     try { const response = await fetch(api, { headers: auth }); const payload = await response.json().catch(() => ({})); if (!response.ok) throw new Error(payload.error || 'unavailable'); render(Array.isArray(payload.notifications) ? payload.notifications : []); status.textContent = ''; }

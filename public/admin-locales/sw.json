@@ -140,5 +140,15 @@
   "bio": "Kuhusu",
   "recentRegistrations": "Usajili wa hivi karibuni",
   "recentRegistrationsNote": "Akaunti mpya kwanza, kutoka kwenye orodha ya watumiaji.",
-  "noRecentRegistrations": "Hakuna watumiaji waliosajiliwa bado."
+  "noRecentRegistrations": "Hakuna watumiaji waliosajiliwa bado.",
+  "humanLearners": "Wanafunzi halisi",
+  "classifiedHumanOnly": "Inahesabu akaunti zilizoainishwa wazi kama za kibinadamu pekee.",
+  "reviewUnclassified": "Akaunti {count} zinasubiri ukaguzi.",
+  "reviewQueue": "Foleni ya ukaguzi",
+  "accountKind": "Aina ya akaunti",
+  "kindFilterAll": "Aina zote",
+  "kindHuman": "Mtu halisi",
+  "kindTest": "Akaunti ya majaribio",
+  "kindDemo": "Akaunti ya demo",
+  "kindUnclassified": "Haijaainishwa"
 }

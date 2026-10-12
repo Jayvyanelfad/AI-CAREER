@@ -140,5 +140,15 @@
   "bio": "About",
   "recentRegistrations": "Naye registrations",
   "recentRegistrationsNote": "User directory se, sabse naye accounts pehle.",
-  "noRecentRegistrations": "Abhi tak koi registered user nahi hai."
+  "noRecentRegistrations": "Abhi tak koi registered user nahi hai.",
+  "humanLearners": "Human learners",
+  "classifiedHumanOnly": "Sirf unhi accounts ki ginti jo explicitly human classify hue hain.",
+  "reviewUnclassified": "{count} accounts review ke liye pending hain.",
+  "reviewQueue": "Review queue",
+  "accountKind": "Account kind",
+  "kindFilterAll": "Sabhi kinds",
+  "kindHuman": "Human",
+  "kindTest": "Test account",
+  "kindDemo": "Demo account",
+  "kindUnclassified": "Unclassified"
 }
