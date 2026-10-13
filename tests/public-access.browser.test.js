@@ -61,6 +61,33 @@ test('chatbot answers navigation questions honestly when AI is down', async t =>
   assert.match(reply, /unavailable right now/);
   assert.match(reply, /courses\.html/);
   assert.doesNotMatch(reply, /admin/i);
+
+  async function ask(question) {
+    const before = await page.locator('#chatbot-body .message.bot').count();
+    await page.locator('#chat-input').fill(question);
+    await page.locator('#send-message').click();
+    await page.waitForFunction(prev => {
+      const items = [...document.querySelectorAll('#chatbot-body .message.bot')];
+      return items.length > prev && !items[items.length - 1].textContent.includes('Thinking');
+    }, before, { timeout: 15000 });
+    return page.locator('#chatbot-body .message.bot').last().innerText();
+  }
+  const cases = [
+    ['how do I reset my password?', /login\.html/],
+    ['where is my exam?', /courses\.html/],
+    ['how do I change language to arabic?', /profile\.html/],
+    ['why does run code fail?', /programming\.html/],
+    ['how do I verify a certificate?', /certificate\.html/],
+    ['how do I register?', /register\.html/]
+  ];
+  for (const [question, route] of cases) {
+    const answer = await ask(question);
+    assert.match(answer, /unavailable right now/, `honest prefix for: ${question}`);
+    assert.match(answer, route, `correct route for: ${question}`);
+    assert.doesNotMatch(answer, /admin/i, `no admin exposure for: ${question}`);
+  }
+  const unknown = await ask('what is the meaning of life?');
+  assert.doesNotMatch(unknown, /\.html/, 'unknown questions get no fabricated route');
 });
 
 test('public certificate verification stays public, private views stay gated', async t => {

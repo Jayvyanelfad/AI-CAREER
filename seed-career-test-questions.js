@@ -151,18 +151,42 @@ async function seedCareerTestQuestions() {
   console.log('Starting career test questions seeding...');
 
   try {
-    // First, deactivate any existing questions to avoid duplicates
-    const { error: deactivateError } = await supabase
+    // Fetch the currently active bank first so reruns can reuse identical
+    // rows instead of duplicating them.
+    const { data: activeRows, error: activeError } = await supabase
       .from('questions')
-      .update({ active: false })
-      .neq('id', '00000000-0000-0000-0000-000000000000'); // Don't update a fake ID
+      .select('id, question_text, category')
+      .eq('active', true);
+    if (activeError) {
+      console.error('Could not read existing questions; aborting to avoid duplicates:', activeError.message);
+      process.exit(1);
+    }
+    const activeByKey = new Map((activeRows || []).map(row => [`${row.category}::${row.question_text}`, row.id]));
+    const seedKeys = new Set(questions.map(q => `${q.category}::${q.question_text}`));
 
-    if (deactivateError) {
-      console.warn('Note: Could not deactivate existing questions (may be first run):', deactivateError.message);
+    // Retire only rows that are not part of this seed set; identical rows are
+    // reused below, so reruns are no-ops instead of duplicates.
+    const staleIds = (activeRows || []).filter(row => !seedKeys.has(`${row.category}::${row.question_text}`)).map(row => row.id);
+    if (staleIds.length > 0) {
+      const { error: deactivateError } = await supabase
+        .from('questions')
+        .update({ active: false })
+        .in('id', staleIds);
+      if (deactivateError) {
+        console.error('Could not deactivate stale questions; aborting to avoid duplicate active banks:', deactivateError.message);
+        process.exit(1);
+      } else {
+        console.log(`Deactivated ${staleIds.length} stale question(s).`);
+      }
     }
 
     // Insert questions and their options
     for (const questionData of questions) {
+      const existingId = activeByKey.get(`${questionData.category}::${questionData.question_text}`);
+      if (existingId) {
+        console.log(`Reusing existing question: ${questionData.question_text}`);
+        continue;
+      }
       const { data: question, error: questionError } = await supabase
         .from('questions')
         .insert({

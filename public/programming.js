@@ -167,10 +167,14 @@ function combineProgrammingStreams(result) {
 async function runProgrammingCode(button) {
   const practice = button.closest('.programming-practice');
   if (!practice) return;
+  // Synchronous re-entry guard: the disabled flag is set below, but rapid
+  // clicks can all pass actionability checks before the first handler runs.
+  if (button.dataset.running === 'true') return;
+  button.dataset.running = 'true';
   const editor = document.getElementById(`${button.dataset.target}-draft`);
   const stdinEditor = document.getElementById(`${button.dataset.target}-stdin`);
   const panel = practice.querySelector('[data-output-panel]');
-  if (!editor || !panel) return;
+  if (!editor || !panel) { delete button.dataset.running; return; }
 
   const originalLabel = button.textContent;
   button.disabled = true;
@@ -240,6 +244,7 @@ async function runProgrammingCode(button) {
       body: t('programming.failedRequest', 'Code execution failed. Please try again later.')
     });
   } finally {
+    delete button.dataset.running;
     button.disabled = false;
     button.textContent = originalLabel;
   }

@@ -106,3 +106,75 @@ test('Programming Studio keeps its learning path, RTL code, and responsive layou
   }
   await context.close();
 });
+
+test('Run executes once per click and shows loading, output, and recovery states', async t => {
+  const app = express();
+  app.use(express.static('public'));
+  const server = app.listen(0, '127.0.0.1');
+  await new Promise(resolve => server.once('listening', resolve));
+  const browser = await chromium.launch({ headless: true });
+  t.after(async () => { await browser.close(); await new Promise(resolve => server.close(resolve)); });
+
+  let runCalls = 0;
+  let runBodies = [];
+  const context = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+  await context.addInitScript(() => {
+    localStorage.setItem('token', 'studio-test-token');
+    localStorage.setItem('aicareer-language', 'en');
+    const session = { access_token: 'studio-test-token', user: { id: 'studio-test-user' } };
+    window.supabase = { auth: {
+      getSession: async () => ({ data: { session }, error: null }),
+      getUser: async () => ({ data: { user: session.user }, error: null }),
+      onAuthStateChange: () => ({ data: { subscription: { unsubscribe() {} } } }),
+      signOut: async () => ({ error: null })
+    } };
+  });
+  await context.route('**/cdn.jsdelivr.net/**', route => route.fulfill({ status: 200, contentType: 'text/javascript', body: '' }));
+  await context.route('**/fonts.googleapis.com/**', route => route.abort());
+  await context.route('**/api/programming/status', route => route.fulfill({
+    status: 200, contentType: 'application/json',
+    body: JSON.stringify({ ok: true, available: true, supportedLanguages: ['python', 'javascript'] })
+  }));
+  let runGateResolve = null;
+  const runGate = new Promise(resolve => { runGateResolve = resolve; });
+  await context.route('**/api/programming/run', async route => {
+    runCalls++;
+    try { runBodies.push(route.request().postDataJSON()); } catch { runBodies.push(null); }
+    // Hold the first response open until every test click has been
+    // dispatched, so slow actionability checks cannot slip past it.
+    if (runCalls === 1) await runGate;
+    return route.fulfill({
+      status: 200, contentType: 'application/json',
+      body: JSON.stringify({ ok: true, result: { stdout: 'hello-output', stderr: '', exitCode: 0, durationMs: 12, timedOut: false } })
+    });
+  });
+  const page = await context.newPage();
+  await page.goto(`http://127.0.0.1:${server.address().port}/programming.html`, { waitUntil: 'domcontentloaded' });
+  const python = page.locator('.programming-track[data-track-id="python"]');
+  await python.locator(':scope > summary').click();
+  const runButton = python.locator('[data-run-code]').first();
+  const editor = python.locator('[data-practice-editor]').first();
+  await editor.fill('print("hello-output")');
+  // Rapid concurrent clicks must still start exactly one execution: later
+  // clicks either fail actionability (disabled) or hit the re-entry guard.
+  await Promise.all([
+    runButton.click(),
+    runButton.click({ timeout: 30000 }).catch(() => {}),
+    runButton.click({ timeout: 30000 }).catch(() => {})
+  ]);
+  runGateResolve();
+  await page.locator('[data-output-panel][data-state="success"]').first().waitFor({ timeout: 15000 });
+  assert.equal(runCalls, 1, 'exactly one execution request per user run');
+  assert.equal(runBodies[0]?.language, 'python');
+  assert.equal(typeof runBodies[0]?.code, 'string');
+  const panel = python.locator('[data-output-panel]').first();
+  assert.match(await panel.locator('[data-output-body]').innerText(), /hello-output/);
+  assert.equal(await runButton.isDisabled(), false, 'run control is usable again after completion');
+  // Editing and running again issues a second, independent execution.
+  await editor.fill('print("second-run")');
+  await runButton.click();
+  await page.waitForFunction(count => document.querySelectorAll('[data-output-panel][data-state="success"]').length >= 1, undefined, { timeout: 15000 }).catch(() => {});
+  await page.waitForTimeout(800);
+  assert.ok(runCalls >= 2, 'a second run issues a new execution request');
+  await context.close();
+});

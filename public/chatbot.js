@@ -200,15 +200,25 @@ class Chatbot {
     if (!text.trim()) return null;
     const prefix = t('coverage.chatbotGuidePrefix', 'The AI assistant is unavailable right now, but I can still point you the right way.');
     const topics = [
-      { keys: ['assessment', 'test', 'result', 'career'], label: t('nav.careerTest', 'Career Test'), route: 'career-test.html' },
-      { keys: ['course', 'enrol', 'catalog', 'lesson', 'module', 'learn'], label: t('nav.courses', 'Courses'), route: 'courses.html' },
-      { keys: ['certificate', 'verify'], label: 'Certificate verification', route: 'certificate.html' },
+      { keys: ['quiz', 'quizzes', 'exam', 'exams', 'final', 'grade', 'score', 'pass', 'attempt'], label: t('nav.courses', 'Courses'), route: 'courses.html' },
+      { keys: ['assessment', 'result', 'results', 'career direction', 'career path', 'career test', 'take the test'], label: t('nav.careerTest', 'Career Test'), route: 'career-test.html' },
+      { keys: ['recommend', 'which course', 'choose a course', 'selection'], label: t('nav.courses', 'Courses'), route: 'courses.html' },
+      { keys: ['course', 'courses', 'catalog', 'learn'], label: t('nav.courses', 'Courses'), route: 'courses.html' },
+      { keys: ['enrol', 'enroll', 'access', 'premium', 'locked'], label: t('nav.courses', 'Courses'), route: 'courses.html' },
+      { keys: ['lesson', 'lessons', 'module', 'modules', 'curriculum'], label: t('nav.courses', 'Courses'), route: 'courses.html' },
+      { keys: ['certificate', 'certificates', 'verify'], label: 'Certificate verification', route: 'certificate.html' },
       { keys: ['dashboard', 'progress', 'journey'], label: t('nav.dashboard', 'Dashboard'), route: 'dashboard.html' },
-      { keys: ['profile', 'avatar', 'photo', 'account', 'password'], label: t('nav.profile', 'Profile'), route: 'profile.html' },
-      { keys: ['programming', 'code', 'python', 'javascript', 'run'], label: t('nav.programming', 'Programming'), route: 'programming.html' },
-      { keys: ['login', 'sign in', 'register', 'sign up'], label: t('nav.login', 'Login'), route: 'login.html' }
+      { keys: ['profile', 'avatar', 'photo', 'account'], label: t('nav.profile', 'Profile'), route: 'profile.html' },
+      { keys: ['language', 'french', 'arabic', 'rtl', 'translate', 'swahili', 'hinglish', 'hausa', 'pidgin', 'wolof'], label: t('nav.profile', 'Profile'), route: 'profile.html' },
+      { keys: ['programming', 'code', 'python', 'javascript', 'run', 'sandbox', 'execution', 'error in code', 'piston'], label: t('nav.programming', 'Programming'), route: 'programming.html' },
+      { keys: ['password', 'reset', 'forgot'], label: t('nav.login', 'Login'), route: 'login.html' },
+      { keys: ['register', 'sign up', 'create account'], label: t('nav.register', 'Register'), route: 'register.html' },
+      { keys: ['login', 'sign in'], label: t('nav.login', 'Login'), route: 'login.html' },
+      { keys: ['contact', 'human', 'support', 'help'], label: 'Contact', route: 'contactus.html' }
     ];
-    const hit = topics.find(topic => topic.keys.some(keyword => text.includes(keyword)));
+    const hit = topics.find(topic => topic.keys.some(keyword => keyword.includes(' ')
+      ? text.includes(keyword)
+      : new RegExp(`\\b${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`).test(text)));
     if (!hit) return null;
     return `${prefix} ${hit.label}: ${hit.route}`;
   }
