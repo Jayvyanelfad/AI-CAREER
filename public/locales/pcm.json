@@ -66,5 +66,75 @@
   },
   "page": {
     "openNavigation": "Open navigation"
+  },
+  "courseMetadata": {
+    "intro_to_ai": {
+      "description": "Learn the difference between AI and machine learning, how data and models dey make predictions, and how to check results responsibly. Build one small guided classifier with test plan and clear limitations. You no need AI experience before."
+    },
+    "python_for_careers": {
+      "description": "Start with Python basics: values, conditions and loops. Then use functions, collections, files, JSON and one simple API request. Finish by building, safely testing and presenting a local file-organizing assistant. You no need coding experience before."
+    },
+    "data_analytics_basics": {
+      "description": "Set one clear analysis question, clean small data, look for patterns with summaries and charts, then explain wetin you find and where the result no fit tell the full story."
+    },
+    "web_dev": {
+      "description": "Build one semantic, responsive web page with HTML, CSS and JavaScript. Practise accessible forms, browser-side interactions and the basics of publishing a frontend."
+    },
+    "dsa": {
+      "description": "Choose and apply common data structures and algorithms, compare how much time and memory they use, and explain the trade-offs behind your solution."
+    },
+    "devops": {
+      "description": "Use Linux commands and shell scripts, package an app with Docker, and explain how cloud services help you deploy and operate software."
+    },
+    "cybersecurity": {
+      "description": "Recognize common threats, reduce basic web-app risks, check security signals, and outline a responsible incident response only in an environment you are allowed to test."
+    },
+    "ui_ux": {
+      "description": "Turn users' needs into one simple flow and interface, make a prototype, check accessibility basics, then improve the design with usability feedback."
+    },
+    "advanced_ml": {
+      "description": "Compare neural methods for text and image tasks, think about training and evaluation trade-offs, and explain how to monitor a model after deployment."
+    },
+    "aws_architect": {
+      "description": "Choose AWS compute, storage, database, networking and security services to sketch a resilient architecture and explain its trade-offs. You no need to deploy to a real cloud."
+    },
+    "data_science": {
+      "description": "Prepare and explore a dataset, build and evaluate a suitable model, then explain what the evidence supports and where its limits are."
+    },
+    "full_stack": {
+      "description": "Plan the parts of one full-stack app, build responsive frontend interactions, connect server APIs to data, and explain why testing and delivery workflows matter."
+    }
+  },
+  "lessonVisual": {
+    "algorithm": {
+      "title": "An algorithm loop",
+      "step1": "Define the input",
+      "step2": "Apply steps in order",
+      "step3": "Check the result"
+    },
+    "python": {
+      "title": "Python control flow",
+      "step1": "Read one value",
+      "step2": "Check one condition",
+      "step3": "Choose or repeat a step"
+    },
+    "aiml": {
+      "title": "Machine-learning workflow",
+      "step1": "Representative examples",
+      "step2": "Train or tune the model",
+      "step3": "Evaluate on separate cases"
+    },
+    "rag": {
+      "title": "Retrieval-augmented generation",
+      "step1": "Question",
+      "step2": "Retrieve relevant sources",
+      "step3": "Grounded answer with checks"
+    },
+    "agent": {
+      "title": "Agent task loop",
+      "step1": "Goal and context",
+      "step2": "Choose a bounded tool action",
+      "step3": "Observe, check, then continue or stop"
+    }
   }
 }

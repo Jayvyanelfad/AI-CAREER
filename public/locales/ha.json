@@ -1,8 +1,126 @@
 {
-  "_meta": {"version": 1, "code": "ha", "name": "Hausa", "nativeName": "Hausa", "dir": "ltr", "langTag": "ha"},
-  "nav": {"home": "Gida", "careerTest": "Gwajin sana'a", "courses": "Darussa", "programming": "Shirye-shirye", "dashboard": "Allon bayani", "profile": "Bayananka", "login": "Shiga", "register": "Yi rajista", "logout": "Fita"},
-  "common": {"start": "Fara", "continue": "Ci gaba", "back": "Komawa", "next": "Na gaba", "previous": "Na baya", "save": "Ajiye", "cancel": "Soke", "loading": "Ana lodawa…", "error": "Wani abu ya faru", "tryAgain": "Sake gwadawa", "pleaseSignIn": "Da fatan za a shiga"},
-  "settings": {"language": "Harshe"},
-  "programming": {"runCode": "Gudanar da lamba", "running": "Ana gudanarwa…", "output": "Sakamako", "stdinLabel": "Shigar daidaitacciya (na zaɓi)", "unavailable": "Gudanar da lamba ba ya samuwa yanzu.", "timedOut": "Gudanarwar ta ƙare da lokaci."},
-  "notifications": {"eyebrow": "SABUNTAWA", "title": "Sanarwa", "loading": "Ana loda sanarwa…", "empty": "Ba ka da sanarwa tukuna.", "unavailable": "Sanarwa ba ta samuwa yanzu.", "markAll": "Sanya duka an karanta", "markRead": "Sanya an karanta", "open": "Buɗe", "update": "Sabuntawa"}
+  "_meta": {
+    "version": 1,
+    "code": "ha",
+    "name": "Hausa",
+    "nativeName": "Hausa",
+    "dir": "ltr",
+    "langTag": "ha"
+  },
+  "nav": {
+    "home": "Gida",
+    "careerTest": "Gwajin sana'a",
+    "courses": "Darussa",
+    "programming": "Shirye-shirye",
+    "dashboard": "Allon bayani",
+    "profile": "Bayananka",
+    "login": "Shiga",
+    "register": "Yi rajista",
+    "logout": "Fita"
+  },
+  "common": {
+    "start": "Fara",
+    "continue": "Ci gaba",
+    "back": "Komawa",
+    "next": "Na gaba",
+    "previous": "Na baya",
+    "save": "Ajiye",
+    "cancel": "Soke",
+    "loading": "Ana lodawa…",
+    "error": "Wani abu ya faru",
+    "tryAgain": "Sake gwadawa",
+    "pleaseSignIn": "Da fatan za a shiga"
+  },
+  "settings": {
+    "language": "Harshe"
+  },
+  "programming": {
+    "runCode": "Gudanar da lamba",
+    "running": "Ana gudanarwa…",
+    "output": "Sakamako",
+    "stdinLabel": "Shigar daidaitacciya (na zaɓi)",
+    "unavailable": "Gudanar da lamba ba ya samuwa yanzu.",
+    "timedOut": "Gudanarwar ta ƙare da lokaci."
+  },
+  "notifications": {
+    "eyebrow": "SABUNTAWA",
+    "title": "Sanarwa",
+    "loading": "Ana loda sanarwa…",
+    "empty": "Ba ka da sanarwa tukuna.",
+    "unavailable": "Sanarwa ba ta samuwa yanzu.",
+    "markAll": "Sanya duka an karanta",
+    "markRead": "Sanya an karanta",
+    "open": "Buɗe",
+    "update": "Sabuntawa"
+  },
+  "courseMetadata": {
+    "intro_to_ai": {
+      "description": "Koyi bambancin AI da machine learning, yadda bayanai da samfura ke yin hasashe, da yadda ake tantance sakamako cikin kulawa. Ka gina ƙaramin classifier tare da tsarin gwaji da bayanin iyakokinsa. Ba a buƙatar ƙwarewar AI ta baya ba."
+    },
+    "python_for_careers": {
+      "description": "Fara da tushen Python: ƙimomi, sharudda da madaukai. Sai ka yi amfani da functions, collections, fayiloli, JSON da kiran API mai sauƙi. A ƙarshe ka gina, gwada cikin aminci, sannan ka gabatar da taimakon tsara fayiloli a kwamfuta. Ba a buƙatar coding a baya ba."
+    },
+    "data_analytics_basics": {
+      "description": "Ƙirƙiri tambayar bincike, tsaftace ƙaramin tarin bayanai, binciki tsaruka da taƙaitawa da zane-zane, sannan ka bayyana abin da ka gano da iyakokinsa."
+    },
+    "web_dev": {
+      "description": "Gina shafin yanar gizo mai ingantaccen tsari kuma mai dacewa da allo da HTML, CSS da JavaScript. Yi atisaye da fom masu sauƙin amfani, hulɗar browser da wallafa frontend."
+    },
+    "dsa": {
+      "description": "Zaɓi muhimman tsarin bayanai da algorithms don matsalolin gama-gari, kwatanta lokacin aiki da amfani da ƙwaƙwalwa, sannan ka bayyana abin da mafita ta samu da abin da ta sadaukar."
+    },
+    "devops": {
+      "description": "Yi amfani da umarnin Linux da shell scripts, shirya application da Docker, sannan ka bayyana yadda sabis na cloud ke taimakawa deployment da gudanarwa."
+    },
+    "cybersecurity": {
+      "description": "Gane barazanar da aka saba gani, rage haɗarin farko na web app, binciki alamun tsaro, sannan ka tsara amsa mai alhaki a wurin da aka ba da izini."
+    },
+    "ui_ux": {
+      "description": "Mayar da buƙatun masu amfani zuwa tsari mai sauƙi da interface, gina prototype, duba accessibility, sannan ka inganta zane bisa ra'ayoyin masu amfani."
+    },
+    "advanced_ml": {
+      "description": "Kwatanta hanyoyin neural don ayyukan rubutu da hoto, fahimci zaɓukan horo da tantancewa, sannan ka bayyana yadda ake sa ido kan model bayan an tura shi."
+    },
+    "aws_architect": {
+      "description": "Zaɓi sabis na AWS na compute, storage, database, networking da tsaro don tsara architecture mai jure matsala, sannan ka bayyana zaɓukan da ka yi. Ba lallai ka yi deployment a cloud ba."
+    },
+    "data_science": {
+      "description": "Shirya kuma binciki bayanai, gina da tantance model da ya dace, sannan ka bayyana abin da shaidar ke nuna da inda iyakarta take."
+    },
+    "full_stack": {
+      "description": "Shirya sassan full-stack app, gina frontend mai dacewa da allo, haɗa server APIs da bayanai, sannan ka bayyana muhimmancin gwaje-gwaje da tsarin isar da software."
+    }
+  },
+  "lessonVisual": {
+    "algorithm": {
+      "title": "Zagayen algorithm",
+      "step1": "Bayyana bayanan shigarwa",
+      "step2": "Bi matakai a jere",
+      "step3": "Duba sakamakon"
+    },
+    "python": {
+      "title": "Gudanar da tafiyar Python",
+      "step1": "Karanta ƙima",
+      "step2": "Gwada sharadi",
+      "step3": "Zaɓi mataki ko maimaita shi"
+    },
+    "aiml": {
+      "title": "Tsarin aikin machine learning",
+      "step1": "Misalai masu wakilci",
+      "step2": "Horar ko daidaita model",
+      "step3": "Tantance da wasu bayanai dabam"
+    },
+    "rag": {
+      "title": "Samarwa da aka ƙarfafa da retrieval",
+      "step1": "Tambaya",
+      "step2": "Nemo tushen da suka dace",
+      "step3": "Amsa bisa tushe tare da dubawa"
+    },
+    "agent": {
+      "title": "Zagayen aikin agent",
+      "step1": "Manufa da mahalli",
+      "step2": "Zaɓi aikin tool mai iyaka",
+      "step3": "Duba, tabbatar, sannan ka ci gaba ko ka tsaya"
+    }
+  }
 }

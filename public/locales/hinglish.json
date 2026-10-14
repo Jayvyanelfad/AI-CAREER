@@ -1171,40 +1171,52 @@
   },
   "courseMetadata": {
     "intro_to_ai": {
-      "title": "AI aur ML ka parichay"
+      "title": "AI aur ML ka parichay",
+      "description": "AI aur machine learning ka difference, data aur models predictions kaise banate hain, aur results ko responsibly evaluate karna samjho. Ek chhota guided classifier banao, test plan aur documented limitations ke saath. Pehle AI experience zaroori nahi."
     },
     "python_for_careers": {
-      "title": "Career growth ke liye Python"
+      "title": "Career growth ke liye Python",
+      "description": "Python ke basics se start karo: values, conditions aur loops. Phir functions, collections, files, JSON aur simple API request use karo. End mein local file-organizing assistant ko build, safely test aur present karo. Pehle programming experience zaroori nahi."
     },
     "data_analytics_basics": {
-      "title": "Data Analytics ki basics"
+      "title": "Data Analytics ki basics",
+      "description": "Ek clear analysis question banao, chhota dataset clean karo, summaries aur charts se patterns dekho, phir finding explain karo aur uski limitations bhi batao."
     },
     "web_dev": {
-      "title": "Web development ki buniyad"
+      "title": "Web development ki buniyad",
+      "description": "HTML, CSS aur JavaScript se semantic aur responsive web page banao. Accessible forms, browser-side interactions aur frontend publish karne ke basics practice karo."
     },
     "dsa": {
-      "title": "Data Structures aur Algorithms"
+      "title": "Data Structures aur Algorithms",
+      "description": "Common problems ke liye core data structures aur algorithms choose karke apply karo, time aur memory cost compare karo, aur solution ke trade-offs samjhao."
     },
     "devops": {
-      "title": "DevOps aur cloud ki basics"
+      "title": "DevOps aur cloud ki basics",
+      "description": "Linux commands aur shell scripts use karo, Docker se app package karo, aur explain karo ki cloud services deployment aur operations ko kaise support karti hain."
     },
     "cybersecurity": {
-      "title": "Cybersecurity ki buniyad"
+      "title": "Cybersecurity ki buniyad",
+      "description": "Common threats pehchano, web app ke basic risks kam karo, security signals review karo, aur authorized environment mein incident response ka responsible plan banao."
     },
     "ui_ux": {
-      "title": "UI/UX design ke usool"
+      "title": "UI/UX design ke usool",
+      "description": "User needs ko simple flow aur interface mein badlo, prototype banao, accessibility basics check karo, aur usability feedback ke basis par design improve karo."
     },
     "advanced_ml": {
-      "title": "Advanced Machine Learning"
+      "title": "Advanced Machine Learning",
+      "description": "Text aur image tasks ke liye neural approaches compare karo, training/evaluation trade-offs samjho, aur deployment ke baad model monitoring explain karo."
     },
     "aws_architect": {
-      "title": "AWS Solutions Architect"
+      "title": "AWS Solutions Architect",
+      "description": "AWS compute, storage, database, networking aur security services choose karke resilient architecture ka sketch banao aur trade-offs samjhao. Actual cloud deployment zaroori nahi."
     },
     "data_science": {
-      "title": "Data Science Professional"
+      "title": "Data Science Professional",
+      "description": "Dataset prepare aur explore karo, suitable model build aur evaluate karo, phir explain karo ki evidence kya support karta hai aur uski limits kya hain."
     },
     "full_stack": {
-      "title": "Full Stack Web Development"
+      "title": "Full Stack Web Development",
+      "description": "Full-stack application ke parts plan karo, responsive frontend interactions banao, server APIs ko data se connect karo, aur testing aur delivery workflows ka role samjhao."
     },
     "prompt_engineering": {
       "title": "Prompt Engineering aur LLM workflows",
@@ -1331,7 +1343,37 @@
     "update": "Update"
   },
   "lessonVisual": {
-    "caption": "Concept diagram — dekhne-wala sambandh, mapa hua data nahi."
+    "caption": "Concept diagram — dekhne-wala sambandh, mapa hua data nahi.",
+    "algorithm": {
+      "title": "Algorithm ka loop",
+      "step1": "Input define karo",
+      "step2": "Steps ko order mein apply karo",
+      "step3": "Result check karo"
+    },
+    "python": {
+      "title": "Python ka control flow",
+      "step1": "Value read karo",
+      "step2": "Condition check karo",
+      "step3": "Step choose ya repeat karo"
+    },
+    "aiml": {
+      "title": "Machine learning workflow",
+      "step1": "Representative examples",
+      "step2": "Model train ya tune karo",
+      "step3": "Alag cases par evaluate karo"
+    },
+    "rag": {
+      "title": "Retrieval-augmented generation",
+      "step1": "Question",
+      "step2": "Relevant sources retrieve karo",
+      "step3": "Sources par based answer, checks ke saath"
+    },
+    "agent": {
+      "title": "Agent ka task loop",
+      "step1": "Goal aur context",
+      "step2": "Bounded tool action choose karo",
+      "step3": "Observe, check, phir continue ya stop karo"
+    }
   },
   "tour": {
     "back": "Peeche",

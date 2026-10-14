@@ -1,8 +1,126 @@
 {
-  "_meta": {"version": 1, "code": "wo", "name": "Gambian Wolof", "nativeName": "Wolof", "dir": "ltr", "langTag": "wo"},
-  "nav": {"home": "Kër gi", "careerTest": "Nattu yoonu liggéey", "courses": "Kurs yi", "programming": "Programmasyon", "dashboard": "Bord bi", "profile": "Sa profil", "login": "Dugg", "register": "Bindu", "logout": "Génn"},
-  "common": {"start": "Tambali", "continue": "Kontine", "back": "Dellu ginnaaw", "next": "Ci kanam", "previous": "Ci ginnaaw", "save": "Denc", "cancel": "Neenal", "loading": "Mi ngi yebbi…", "error": "Am na njuumte", "tryAgain": "Jéemaat", "pleaseSignIn": "Dugg nga jëkk"},
-  "settings": {"language": "Làkk"},
-  "programming": {"runCode": "Doxal kod bi", "running": "Mi ngi dox…", "output": "Génne bi", "stdinLabel": "Duggal bu soxla (tànn rekk)", "unavailable": "Doxal kod bi amul fii léegi.", "timedOut": "Doxal bi yàgg na lool."},
-  "notifications": {"eyebrow": "YEESAL", "title": "Yégle yi", "loading": "Mi ngi yebbi yégle yi…", "empty": "Amuloo yégle fii léegi.", "unavailable": "Yégle yi amul fii léegi.", "markAll": "Jàngal lépp", "markRead": "Marke ko ni jàng na", "open": "Ubbi", "update": "Yeesal"}
+  "_meta": {
+    "version": 1,
+    "code": "wo",
+    "name": "Gambian Wolof",
+    "nativeName": "Wolof",
+    "dir": "ltr",
+    "langTag": "wo"
+  },
+  "nav": {
+    "home": "Kër gi",
+    "careerTest": "Nattu yoonu liggéey",
+    "courses": "Kurs yi",
+    "programming": "Programmasyon",
+    "dashboard": "Bord bi",
+    "profile": "Sa profil",
+    "login": "Dugg",
+    "register": "Bindu",
+    "logout": "Génn"
+  },
+  "common": {
+    "start": "Tambali",
+    "continue": "Kontine",
+    "back": "Dellu ginnaaw",
+    "next": "Ci kanam",
+    "previous": "Ci ginnaaw",
+    "save": "Denc",
+    "cancel": "Neenal",
+    "loading": "Mi ngi yebbi…",
+    "error": "Am na njuumte",
+    "tryAgain": "Jéemaat",
+    "pleaseSignIn": "Dugg nga jëkk"
+  },
+  "settings": {
+    "language": "Làkk"
+  },
+  "programming": {
+    "runCode": "Doxal kod bi",
+    "running": "Mi ngi dox…",
+    "output": "Génne bi",
+    "stdinLabel": "Duggal bu soxla (tànn rekk)",
+    "unavailable": "Doxal kod bi amul fii léegi.",
+    "timedOut": "Doxal bi yàgg na lool."
+  },
+  "notifications": {
+    "eyebrow": "YEESAL",
+    "title": "Yégle yi",
+    "loading": "Mi ngi yebbi yégle yi…",
+    "empty": "Amuloo yégle fii léegi.",
+    "unavailable": "Yégle yi amul fii léegi.",
+    "markAll": "Jàngal lépp",
+    "markRead": "Marke ko ni jàng na",
+    "open": "Ubbi",
+    "update": "Yeesal"
+  },
+  "courseMetadata": {
+    "intro_to_ai": {
+      "description": "Xamle wuute gi diggante AI ak machine learning, ni data ak modèle yi di def jàppale, ak ni ñuy seet njureef yi bu baax. Sàmpal ab classifier bu ndaw ak planu test ak limu mujj. Doo soxla xam-xamu AI bu njëkk."
+    },
+    "python_for_careers": {
+      "description": "Tambalee ci njàngat Python: values, conditions ak loops. Jëfandikool functions, collections, files, JSON ak ab API request bu yomb. Ci njeexital, sàmpal ab assistant bu toggal files, seetal ko bu baax te wone ni muy dox. Xam-xamu coding bu njëkk du lu la war."
+    },
+    "data_analytics_basics": {
+      "description": "Tàggal ab laaj bu wér ci analyse, setal ab kumpa data bu ndaw, seetal pattern yi ci résumé ak chart, te wax lu nga fekk ak lu ko mëntaul wax."
+    },
+    "web_dev": {
+      "description": "Sàmpal ab page web bu semantic te responsive ak HTML, CSS ak JavaScript. Jàngal fomu yi ñépp mëna jëfandikoo, interactions ci browser ak ni ñuy génne frontend."
+    },
+    "dsa": {
+      "description": "Tannal te jëfandikoo data structures ak algorithms yi ñu gën a am solo ci jafe-jafe yu am solo. Méngale waxtu ak memory, te leeral li solution bi di jox ak li muy ñàkk."
+    },
+    "devops": {
+      "description": "Jëfandikoo commandes Linux ak shell scripts, empaqueteel application bi ak Docker, te leeral ni services cloud yi di dimbali deployment ak doxalinu système bi."
+    },
+    "cybersecurity": {
+      "description": "Xàmmee ayib yi ñu gën a gis, wàññi risk yu njëkk ci web app, seetal signalu security, te def plan bu am responsibilité ngir tontu incident ci barab bu sañ-sañ am."
+    },
+    "ui_ux": {
+      "description": "Soppi soxla yu jëfandikukat yi ci ab flow bu yomb ak interface. Def prototype, seetal accessibility, te rafetal design bi ci xalaat yu jëfandikukat yi."
+    },
+    "advanced_ml": {
+      "description": "Méngale neural approaches ngir liggéey yu text ak image, xool trade-offs ci training ak evaluation, te leeral ni ñuy toppatoo model bi ginnaaw deploy."
+    },
+    "aws_architect": {
+      "description": "Tannal AWS services ngir compute, storage, database, networking ak security, ngir raññee architecture bu mëna taxaw te leeral trade-offs yi. Deploy ci cloud dëgg du lu la war."
+    },
+    "data_science": {
+      "description": "Waajal te seetal dataset bi, sàmpal te nattal model bu méngoo, te wax li evidence bi mëna wone ak lu muy mëntaul wone."
+    },
+    "full_stack": {
+      "description": "Tàggal pàcc yi ci application full stack, sàmpal frontend interactions yu responsive, lëkkal server APIs ak data, te leeral solo bu tests ak delivery workflows."
+    }
+  },
+  "lessonVisual": {
+    "algorithm": {
+      "title": "Ab loop bu algorithm",
+      "step1": "Tàggal input bi",
+      "step2": "Jëfandikoo steps yi ci order",
+      "step3": "Seetal njureef bi"
+    },
+    "python": {
+      "title": "Control flow ci Python",
+      "step1": "Jàng value bi",
+      "step2": "Seetal condition bi",
+      "step3": "Tannal walla dellu ci step bi"
+    },
+    "aiml": {
+      "title": "Workflow bu machine learning",
+      "step1": "Ay misaal yu wone data bi",
+      "step2": "Jàngal walla réglé model bi",
+      "step3": "Nattal ci ay cas yu wuute"
+    },
+    "rag": {
+      "title": "Génération ak retrieval",
+      "step1": "Laaj",
+      "step2": "Wutal ay source yu méngoo",
+      "step3": "Tontu bu sukkandiku ci source yi ak seet"
+    },
+    "agent": {
+      "title": "Loop bu liggéeyu agent",
+      "step1": "Jubluwaay ak contexte",
+      "step2": "Tannal action bu tool bu am ay limit",
+      "step3": "Seetal, wóoral, toppatoo walla taxaw"
+    }
+  }
 }

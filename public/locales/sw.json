@@ -1171,40 +1171,52 @@
   },
   "courseMetadata": {
     "intro_to_ai": {
-      "title": "Utangulizi wa AI na ML"
+      "title": "Utangulizi wa AI na ML",
+      "description": "Jifunze tofauti kati ya AI na machine learning, jinsi data na modeli zinavyotoa utabiri, na jinsi ya kutathmini matokeo kwa uwajibikaji. Tengeneza classifier ndogo kwa mwongozo, pamoja na mpango wa majaribio na mipaka yake iliyoandikwa. Huhitaji uzoefu wa awali wa AI."
     },
     "python_for_careers": {
-      "title": "Python kwa maendeleo ya taaluma"
+      "title": "Python kwa maendeleo ya taaluma",
+      "description": "Anza na misingi ya Python: thamani, masharti na mizunguko. Kisha tumia functions, collections, faili, JSON na ombi rahisi la API. Mwishoni tengeneza, jaribu kwa usalama na uwasilishe msaidizi wa kupanga faili kwenye kompyuta yako. Huhitaji uzoefu wa programu."
     },
     "data_analytics_basics": {
-      "title": "Misingi ya uchanganuzi wa data"
+      "title": "Misingi ya uchanganuzi wa data",
+      "description": "Weka swali la uchanganuzi, safisha data ndogo, chunguza mifumo kwa muhtasari na chati, kisha eleza ulichopata pamoja na mipaka yake."
     },
     "web_dev": {
-      "title": "Misingi ya utengenezaji wa wavuti"
+      "title": "Misingi ya utengenezaji wa wavuti",
+      "description": "Jenga ukurasa wa wavuti wenye muundo sahihi na unaojibadilisha kwa HTML, CSS na JavaScript. Fanya mazoezi ya fomu zinazofikika, mwingiliano wa browser na uchapishaji wa frontend."
     },
     "dsa": {
-      "title": "Miundo ya data na algoriti"
+      "title": "Miundo ya data na algoriti",
+      "description": "Chagua na tumia miundo muhimu ya data na algoriti kutatua matatizo ya kawaida, linganisha gharama ya muda na kumbukumbu, kisha eleza faida na hasara za suluhisho."
     },
     "devops": {
-      "title": "Misingi ya DevOps na cloud"
+      "title": "Misingi ya DevOps na cloud",
+      "description": "Tumia amri za Linux na shell scripts, pakia programu kwa Docker, na eleza jinsi huduma za cloud zinavyosaidia kusambaza na kuendesha programu."
     },
     "cybersecurity": {
-      "title": "Misingi ya usalama wa mtandao"
+      "title": "Misingi ya usalama wa mtandao",
+      "description": "Tambua vitisho vya kawaida, punguza hatari za msingi za programu za wavuti, kagua ishara za usalama na eleza mwitikio wa tukio kwa uwajibikaji katika mazingira yaliyoruhusiwa."
     },
     "ui_ux": {
-      "title": "Kanuni za usanifu wa UI/UX"
+      "title": "Kanuni za usanifu wa UI/UX",
+      "description": "Geuza mahitaji ya watumiaji kuwa mtiririko rahisi na kiolesura, tengeneza mfano, kagua misingi ya ufikikaji, kisha boresha muundo kwa kutumia maoni ya watumiaji."
     },
     "advanced_ml": {
-      "title": "Machine learning ya kiwango cha juu"
+      "title": "Machine learning ya kiwango cha juu",
+      "description": "Linganisha mbinu za neural kwa kazi za maandishi na picha, elewa maamuzi ya mafunzo na tathmini, na eleza jinsi ya kufuatilia modeli baada ya kusambazwa."
     },
     "aws_architect": {
-      "title": "Mbunifu wa suluhisho za AWS"
+      "title": "Mbunifu wa suluhisho za AWS",
+      "description": "Chagua huduma za AWS za compute, storage, database, networking na usalama ili kuchora usanifu unaostahimili hitilafu na kueleza maamuzi yake. Kutumia cloud moja kwa moja hakuhitajiki."
     },
     "data_science": {
-      "title": "Mtaalamu wa data science"
+      "title": "Mtaalamu wa data science",
+      "description": "Andaa na chunguza mkusanyiko wa data, jenga na tathmini modeli inayofaa, kisha eleza ushahidi unaunga mkono nini na una mipaka gani."
     },
     "full_stack": {
-      "title": "Utengenezaji wa wavuti wa full stack"
+      "title": "Utengenezaji wa wavuti wa full stack",
+      "description": "Panga sehemu za programu ya full stack, jenga mwingiliano wa frontend unaojibadilisha, unganisha API za seva na data, kisha eleza nafasi ya majaribio na michakato ya kuwasilisha programu."
     },
     "prompt_engineering": {
       "title": "Uhandisi wa prompts na mtiririko wa LLM",
@@ -1331,7 +1343,37 @@
     "update": "Taarifa"
   },
   "lessonVisual": {
-    "caption": "Mchoro wa dhana — uhusiano wa kuchunguza, si data iliyopimwa."
+    "caption": "Mchoro wa dhana — uhusiano wa kuchunguza, si data iliyopimwa.",
+    "algorithm": {
+      "title": "Mzunguko wa algoriti",
+      "step1": "Bainisha ingizo",
+      "step2": "Tekeleza hatua kwa mpangilio",
+      "step3": "Kagua matokeo"
+    },
+    "python": {
+      "title": "Mtiririko wa udhibiti wa Python",
+      "step1": "Soma thamani",
+      "step2": "Jaribu sharti",
+      "step3": "Chagua hatua au irudie"
+    },
+    "aiml": {
+      "title": "Mtiririko wa kazi wa machine learning",
+      "step1": "Mifano inayowakilisha data",
+      "step2": "Funza au rekebisha modeli",
+      "step3": "Tathmini kwa mifano tofauti"
+    },
+    "rag": {
+      "title": "Uzalishaji unaosaidiwa na urejeshaji",
+      "step1": "Swali",
+      "step2": "Pata vyanzo vinavyohusika",
+      "step3": "Jibu lenye msingi wa vyanzo na ukaguzi"
+    },
+    "agent": {
+      "title": "Mzunguko wa kazi wa wakala",
+      "step1": "Lengo na muktadha",
+      "step2": "Chagua hatua ya kifaa yenye mipaka",
+      "step3": "Angalia, kagua, kisha endelea au simama"
+    }
   },
   "tour": {
     "back": "Rudi",

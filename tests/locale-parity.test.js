@@ -64,6 +64,17 @@ test('full locales have zero missing interface keys', () => {
   }
 });
 
+test('full locale dictionaries have the same canonical key set as English', () => {
+  const canonical = new Set(flatKeys(dict('en')));
+  for (const locale of ['fr', 'hinglish', 'sw', 'ar']) {
+    const available = new Set(flatKeys(dict(locale)));
+    const missing = [...canonical].filter(key => !available.has(key));
+    const extra = [...available].filter(key => !canonical.has(key));
+    assert.deepEqual(missing, [], `${locale} is missing canonical keys: ${missing.slice(0, 20).join(', ')}`);
+    assert.deepEqual(extra, [], `${locale} has unexpected keys: ${extra.slice(0, 20).join(', ')}`);
+  }
+});
+
 test('partial locales stay parseable with their documented core subset', () => {
   const core = ['common.loading', 'nav.home', 'nav.courses', 'programming.runCode', 'settings.language'];
   for (const locale of ['ha', 'pcm', 'wo']) {
