@@ -130,29 +130,32 @@ function createRequirePageAuthentication({ createAuthClient, isAdmin, logger = c
   return async function requirePageAuthentication(req, res, next) {
     if (req.method !== 'GET' && req.method !== 'HEAD') return next();
 
-    let url;
-    try {
-      url = new URL(req.originalUrl || req.url, 'http://careerpath.local');
-    } catch (_error) {
-      return next();
-    }
-
+    const rawTarget = String(req.originalUrl || req.url || '/');
+    const queryAt = rawTarget.indexOf('?');
+    const rawPath = queryAt < 0 ? rawTarget : rawTarget.slice(0, queryAt);
+    const rawQuery = queryAt < 0 ? '' : rawTarget.slice(queryAt + 1);
     let pathname;
+    let searchParams;
     try {
-      // Match Express static's decoded URL path, not only the raw spelling.
-      // Otherwise an encoded suffix (for example %2e in ".") can bypass the gate.
-      const decodedPath = decodeURIComponent(url.pathname).replace(/\\/g, '/');
+      // Normalize the request target the same way a static file server may
+      // decode it. Parse the origin-form path manually so //path is not
+      // mistaken for a protocol-relative host by WHATWG URL parsing.
+      if (!rawPath.startsWith('/')) {
+        return res.status(400).type('text/plain').send('Invalid page path.');
+      }
+      const decodedPath = decodeURIComponent(rawPath).replace(/\\/g, '/');
       if (decodedPath.split('/').some(part => part === '.' || part === '..')) {
         return res.status(400).type('text/plain').send('Invalid page path.');
       }
       pathname = decodedPath.toLowerCase().replace(/\/+/g, '/').replace(/\/+$/, '') || '/';
+      searchParams = new URLSearchParams(rawQuery);
     } catch (_error) {
       return res.status(400).type('text/plain').send('Invalid page path.');
     }
     if (!PROTECTED_PAGE_PATHS.has(pathname)) return next();
 
     // Public certificate verification links stay public; private views require login.
-    if (pathname === '/certificate.html' && url.searchParams.has('verify')) return next();
+    if (pathname === '/certificate.html' && searchParams.has('verify')) return next();
 
     const login = () => res.redirect(302, '/login.html?authRequired=1&next=' + encodeURIComponent(req.originalUrl || pathname));
     const failClosed = () => res.status(503).type('text/plain')

@@ -103,7 +103,7 @@ test('protected pages redirect without a session cookie and allow verified sessi
 
 test('case variants and encoded protected-page paths cannot bypass the server gate', async t => {
   const ctx = await start(t);
-  for (const path of ['/DASHBOARD.HTML', '/dashboard%2ehtml', '/admin%2ehtml']) {
+  for (const path of ['/DASHBOARD.HTML', '/dashboard%2ehtml', '/admin%2ehtml', '/%64ashboard.html', '//admin.html']) {
     const response = await fetch(ctx.base + path, { redirect: 'manual' });
     assert.equal(response.status, 302, `protected alias ${path} should redirect`);
   }
