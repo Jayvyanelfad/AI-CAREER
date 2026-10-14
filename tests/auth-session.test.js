@@ -1,5 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
 const express = require('express');
 const {
   AUTH_COOKIE_NAME,
@@ -60,6 +62,17 @@ const sameOriginPost = (base, body, origin = base, method = 'POST') => fetch(bas
   },
   body: body ? JSON.stringify(body) : undefined,
   redirect: 'manual'
+});
+
+test('production server mounts session sync and page gate before static file delivery', () => {
+  const source = fs.readFileSync(path.join(__dirname, '..', 'server.js'), 'utf8');
+  const cookieRoute = source.indexOf("app.use('/api/auth/session-cookie', createAuthSessionRouter({ createAuthClient }));");
+  const pageGate = source.indexOf('app.use(createRequirePageAuthentication({');
+  const staticFiles = source.indexOf("app.use(express.static(path.join(__dirname, 'public'),");
+  assert.ok(cookieRoute >= 0, 'session-cookie router must be mounted');
+  assert.ok(pageGate > cookieRoute, 'page gate must be mounted after Auth client creation');
+  assert.ok(staticFiles > pageGate, 'page gate must be registered before static HTML');
+  assert.ok(source.includes("from('admin_users')"), 'admin page must verify database membership');
 });
 
 test('session-cookie endpoint verifies the token and sets an HttpOnly cookie', async t => {
