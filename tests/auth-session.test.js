@@ -91,7 +91,7 @@ test('session-cookie endpoint rejects missing, expired and invalid tokens', asyn
   assert.equal((await sameOriginPost(ctx.base, null)).status, 400);
   const expired = accessToken(Math.floor(Date.now() / 1000) - 1);
   assert.equal((await sameOriginPost(ctx.base, { accessToken: expired })).status, 401);
-  assert.equal((await sameOriginPost(ctx.base, { accessToken: 'invalid.jwt.token' })).status, 401);
+  assert.equal((await sameOriginPost(ctx.base, { accessToken: 'invalid.jwt.token.with-more-than-20-chars' })).status, 401);
 });
 
 test('session-cookie endpoint rejects cross-origin requests', async t => {

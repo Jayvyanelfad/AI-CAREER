@@ -114,8 +114,8 @@ test('server fails fast on missing env and reports config without secrets', () =
   const fs = require('node:fs');
   const path = require('node:path');
   const server = fs.readFileSync(path.join(__dirname, '..', 'server.js'), 'utf8');
-  assert.match(server, /const REQUIRED_ENV = \\['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY'\\]/);
-  assert.match(server, /!process\\.env\\.SUPABASE_PUBLISHABLE_KEY && !process\\.env\\.SUPABASE_ANON_KEY/);
+  assert.ok(server.includes("const REQUIRED_ENV = ['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY'];"));
+  assert.ok(server.includes('!process.env.SUPABASE_PUBLISHABLE_KEY && !process.env.SUPABASE_ANON_KEY'));
   assert.match(server, /Missing required environment variables/);
   assert.match(server, /process\.exit\(1\)/);
   assert.match(server, /configured: \{\s*gemini: Boolean\(process\.env\.GEMINI_API_KEY\)/);

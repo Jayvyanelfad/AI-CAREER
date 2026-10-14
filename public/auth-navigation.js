@@ -473,7 +473,7 @@
   const currentPage = window.location.pathname.split('/').pop().toLowerCase();
   const protectedPages = new Set([
     'courses', 'courses.html', 'course-detail.html', 'programming', 'programming.html',
-    'dashboard.html', 'profile.html', 'career-test.html', 'exam.html', 'certificate.html', 'admin.html'
+    'dashboard.html', 'profile.html', 'career-test.html', 'exam.html', 'certificate.html'
   ]);
   // Public certificate verification links (?verify=<id>) must stay reachable
   // without an account; only the private certificate views require sign-in.
