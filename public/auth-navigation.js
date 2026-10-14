@@ -373,6 +373,32 @@
     const token = await getCurrentAccessToken();
     if (!token) return;
 
+    // Existing browser sessions may predate the server-side page cookie.
+    // Synchronize before navigating, otherwise the protected route redirects
+    // this user back to login in a loop.
+    if (window.syncCareerPathSessionCookie) {
+      let session = null;
+      try {
+        const auth = window.supabase && window.supabase.auth;
+        if (auth && typeof auth.getSession === 'function') {
+          const { data, error } = await auth.getSession();
+          if (!error && data && data.session) session = data.session;
+        }
+      } catch (_error) {
+        // Fall back to validating the current access token at the server.
+      }
+      if (!session) session = { access_token: token };
+      const synced = await window.syncCareerPathSessionCookie(session);
+      if (!synced) {
+        const errorElement = document.getElementById('error-message');
+        if (errorElement) {
+          errorElement.textContent = 'We found an existing sign-in, but could not verify secure page access. Please sign in again.';
+          errorElement.style.display = 'block';
+        }
+        return;
+      }
+    }
+
     let next = null;
     const requested = new URLSearchParams(window.location.search).get('next');
     if (requested) {
