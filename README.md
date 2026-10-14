@@ -38,15 +38,22 @@ database. `node --check <file>` for syntax; `git diff --check` for whitespace.
    `migrations/20261014_public_api_write_hardening.sql`,
    `migrations/20261014_foreign_key_indexes.sql`,
    `migrations/20261014_rls_initplan_optimization.sql`,
-   `migrations/20261014_question_policy_roles.sql`, and
-   `migrations/20261014_revoke_remaining_client_privileges.sql`.
+   `migrations/20261014_question_policy_roles.sql`,
+   `migrations/20261014_revoke_remaining_client_privileges.sql`, and
+   `migrations/20261014_deny_direct_browser_access_to_server_tables.sql`.
 
-The `20261014` hardening, index, and RLS-performance migrations are recorded
-in the primary `AI-CAREER` database. The last migration additionally removes
-remaining direct table/function privileges from browser roles; apply it only
-after verifying the backend-only table-access contract. The separate staging
-project has only a partial schema; do not apply these migrations there until
-all referenced tables and server-mediated routes have been tested.
+The listed `20261014` privilege, index, RLS-performance, and deny-policy
+migrations are recorded in the primary `AI-CAREER` database. The primary
+project now has zero table, column, sequence, or routine privileges for
+`anon`/`authenticated` in the `public` schema, while the backend
+`service_role` retains its required grants. The 13 server-owned RLS tables
+that previously had no policies now have explicit deny-all policies for browser
+roles. The security advisor no longer reports RLS-enabled tables without
+policies. The only remaining security warning is leaked-password protection:
+the current organization is on the Free plan, and Supabase documents this
+feature as available on Pro and above. The separate staging project has only a
+partial schema; do not apply these migrations there until all referenced tables
+and server-mediated routes have been tested.
 
 > WARNING: never run `SUPABASE_MIGRATION_FIXED.sql` — its header drops all
 > application tables. It is kept only as migration history.
