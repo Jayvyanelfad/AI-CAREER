@@ -40,7 +40,9 @@ database. `node --check <file>` for syntax; `git diff --check` for whitespace.
   (`en` canonical; `fr`/`hinglish`/`sw`/`ar` full; `ha`/`pcm`/`wo` intentional
   subsets with English fallback). Lesson/catalog bodies are English by design.
 - Backend: Express (`server.js`) + Supabase (service-role server-side only).
-  Auth via Supabase JWT; admin via `admin_users` membership (fail-closed).
+  API routes verify Supabase JWTs. Protected HTML is gated server-side by a
+  verified HttpOnly access-token cookie; admin also requires `admin_users`
+  membership.
 - Exams are server-graded through service-role RPCs; exam tables deny browser
   access. Certificates issue only from verified enrollment + lessons + passed
   final exam; public verification stays open, private views stay owned.

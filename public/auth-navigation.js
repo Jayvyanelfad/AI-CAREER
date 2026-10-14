@@ -407,6 +407,7 @@
       console.error('Logout error:', error);
     } finally {
       clearStoredAuth();
+      if (window.clearCareerPathSessionCookie) await window.clearCareerPathSessionCookie();
       window.location.href = 'index.html';
     }
   };
@@ -446,7 +447,7 @@
   const currentPage = window.location.pathname.split('/').pop().toLowerCase();
   const protectedPages = new Set([
     'courses', 'courses.html', 'course-detail.html', 'programming', 'programming.html',
-    'dashboard.html', 'profile.html', 'career-test.html', 'exam.html', 'certificate.html'
+    'dashboard.html', 'profile.html', 'career-test.html', 'exam.html', 'certificate.html', 'admin.html'
   ]);
   // Public certificate verification links (?verify=<id>) must stay reachable
   // without an account; only the private certificate views require sign-in.
