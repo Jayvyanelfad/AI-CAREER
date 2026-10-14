@@ -76,10 +76,10 @@ test('full locale dictionaries have the same canonical key set as English', () =
 });
 
 test('partial locales stay parseable with their documented core subset', () => {
-  const core = ['common.loading', 'nav.home', 'nav.courses', 'programming.runCode', 'settings.language'];
+  const core = ['common.loading', 'common.startLearning', 'nav.home', 'nav.courses', 'programming.runCode', 'settings.language', 'profile.language', 'career.test', 'assessment.stronglyAgree', 'ui.myCourses'];
   for (const locale of ['ha', 'pcm', 'wo']) {
     const available = new Set(flatKeys(dict(locale)));
-    assert.ok(available.size > 0 && available.size < 100, `${locale} must remain an intentional subset, got ${available.size}`);
+    assert.ok(available.size > 100 && available.size < 300, `${locale} must remain an intentional subset, got ${available.size}`);
     for (const key of core) assert.ok(available.has(key), `${locale} must keep core key ${key}`);
   }
 });
