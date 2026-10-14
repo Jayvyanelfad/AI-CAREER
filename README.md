@@ -37,21 +37,25 @@ database. `node --check <file>` for syntax; `git diff --check` for whitespace.
    `migrations/20261012_account_classification.sql`,
    `migrations/20261014_public_api_write_hardening.sql`,
    `migrations/20261014_foreign_key_indexes.sql`,
-   `migrations/20261014_rls_initplan_optimization.sql`, and
-   `migrations/20261014_question_policy_roles.sql`.
+   `migrations/20261014_rls_initplan_optimization.sql`,
+   `migrations/20261014_question_policy_roles.sql`, and
+   `migrations/20261014_revoke_remaining_client_privileges.sql`.
 
-The `20261014` hardening, index, and RLS-performance changes have already been applied to the primary
-`AI-CAREER` database. The separate staging project has only a partial schema;
-do not run these migrations there until all referenced tables have been created
-and the server-mediated write contract has been tested.
+The `20261014` hardening, index, and RLS-performance migrations are recorded
+in the primary `AI-CAREER` database. The last migration additionally removes
+remaining direct table/function privileges from browser roles; apply it only
+after verifying the backend-only table-access contract. The separate staging
+project has only a partial schema; do not apply these migrations there until
+all referenced tables and server-mediated routes have been tested.
 
 > WARNING: never run `SUPABASE_MIGRATION_FIXED.sql` — its header drops all
 > application tables. It is kept only as migration history.
 
 ## Architecture
 - Frontend: static HTML/CSS/JS in `public/`, dark-green/cream theme, 8 locales
-  (`en` canonical; `fr`/`hinglish`/`sw`/`ar` full; `ha`/`pcm`/`wo` intentional
-  subsets with English fallback). Lesson/catalog bodies are English by design.
+  (`en` canonical; `fr`/`hinglish`/`sw`/`ar` have complete dictionary key
+  sets; `ha`/`pcm`/`wo` are partial and use English fallback). Lesson bodies
+  and several long-form product texts still need localization review.
 - Backend: Express (`server.js`) + Supabase (service-role server-side only).
   API routes verify Supabase JWTs. Protected HTML is gated server-side by a
   verified HttpOnly access-token cookie; admin also requires `admin_users`
