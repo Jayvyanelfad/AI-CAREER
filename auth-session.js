@@ -137,7 +137,18 @@ function createRequirePageAuthentication({ createAuthClient, isAdmin, logger = c
       return next();
     }
 
-    const pathname = url.pathname.toLowerCase().replace(/\/+$/, '') || '/';
+    let pathname;
+    try {
+      // Match Express static's decoded URL path, not only the raw spelling.
+      // Otherwise an encoded suffix (for example %2e in ".") can bypass the gate.
+      const decodedPath = decodeURIComponent(url.pathname).replace(/\\/g, '/');
+      if (decodedPath.split('/').some(part => part === '.' || part === '..')) {
+        return res.status(400).type('text/plain').send('Invalid page path.');
+      }
+      pathname = decodedPath.toLowerCase().replace(/\/+/g, '/').replace(/\/+$/, '') || '/';
+    } catch (_error) {
+      return res.status(400).type('text/plain').send('Invalid page path.');
+    }
     if (!PROTECTED_PAGE_PATHS.has(pathname)) return next();
 
     // Public certificate verification links stay public; private views require login.
@@ -181,6 +192,9 @@ function createRequirePageAuthentication({ createAuthClient, isAdmin, logger = c
     }
 
     req.pageAuthUser = user;
+    res.locals.privatePageAuth = true;
+    res.setHeader('Cache-Control', 'private, no-store');
+    res.setHeader('Vary', 'Cookie');
     return next();
   };
 }

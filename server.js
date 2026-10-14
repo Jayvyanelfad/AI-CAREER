@@ -1610,7 +1610,15 @@ app.use(createRequirePageAuthentication({
 }));
 app.get('/courses', (_req, res) => res.sendFile(path.join(__dirname, 'public', 'courses.html')));
 app.get('/programming', (_req, res) => res.sendFile(path.join(__dirname, 'public', 'programming.html')));
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public'), {
+  // Override serve-static's default cache policy for authenticated HTML pages.
+  setHeaders(res) {
+    if (res.locals.privatePageAuth) {
+      res.setHeader('Cache-Control', 'private, no-store');
+      res.setHeader('Vary', 'Cookie');
+    }
+  }
+}));
 
 // Start server
 app.listen(PORT, HOST, () => {

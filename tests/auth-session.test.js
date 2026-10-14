@@ -101,6 +101,19 @@ test('protected pages redirect without a session cookie and allow verified sessi
   assert.equal(await allowed.text(), 'dashboard');
 });
 
+test('case variants and encoded protected-page paths cannot bypass the server gate', async t => {
+  const ctx = await start(t);
+  for (const path of ['/DASHBOARD.HTML', '/dashboard%2ehtml', '/admin%2ehtml']) {
+    const response = await fetch(ctx.base + path, { redirect: 'manual' });
+    assert.equal(response.status, 302, `protected alias ${path} should redirect`);
+  }
+  const valid = await fetch(ctx.base + '/dashboard.html', {
+    headers: { Cookie: AUTH_COOKIE_NAME + '=' + ctx.validToken },
+    redirect: 'manual'
+  });
+  assert.match(valid.headers.get('cache-control') || '', /private, no-store/i);
+});
+
 test('public certificate verification stays public while private certificate pages are gated', async t => {
   const ctx = await start(t);
   const verification = await fetch(ctx.base + '/certificate.html?verify=11111111-1111-4111-8111-111111111111', { redirect: 'manual' });
