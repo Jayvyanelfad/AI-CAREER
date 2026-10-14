@@ -35,10 +35,12 @@ database. `node --check <file>` for syntax; `git diff --check` for whitespace.
    `migrations/20261012_certificate_revoke_client_insert.sql`,
    `migrations/20261012_exam_final_discriminator.sql`,
    `migrations/20261012_account_classification.sql`,
-   `migrations/20261014_public_api_write_hardening.sql`, and
-   `migrations/20261014_foreign_key_indexes.sql`.
+   `migrations/20261014_public_api_write_hardening.sql`,
+   `migrations/20261014_foreign_key_indexes.sql`,
+   `migrations/20261014_rls_initplan_optimization.sql`, and
+   `migrations/20261014_question_policy_roles.sql`.
 
-The `20261014` hardening/index changes have already been applied to the primary
+The `20261014` hardening, index, and RLS-performance changes have already been applied to the primary
 `AI-CAREER` database. The separate staging project has only a partial schema;
 do not run these migrations there until all referenced tables have been created
 and the server-mediated write contract has been tested.
