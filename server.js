@@ -4,6 +4,8 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const { createClient } = require('@supabase/supabase-js');
+const path = require('path');
+const { createAuthSessionRouter, createRequirePageAuthentication } = require('./auth-session');
 const { GoogleGenAI } = require('@google/genai');
 const { randomInt } = require('crypto');
 const courseCatalogConfig = require('./course-catalog-config.json');
@@ -24,8 +26,9 @@ const { createCourseEnrollmentRouter, formatEnrollment } = require('./course-enr
 dotenv.config();
 
 // Fail fast with a clear message instead of crashing later inside clients.
-const REQUIRED_ENV = ['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'SUPABASE_ANON_KEY'];
+const REQUIRED_ENV = ['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY'];
 const missingEnv = REQUIRED_ENV.filter(key => !process.env[key]);
+if (!process.env.SUPABASE_PUBLISHABLE_KEY && !process.env.SUPABASE_ANON_KEY) missingEnv.push('SUPABASE_PUBLISHABLE_KEY or SUPABASE_ANON_KEY');
 if (missingEnv.length > 0) {
   console.error(`Missing required environment variables: ${missingEnv.join(', ')}. Copy .env.example to .env and fill them in.`);
   process.exit(1);
@@ -44,18 +47,11 @@ app.use((_req, res, next) => {
   next();
 });
 app.use(express.json());
-app.use(express.static("public"));
-
-// Keep the short product routes available while the browser-side shared auth
-// helper enforces the existing Supabase session for learning pages.
-app.get('/courses', (_req, res) => res.sendFile(require('path').join(__dirname, 'public', 'courses.html')));
-app.get('/programming', (_req, res) => res.sendFile(require('path').join(__dirname, 'public', 'programming.html')));
-
 // Supabase setup (using service role key for backend operations)
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
-const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
+const supabaseAnonKey = process.env.SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY;
 const courseLearningStore = createCourseLearningStore(supabase);
 
 // Keep Auth API state separate from the service-role database client. Supabase
@@ -66,6 +62,8 @@ function createAuthClient() {
     auth: { persistSession: false, autoRefreshToken: false }
   });
 }
+
+app.use('/api/auth/session-cookie', createAuthSessionRouter({ createAuthClient }));
 
 function getAuthCallbackUrl() {
   const appUrl = process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`;
@@ -1600,6 +1598,19 @@ app.use('/api', createChatRouter({
     return result.text();
   }
 }));
+
+// Private HTML is checked server-side before Express serves static files.
+app.use(createRequirePageAuthentication({
+  createAuthClient,
+  isAdmin: async userId => {
+    const { data, error } = await supabase.from('admin_users').select('user_id').eq('user_id', userId).maybeSingle();
+    if (error) throw error;
+    return Boolean(data);
+  }
+}));
+app.get('/courses', (_req, res) => res.sendFile(path.join(__dirname, 'public', 'courses.html')));
+app.get('/programming', (_req, res) => res.sendFile(path.join(__dirname, 'public', 'programming.html')));
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Start server
 app.listen(PORT, HOST, () => {

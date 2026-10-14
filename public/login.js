@@ -129,6 +129,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (sessionError) throw sessionError;
                 if (!sessionData || !sessionData.session) throw new Error('We could not establish a secure sign-in session. Please try again.');
                 localStorage.setItem("token", sessionData.session.access_token);
+                if (window.syncCareerPathSessionCookie && !(await window.syncCareerPathSessionCookie(sessionData.session))) throw new Error('Sign-in worked, but the secure page session could not be saved. Please try again.');
             }
             localStorage.setItem("user", JSON.stringify(data.user));
 

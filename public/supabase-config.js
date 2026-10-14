@@ -11,14 +11,46 @@
 const SUPABASE_URL = "https://bfjkjiizmlsbfszyhxfe.supabase.co";
 const SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJmamtqaWl6bWxzYmZzenloeGZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY0NTY4OTgsImV4cCI6MjEwMjAzMjg5OH0.fIaE9Voe5bsXV-z-2UV0-DL4xwdpvOWVwRk_-KDprew";
 
+// Mirror Auth state into an HttpOnly cookie for server-side page gates.
+// Supabase continues to own token refresh in the browser.
+let careerPathCookieSyncChain = Promise.resolve(true);
+window.syncCareerPathSessionCookie = function (session) {
+  const accessToken = session && typeof session.access_token === 'string' ? session.access_token : null;
+  const request = async () => {
+    try {
+      const response = await fetch('/api/auth/session-cookie', {
+        method: accessToken ? 'POST' : 'DELETE', credentials: 'same-origin',
+        headers: accessToken ? { 'Content-Type': 'application/json' } : {},
+        body: accessToken ? JSON.stringify({ accessToken }) : undefined
+      });
+      return response.ok;
+    } catch (_error) { return false; }
+  };
+  careerPathCookieSyncChain = careerPathCookieSyncChain.catch(() => false).then(request);
+  return careerPathCookieSyncChain;
+};
+window.clearCareerPathSessionCookie = () => window.syncCareerPathSessionCookie(null);
+function attachCareerPathCookieSync(client) {
+  if (!client || !client.auth || typeof client.auth.getSession !== 'function' ||
+      typeof client.auth.onAuthStateChange !== 'function' ||
+      window.__careerPathCookieSyncClient === client) return;
+  window.__careerPathCookieSyncClient = client;
+  client.auth.onAuthStateChange((_event, session) => { void window.syncCareerPathSessionCookie(session || null); });
+  client.auth.getSession().then(({ data, error }) => {
+    if (!error) void window.syncCareerPathSessionCookie(data && data.session ? data.session : null);
+  }).catch(() => {});
+}
+
+
 // Function to initialize Supabase client when the global is available
 function initSupabaseClient() {
   // Check if supabase global is available (from the CDN script)
   if (window.supabase) {
     // Keep one client per page so the verifier created during OAuth initiation
     // is available to the callback page through the same origin storage.
-    if (window.supabase.auth) {
+    if (window.supabase.auth && typeof window.supabase.auth.getSession === 'function') {
       window.API_BASE = window.API_BASE || "/api";
+      attachCareerPathCookieSync(window.supabase);
       return true;
     }
 
@@ -31,6 +63,7 @@ function initSupabaseClient() {
       }
     });
     console.log('✅ Supabase client initialized successfully');
+    attachCareerPathCookieSync(window.supabase);
 
     // Also set up the API base
     window.API_BASE = "/api";
