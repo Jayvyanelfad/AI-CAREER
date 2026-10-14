@@ -8,7 +8,7 @@ Live: `https://ai-careerr.onrender.com` · Repo: `Jayvyanelfad/AI-CAREER` (`main
 3. Run: `npm start`
 4. Visit: `http://localhost:5000`
 
-Required env: `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`.
+Required env: `SUPABASE_URL`, either `SUPABASE_PUBLISHABLE_KEY` (preferred) or legacy `SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY`.
 Optional: `GEMINI_API_KEY` (AI chat; without it the chatbot answers navigation
 guidance only), `PROGRAMMING_EXECUTION_PROVIDER=piston` + `PISTON_BASE_URL`
 (Python/JavaScript sandbox; without them Run is honestly disabled).
@@ -27,10 +27,21 @@ database. `node --check <file>` for syntax; `git diff --check` for whitespace.
 3. Seed scripts: `seed-courses.js` → `seed-modern-ai-courses.js` →
    `seed-course-content.js` → `seed-career-test-questions.js` → `seed-exam.js`.
 4. `staging_step3_postseed.sql` (requires `exams.id = 'intro_to_ai_exam_1'`).
-5. `migrations/20261012_certificate_revoke_client_insert.sql`,
+5. Apply the supplemental migrations in reviewed order after all referenced
+   tables exist: `migrations/20260930_admin_users.sql`,
+   `migrations/20261011_profile_partial_locale_preferences.sql`,
+   `migrations/20261011_notifications.sql`,
+   `migrations/20261011_enrollment_uniqueness.sql`,
+   `migrations/20261012_certificate_revoke_client_insert.sql`,
    `migrations/20261012_exam_final_discriminator.sql`,
    `migrations/20261012_account_classification.sql`,
-   `migrations/20260930_admin_users.sql` (each transactional and re-runnable).
+   `migrations/20261014_public_api_write_hardening.sql`, and
+   `migrations/20261014_foreign_key_indexes.sql`.
+
+The `20261014` hardening/index changes have already been applied to the primary
+`AI-CAREER` database. The separate staging project has only a partial schema;
+do not run these migrations there until all referenced tables have been created
+and the server-mediated write contract has been tested.
 
 > WARNING: never run `SUPABASE_MIGRATION_FIXED.sql` — its header drops all
 > application tables. It is kept only as migration history.
