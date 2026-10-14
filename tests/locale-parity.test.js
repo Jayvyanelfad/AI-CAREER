@@ -36,6 +36,19 @@ function referencedKeys() {
   return found;
 }
 
+function flatEntries(obj, prefix = '', out = {}) {
+  for (const key of Object.keys(obj)) {
+    const value = obj[key];
+    const fullKey = `${prefix}${key}`;
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
+      flatEntries(value, `${fullKey}.`, out);
+    } else {
+      out[fullKey] = value;
+    }
+  }
+  return out;
+}
+
 function flatKeys(obj, prefix = '', out = []) {
   for (const key of Object.keys(obj)) {
     const value = obj[key];
@@ -72,6 +85,24 @@ test('full locale dictionaries have the same canonical key set as English', () =
     const extra = [...available].filter(key => !canonical.has(key));
     assert.deepEqual(missing, [], `${locale} is missing canonical keys: ${missing.slice(0, 20).join(', ')}`);
     assert.deepEqual(extra, [], `${locale} has unexpected keys: ${extra.slice(0, 20).join(', ')}`);
+  }
+});
+
+test('all locale strings preserve interpolation placeholders from English', () => {
+  const english = flatEntries(dict('en'));
+  const placeholders = value => [...new Set(String(value).match(/\{[A-Za-z_][A-Za-z0-9_]*\}/g) || [])].sort();
+  for (const locale of ['fr', 'hinglish', 'sw', 'ar', 'ha', 'pcm', 'wo']) {
+    const translated = flatEntries(dict(locale));
+    const mismatches = [];
+    for (const [key, value] of Object.entries(translated)) {
+      if (typeof english[key] !== 'string') continue;
+      const expected = placeholders(english[key]);
+      const actual = placeholders(value);
+      if (JSON.stringify(expected) !== JSON.stringify(actual)) {
+        mismatches.push({ key, expected, actual });
+      }
+    }
+    assert.deepEqual(mismatches, [], `${locale} lost or changed interpolation placeholders`);
   }
 });
 

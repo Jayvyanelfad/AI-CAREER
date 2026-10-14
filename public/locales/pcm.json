@@ -166,8 +166,8 @@
     "toggleThemeAria": "Change theme",
     "lightTheme": "Light",
     "darkTheme": "Dark",
-    "switchTheme": "Change theme",
-    "switchThemeTitle": "Change between light and dark theme",
+    "switchTheme": "Change am to {theme} theme",
+    "switchThemeTitle": "Change theme to {theme} (current: {current})",
     "menuLabel": "Menu"
   },
   "page": {
