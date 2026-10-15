@@ -74,7 +74,18 @@ function getAuthCallbackUrl() {
 }
 
 // Gemini AI setup
-const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+// Create the Gemini client lazily after checking server-side configuration.
+let genAIClient = null;
+function getGenAIClient() {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey || !apiKey.trim()) {
+    const error = new Error('AI assistant is not configured');
+    error.status = 503;
+    throw error;
+  }
+  if (!genAIClient) genAIClient = new GoogleGenAI({ apiKey });
+  return genAIClient;
+}
 
 // ---- Shared helpers -------------------------------------------------------
 // The database is authoritative and uses snake_case columns. The frontend
@@ -1580,24 +1591,46 @@ app.put('/api/user/profile', authenticateToken, async (req, res) => {
   }
 });
 
-// AI Chatbot endpoints (keep same logic)
+// AI Chatbot endpoints. Gemini credentials remain server-side only.
 app.use('/api', createChatRouter({
   supabase,
   authenticateToken,
   generateReply: async (message) => {
-    // Create prompt with context
-    const prompt = `
-      You are CareerPath AI, an helpful career advisor. The user is asking: "${message}"
+    if (typeof message !== 'string' || !message.trim()) {
+      const error = new Error('Message is required');
+      error.status = 400;
+      throw error;
+    }
+    if (message.length > 4000) {
+      const error = new Error('Message is too long. Please keep it under 4,000 characters.');
+      error.status = 400;
+      throw error;
+    }
 
-      Provide helpful, accurate advice about tech careers, learning paths, courses, resumes, and interview preparation.
-      Keep responses concise but informative. If you don't know something specific, say so and offer to help with related topics.
-    `;
-
-    const result = await genAI.models.generateContent({
-      model: 'gemini-pro-latest',
-      contents: prompt
+    const ai = getGenAIClient();
+    const result = await ai.models.generateContent({
+      // Override in Render if the selected model is unavailable to this API key.
+      model: process.env.GEMINI_MODEL || 'gemini-3.8-flash',
+      contents: message.trim(),
+      config: {
+        systemInstruction: [
+          'You are CareerPath AI, a friendly and responsible technology-career learning assistant.',
+          'Help learners understand AI, machine learning, cybersecurity, data science, programming, tech careers, learning paths, resumes, and interview preparation.',
+          'Explain difficult ideas simply, using small examples or a story-based “donkey method” explanation when useful.',
+          'Be concise but useful. Do not claim to know a learner’s private account data. Do not invent platform features, course access, job openings, salaries, or credentials.',
+          'If a question is outside your expertise, say so and suggest a safe next step.'
+        ].join(' ')
+      }
     });
-    return result.text();
+
+    // In @google/genai, response.text is a property, not a function.
+    const text = typeof result.text === 'function' ? result.text() : result.text;
+    if (typeof text !== 'string' || !text.trim()) {
+      const error = new Error('The AI provider returned an empty response');
+      error.status = 502;
+      throw error;
+    }
+    return text.trim();
   }
 }));
 
