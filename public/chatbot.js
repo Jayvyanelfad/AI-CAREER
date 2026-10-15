@@ -185,7 +185,8 @@ class Chatbot {
     } catch (error) {
       console.error("Chat error:", error);
       typingDiv.remove();
-      const guide = this.guideReply((document.getElementById("chat-input") || {}).value || '');
+      // Preserve the submitted message for offline guidance; the input was cleared above.
+      const guide = this.guideReply(message);
       this.addMessage("bot", guide || t("coverage.chatbotConnectionError", "⚠️ Connection error. Please try again."));
     }
 
