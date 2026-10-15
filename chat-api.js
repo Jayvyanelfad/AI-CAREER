@@ -41,8 +41,20 @@ function createChatRouter({ supabase, authenticateToken, generateReply, logger =
 
       res.json({ reply: text, persisted: true });
     } catch (error) {
-      console.error('AI chat error:', error);
-      res.status(500).json({ error: 'Failed to generate response' });
+      const status = Number(error?.status);
+      // Keep provider details and secrets out of public responses.
+      if (status === 400) {
+        return res.status(400).json({ error: error.message || 'Invalid chat message' });
+      }
+      if (status === 429 || status === 503) {
+        return res.status(503).json({
+          error: status === 429
+            ? 'AI service is temporarily busy. Please try again shortly.'
+            : 'AI assistant is not configured or is temporarily unavailable.'
+        });
+      }
+      console.error('AI chat error:', status || 'provider error');
+      return res.status(502).json({ error: 'The AI assistant could not generate a response. Please try again.' });
     }
   });
 
