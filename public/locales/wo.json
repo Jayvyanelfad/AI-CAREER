@@ -1,8 +1,302 @@
 {
-  "_meta": {"version": 1, "code": "wo", "name": "Gambian Wolof", "nativeName": "Wolof", "dir": "ltr", "langTag": "wo"},
-  "nav": {"home": "Kër gi", "careerTest": "Nattu yoonu liggéey", "courses": "Kurs yi", "programming": "Programmasyon", "dashboard": "Bord bi", "profile": "Sa profil", "login": "Dugg", "register": "Bindu", "logout": "Génn"},
-  "common": {"start": "Tambali", "continue": "Kontine", "back": "Dellu ginnaaw", "next": "Ci kanam", "previous": "Ci ginnaaw", "save": "Denc", "cancel": "Neenal", "loading": "Mi ngi yebbi…", "error": "Am na njuumte", "tryAgain": "Jéemaat", "pleaseSignIn": "Dugg nga jëkk"},
-  "settings": {"language": "Làkk"},
-  "programming": {"runCode": "Doxal kod bi", "running": "Mi ngi dox…", "output": "Génne bi", "stdinLabel": "Duggal bu soxla (tànn rekk)", "unavailable": "Doxal kod bi amul fii léegi.", "timedOut": "Doxal bi yàgg na lool."},
-  "notifications": {"eyebrow": "YEESAL", "title": "Yégle yi", "loading": "Mi ngi yebbi yégle yi…", "empty": "Amuloo yégle fii léegi.", "unavailable": "Yégle yi amul fii léegi.", "markAll": "Jàngal lépp", "markRead": "Marke ko ni jàng na", "open": "Ubbi", "update": "Yeesal"}
+  "_meta": {
+    "version": 1,
+    "code": "wo",
+    "name": "Gambian Wolof",
+    "nativeName": "Wolof",
+    "dir": "ltr",
+    "langTag": "wo"
+  },
+  "nav": {
+    "home": "Kër gi",
+    "careerTest": "Nattu yoonu liggéey",
+    "courses": "Kurs yi",
+    "programming": "Programmasyon",
+    "dashboard": "Bord bi",
+    "profile": "Sa profil",
+    "login": "Dugg",
+    "register": "Bindu",
+    "logout": "Génn",
+    "admin": "Administrateur"
+  },
+  "common": {
+    "start": "Tambali",
+    "continue": "Kontine",
+    "back": "Dellu ginnaaw",
+    "next": "Ci kanam",
+    "previous": "Ci ginnaaw",
+    "save": "Denc",
+    "cancel": "Neenal",
+    "loading": "Mi ngi yebbi…",
+    "error": "Am na njuumte",
+    "tryAgain": "Jéemaat",
+    "pleaseSignIn": "Dugg nga jëkk",
+    "saveChanges": "Denc coppite yi",
+    "close": "Tëj",
+    "submit": "Yónnee",
+    "view": "Xool",
+    "explore": "Seetal",
+    "learnMore": "Xam lu ëpp",
+    "startLearning": "Tambali jàng",
+    "enrollFree": "Bindu te feyul",
+    "getStarted": "Tambali",
+    "takeQuiz": "Defal quiz",
+    "practice": "Tëggat",
+    "buildProject": "Sàmpal projet",
+    "viewCourse": "Xool kurs bi",
+    "viewProject": "Xool projet bi",
+    "complete": "Jeexal",
+    "completed": "Jeex na",
+    "noResults": "Amul njureef",
+    "comingSoon": "Dina ñëw léegi",
+    "notAvailable": "Amul fii léegi",
+    "signInRequired": "Dugg nga jëkk",
+    "noResultsFound": "Amul benn njureef"
+  },
+  "settings": {
+    "language": "Làkk"
+  },
+  "programming": {
+    "runCode": "Doxal kod bi",
+    "running": "Mi ngi dox…",
+    "output": "Génne bi",
+    "stdinLabel": "Duggal bu soxla (tànn rekk)",
+    "unavailable": "Doxal kod bi amul fii léegi.",
+    "timedOut": "Doxal bi yàgg na lool.",
+    "studio": "Programming Studio",
+    "heroTitle": "Jàngal làkk bi. Sàmpal dara bu dëgg.",
+    "heroCopy": "Xamle ni làkk bi di doxee. Tëggatal ci ay xalaatam, saafara jafe-jafe, sàmpal projet, te jàng ni ngay ko wonee nit ñi.",
+    "chooseStartingPoint": "Tannal barab bi ngay tàmbalee",
+    "findDirection": "Seetal yoon wi",
+    "exploreTracks": "Seetal yoon yi",
+    "projectPresentation": "Wone projet bi",
+    "startLearning": "Tambali jàng",
+    "continue": "Toppatoo",
+    "completed": "Jeex na",
+    "error": "Njuumte",
+    "success": "Jeex na",
+    "runtimeError": "Njuumte ci waxtu doxal",
+    "tooMany": "Doxal nañu kod bi lu bari. Xaar tuuti te jéemaat.",
+    "signInToRun": "Dugg ngir doxal kod bi.",
+    "failedRequest": "Doxal kod bi antuwul. Jéemaat ci kanam.",
+    "clearOutput": "Far njureef yi",
+    "resetCode": "Delloo kod bi ci njëlbeenu",
+    "comingSoon": "Dina ñëw léegi"
+  },
+  "notifications": {
+    "eyebrow": "YEESAL",
+    "title": "Yégle yi",
+    "loading": "Mi ngi yebbi yégle yi…",
+    "empty": "Amuloo yégle fii léegi.",
+    "unavailable": "Yégle yi amul fii léegi.",
+    "markAll": "Jàngal lépp",
+    "markRead": "Marke ko ni jàng na",
+    "open": "Ubbi",
+    "update": "Yeesal"
+  },
+  "courseMetadata": {
+    "intro_to_ai": {
+      "description": "Xamle wuute gi diggante AI ak machine learning, ni data ak modèle yi di def jàppale, ak ni ñuy seet njureef yi bu baax. Sàmpal ab classifier bu ndaw ak planu test ak limu mujj. Doo soxla xam-xamu AI bu njëkk."
+    },
+    "python_for_careers": {
+      "description": "Tambalee ci njàngat Python: values, conditions ak loops. Jëfandikool functions, collections, files, JSON ak ab API request bu yomb. Ci njeexital, sàmpal ab assistant bu toggal files, seetal ko bu baax te wone ni muy dox. Xam-xamu coding bu njëkk du lu la war."
+    },
+    "data_analytics_basics": {
+      "description": "Tàggal ab laaj bu wér ci analyse, setal ab kumpa data bu ndaw, seetal pattern yi ci résumé ak chart, te wax lu nga fekk ak lu ko mëntaul wax."
+    },
+    "web_dev": {
+      "description": "Sàmpal ab page web bu semantic te responsive ak HTML, CSS ak JavaScript. Jàngal fomu yi ñépp mëna jëfandikoo, interactions ci browser ak ni ñuy génne frontend."
+    },
+    "dsa": {
+      "description": "Tannal te jëfandikoo data structures ak algorithms yi ñu gën a am solo ci jafe-jafe yu am solo. Méngale waxtu ak memory, te leeral li solution bi di jox ak li muy ñàkk."
+    },
+    "devops": {
+      "description": "Jëfandikoo commandes Linux ak shell scripts, empaqueteel application bi ak Docker, te leeral ni services cloud yi di dimbali deployment ak doxalinu système bi."
+    },
+    "cybersecurity": {
+      "description": "Xàmmee ayib yi ñu gën a gis, wàññi risk yu njëkk ci web app, seetal signalu security, te def plan bu am responsibilité ngir tontu incident ci barab bu sañ-sañ am."
+    },
+    "ui_ux": {
+      "description": "Soppi soxla yu jëfandikukat yi ci ab flow bu yomb ak interface. Def prototype, seetal accessibility, te rafetal design bi ci xalaat yu jëfandikukat yi."
+    },
+    "advanced_ml": {
+      "description": "Méngale neural approaches ngir liggéey yu text ak image, xool trade-offs ci training ak evaluation, te leeral ni ñuy toppatoo model bi ginnaaw deploy."
+    },
+    "aws_architect": {
+      "description": "Tannal AWS services ngir compute, storage, database, networking ak security, ngir raññee architecture bu mëna taxaw te leeral trade-offs yi. Deploy ci cloud dëgg du lu la war."
+    },
+    "data_science": {
+      "description": "Waajal te seetal dataset bi, sàmpal te nattal model bu méngoo, te wax li evidence bi mëna wone ak lu muy mëntaul wone."
+    },
+    "full_stack": {
+      "description": "Tàggal pàcc yi ci application full stack, sàmpal frontend interactions yu responsive, lëkkal server APIs ak data, te leeral solo bu tests ak delivery workflows."
+    }
+  },
+  "lessonVisual": {
+    "algorithm": {
+      "title": "Ab loop bu algorithm",
+      "step1": "Tàggal input bi",
+      "step2": "Jëfandikoo steps yi ci order",
+      "step3": "Seetal njureef bi"
+    },
+    "python": {
+      "title": "Control flow ci Python",
+      "step1": "Jàng value bi",
+      "step2": "Seetal condition bi",
+      "step3": "Tannal walla dellu ci step bi"
+    },
+    "aiml": {
+      "title": "Workflow bu machine learning",
+      "step1": "Ay misaal yu wone data bi",
+      "step2": "Jàngal walla réglé model bi",
+      "step3": "Nattal ci ay cas yu wuute"
+    },
+    "rag": {
+      "title": "Génération ak retrieval",
+      "step1": "Laaj",
+      "step2": "Wutal ay source yu méngoo",
+      "step3": "Tontu bu sukkandiku ci source yi ak seet"
+    },
+    "agent": {
+      "title": "Loop bu liggéeyu agent",
+      "step1": "Jubluwaay ak contexte",
+      "step2": "Tannal action bu tool bu am ay limit",
+      "step3": "Seetal, wóoral, toppatoo walla taxaw"
+    }
+  },
+  "learning": {
+    "course": "Kurs",
+    "courses": "Kurs yi",
+    "module": "Mojjul",
+    "modules": "Mojjul yi",
+    "lesson": "Jàngat",
+    "lessons": "Jàngat yi",
+    "challenge": "Jafe-jafe",
+    "takeaway": "Li war a des ci xel",
+    "project": "Projet",
+    "projectPresentation": "Wone projet bi",
+    "progress": "Jëm kanam",
+    "journey": "Yoonu njàng",
+    "learn": "Jàng"
+  },
+  "career": {
+    "test": "Nattu yoonu liggéey",
+    "profile": "Sa profil bu liggéey",
+    "alignment": "Méngoo bu liggéey",
+    "topDirections": "Yoon yi gën a am solo",
+    "exploreCareers": "Seetal ay yoonu liggéey",
+    "yourResults": "Sa njureef yi",
+    "continueToTest": "Dellu ci nattu liggéey bi",
+    "instructions": "Tontul benn-benn wax ci anam bi gën a méngoo ak yaw."
+  },
+  "dashboard": {
+    "title": "Bord bi",
+    "myCourses": "Samay kurs",
+    "continueLearning": "Toppatoo njàng",
+    "yourProgress": "Sa jëm kanam",
+    "inProgress": "Mi ngi dox",
+    "notStarted": "Tambaliwul"
+  },
+  "profile": {
+    "title": "Sa profil",
+    "account": "Account",
+    "language": "Làkk",
+    "settings": "Tànneef yi",
+    "edit": "Soppi sa profil",
+    "saveChanges": "Denc coppite yi",
+    "photo": "Foto profil",
+    "savePhoto": "Denc foto bi",
+    "removePhoto": "Far foto bi",
+    "bio": "Ci sa mbir",
+    "bioHint": "Waxal tuuti ci sa xalaat ci liggéey (ba 240 caractères).",
+    "noBio": "Amul ab présentation bu ñu bind léegi.",
+    "saved": "Sa profil soppi nañu ko.",
+    "photoTypeError": "Tannal foto JPEG, PNG walla WebP.",
+    "photoSizeError": "Tannal foto bu néew ci 5 MB.",
+    "photoUploadFailed": "Mënunu denc foto bi. Jéemaat.",
+    "photoSaved": "Denc nañu foto profil bi.",
+    "photoRemoved": "Far nañu foto profil bi.",
+    "preferenceHint": "Ñu denc sa tànneef yi ci profil bi ak browser bii.",
+    "preferenceSaving": "Mi ngi denc tànneef bi...",
+    "preferenceSaved": "Denc nañu tànneef bi.",
+    "preferenceLocalOnly": "Denc nañu ko ci browser bii; sync profil bi amul."
+  },
+  "assessment": {
+    "stronglyDisagree": "Dëdduwuma ko mukk",
+    "disagree": "Dëdduwuma",
+    "neutral": "Dëdduwuma te nanguwuma",
+    "agree": "Nangu naa",
+    "stronglyAgree": "Nangu naa lool",
+    "questionProgress": "Laaj {current} ci {total}",
+    "submitting": "Mi ngi yónnee sa tontu yi...",
+    "resultsTitle": "Sa profil bu liggéey",
+    "validation": "Tontul bépp laaj bala ngay dem kanam."
+  },
+  "ui": {
+    "discoverDirection": "Seetal yoon wi méngoo ak yaw.",
+    "learnStories": "Jàngal teknoloji bu bees ak ay nettali.",
+    "practiceLearn": "Tëggatal li nga jàng.",
+    "discoverPath": "Seetal sama yoonu liggéey",
+    "exploreCourses": "Seetal kurs yi",
+    "exploreJourney": "Seetal yoonu njàng bi",
+    "careerAssessment": "Nattu liggéey",
+    "takeAssessment": "Defal nattu liggéey bi",
+    "exploreSkills": "Seetal skill yi nga mëna jàng.",
+    "learningPaths": "Seetal yoonu njàng yi.",
+    "oneJourney": "Benn yoon bu lëkkale.",
+    "assessmentHero": "Gisal fan la sa doole mëna yóbbu yaw.",
+    "yourCareerProfile": "Sa profil bu liggéey",
+    "recommendedCourses": "Seetal kurs yi ñu la digal",
+    "goDashboard": "Dem ci bord bi",
+    "retakeTest": "Defaat nattu bi",
+    "allCourses": "Kurs yépp",
+    "beginner": "Ku tàmbali",
+    "intermediate": "Diggante",
+    "advanced": "Gëna xam",
+    "loadingCourses": "Mi ngi yebbi kurs yi...",
+    "backCourses": "Dellu ci kurs yi",
+    "currentCatalog": "Seetal kurs yu teknoloji ci AI, software, data ak design.",
+    "profileHub": "SA YONU LIGGÉEY AK NJÀNG",
+    "profileDescription": "Sa profil liggéey, yoonu njàng ak sa jëfandikoo yi ci benn barab.",
+    "fullName": "Sa tur bu mat",
+    "calculatingPath": "Mi ngi xayma sa yoonu liggéey...",
+    "chooseStarting": "Tannal barab bi ngay tàmbalee",
+    "learn": "Jàng",
+    "understand": "Xamle",
+    "solve": "Saafara",
+    "build": "Sàmpal",
+    "present": "Wone",
+    "objective": "Jubluwaay",
+    "story": "Nettali",
+    "concept": "Xalaat",
+    "example": "Misaal",
+    "challenge": "Jafe-jafe",
+    "takeaway": "Li war a des ci xel",
+    "submitTest": "Yónnee nattu bi",
+    "takeCareerTest": "Defal nattu liggéey",
+    "myCourses": "Samay kurs",
+    "yourProgress": "Sa jëm kanam",
+    "noCourses": "Amul benn kurs.",
+    "signIn": "Dugg",
+    "register": "Bindu",
+    "logout": "Génn",
+    "home": "Kër gi",
+    "courses": "Kurs yi",
+    "dashboard": "Bord bi",
+    "profile": "Profil",
+    "careerTest": "Nattu liggéey",
+    "language": "Làkk",
+    "settings": "Tànneef yi",
+    "editProfile": "Soppi profil",
+    "saveChanges": "Denc coppite yi",
+    "account": "Account",
+    "loading": "Mi ngi yebbi...",
+    "noResults": "Amul njureef",
+    "somethingWrong": "Am na njuumte",
+    "tryAgain": "Jéemaat",
+    "comingSoon": "Dina ñëw léegi",
+    "notAvailable": "Amul fii léegi",
+    "pleaseSignIn": "Dugg nga jëkk",
+    "signInRequired": "Dugg nga jëkk"
+  }
 }

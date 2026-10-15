@@ -130,6 +130,7 @@ document.addEventListener("DOMContentLoaded", () => {
             await completeProfile(data.session.access_token);
             localStorage.setItem("token", data.session.access_token);
             localStorage.setItem("user", JSON.stringify(user));
+            if (window.syncCareerPathSessionCookie && !(await window.syncCareerPathSessionCookie(data.session))) throw new Error('Account created, but the secure page session could not be saved. Please log in again.');
             window.location.href = getSafeAuthReturnTarget() || "career-test.html";
         } catch (error) {
             showError(error.message || "Something went wrong. Try again.");

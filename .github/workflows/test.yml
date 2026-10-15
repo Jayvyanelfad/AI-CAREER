@@ -1,0 +1,26 @@
+name: Test CareerPath AI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - "hardening/**"
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Install Chromium for browser tests
+        run: npx playwright install --with-deps chromium
+      - name: Run all tests
+        run: npm test

@@ -8,7 +8,7 @@ Live: `https://ai-careerr.onrender.com` · Repo: `Jayvyanelfad/AI-CAREER` (`main
 3. Run: `npm start`
 4. Visit: `http://localhost:5000`
 
-Required env: `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`.
+Required env: `SUPABASE_URL`, either `SUPABASE_PUBLISHABLE_KEY` (preferred) or legacy `SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY`.
 Optional: `GEMINI_API_KEY` (AI chat; without it the chatbot answers navigation
 guidance only), `PROGRAMMING_EXECUTION_PROVIDER=piston` + `PISTON_BASE_URL`
 (Python/JavaScript sandbox; without them Run is honestly disabled).
@@ -27,20 +27,46 @@ database. `node --check <file>` for syntax; `git diff --check` for whitespace.
 3. Seed scripts: `seed-courses.js` → `seed-modern-ai-courses.js` →
    `seed-course-content.js` → `seed-career-test-questions.js` → `seed-exam.js`.
 4. `staging_step3_postseed.sql` (requires `exams.id = 'intro_to_ai_exam_1'`).
-5. `migrations/20261012_certificate_revoke_client_insert.sql`,
+5. Apply the supplemental migrations in reviewed order after all referenced
+   tables exist: `migrations/20260930_admin_users.sql`,
+   `migrations/20261011_profile_partial_locale_preferences.sql`,
+   `migrations/20261011_notifications.sql`,
+   `migrations/20261011_enrollment_uniqueness.sql`,
+   `migrations/20261012_certificate_revoke_client_insert.sql`,
    `migrations/20261012_exam_final_discriminator.sql`,
    `migrations/20261012_account_classification.sql`,
-   `migrations/20260930_admin_users.sql` (each transactional and re-runnable).
+   `migrations/20261014_public_api_write_hardening.sql`,
+   `migrations/20261014_foreign_key_indexes.sql`,
+   `migrations/20261014_rls_initplan_optimization.sql`,
+   `migrations/20261014_question_policy_roles.sql`,
+   `migrations/20261014_revoke_remaining_client_privileges.sql`, and
+   `migrations/20261014_deny_direct_browser_access_to_server_tables.sql`.
+
+The listed `20261014` privilege, index, RLS-performance, and deny-policy
+migrations are recorded in the primary `AI-CAREER` database. The primary
+project now has zero table, column, sequence, or routine privileges for
+`anon`/`authenticated` in the `public` schema, while the backend
+`service_role` retains its required grants. The 13 server-owned RLS tables
+that previously had no policies now have explicit deny-all policies for browser
+roles. The security advisor no longer reports RLS-enabled tables without
+policies. The only remaining security warning is leaked-password protection:
+the current organization is on the Free plan, and Supabase documents this
+feature as available on Pro and above. The separate staging project has only a
+partial schema; do not apply these migrations there until all referenced tables
+and server-mediated routes have been tested.
 
 > WARNING: never run `SUPABASE_MIGRATION_FIXED.sql` — its header drops all
 > application tables. It is kept only as migration history.
 
 ## Architecture
 - Frontend: static HTML/CSS/JS in `public/`, dark-green/cream theme, 8 locales
-  (`en` canonical; `fr`/`hinglish`/`sw`/`ar` full; `ha`/`pcm`/`wo` intentional
-  subsets with English fallback). Lesson/catalog bodies are English by design.
+  (`en` canonical; `fr`/`hinglish`/`sw`/`ar` have complete dictionary key
+  sets; `ha`/`pcm`/`wo` are partial and use English fallback). Lesson bodies
+  and several long-form product texts still need localization review.
 - Backend: Express (`server.js`) + Supabase (service-role server-side only).
-  Auth via Supabase JWT; admin via `admin_users` membership (fail-closed).
+  API routes verify Supabase JWTs. Protected HTML is gated server-side by a
+  verified HttpOnly access-token cookie; admin also requires `admin_users`
+  membership.
 - Exams are server-graded through service-role RPCs; exam tables deny browser
   access. Certificates issue only from verified enrollment + lessons + passed
   final exam; public verification stays open, private views stay owned.

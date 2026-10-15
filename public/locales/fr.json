@@ -1171,40 +1171,52 @@
   },
   "courseMetadata": {
     "intro_to_ai": {
-      "title": "Introduction à l’IA et au ML"
+      "title": "Introduction à l’IA et au ML",
+      "description": "Découvrez les différences entre l’IA et l’apprentissage automatique, comment les données et les modèles produisent des prédictions et comment évaluer les résultats avec responsabilité. Réalisez un petit classificateur guidé, accompagné d’un plan de test et de limites documentées. Aucune expérience préalable en IA n’est requise."
     },
     "python_for_careers": {
-      "title": "Python pour évoluer professionnellement"
+      "title": "Python pour évoluer professionnellement",
+      "description": "Commencez par les bases de Python : valeurs, conditions et boucles. Utilisez ensuite des fonctions, des collections, des fichiers, JSON et une requête API simple. Terminez par un assistant local de classement de fichiers, construit, testé prudemment et présenté. Aucune expérience en programmation n’est requise."
     },
     "data_analytics_basics": {
-      "title": "Bases de l’analyse de données"
+      "title": "Bases de l’analyse de données",
+      "description": "Formulez une question d’analyse, nettoyez un petit jeu de données, explorez les tendances avec des résumés et des graphiques, puis présentez un constat en précisant ses limites."
     },
     "web_dev": {
-      "title": "Fondamentaux du développement web"
+      "title": "Fondamentaux du développement web",
+      "description": "Créez une page web sémantique et adaptable avec HTML, CSS et JavaScript. Pratiquez les formulaires accessibles, les interactions côté navigateur et les bases de publication d’un frontend."
     },
     "dsa": {
-      "title": "Structures de données et algorithmes"
+      "title": "Structures de données et algorithmes",
+      "description": "Choisissez et appliquez les principales structures de données et les algorithmes à des problèmes courants, comparez les coûts en temps et en mémoire, puis expliquez les compromis d’une solution."
     },
     "devops": {
-      "title": "Bases du DevOps et du cloud"
+      "title": "Bases du DevOps et du cloud",
+      "description": "Utilisez les commandes Linux et des scripts shell, empaquetez une application avec Docker, puis expliquez comment les services cloud soutiennent le déploiement et l’exploitation."
     },
     "cybersecurity": {
-      "title": "Fondamentaux de la cybersécurité"
+      "title": "Fondamentaux de la cybersécurité",
+      "description": "Reconnaissez les menaces courantes, réduisez les risques de base d’une application web, examinez les signaux de sécurité et décrivez une réponse responsable à un incident dans un environnement autorisé."
     },
     "ui_ux": {
-      "title": "Principes du design UI/UX"
+      "title": "Principes du design UI/UX",
+      "description": "Transformez les besoins des utilisateurs en un parcours simple et une interface, prototypez-la, vérifiez les bases de l’accessibilité et améliorez le design grâce aux retours d’usage."
     },
     "advanced_ml": {
-      "title": "Machine learning avancé"
+      "title": "Machine learning avancé",
+      "description": "Comparez des approches neuronales pour les tâches de texte et d’image, examinez les compromis d’entraînement et d’évaluation, puis expliquez comment surveiller un modèle après son déploiement."
     },
     "aws_architect": {
-      "title": "Architecte de solutions AWS"
+      "title": "Architecte de solutions AWS",
+      "description": "Choisissez des services AWS de calcul, stockage, base de données, réseau et sécurité pour esquisser une architecture résiliente et expliquer ses compromis. Un déploiement cloud réel n’est pas requis."
     },
     "data_science": {
-      "title": "Data science professionnel"
+      "title": "Data science professionnel",
+      "description": "Préparez et explorez un jeu de données, construisez et évaluez un modèle adapté, puis expliquez ce que les éléments observés permettent de conclure et leurs limites."
     },
     "full_stack": {
-      "title": "Développement web full stack"
+      "title": "Développement web full stack",
+      "description": "Planifiez les composants d’une application full stack, créez des interactions frontend adaptables, reliez les API du serveur aux données et expliquez le rôle des tests et des flux de livraison."
     },
     "prompt_engineering": {
       "title": "Ingénierie des prompts et workflows LLM",
@@ -1331,7 +1343,37 @@
     "update": "Mise à jour"
   },
   "lessonVisual": {
-    "caption": "Schéma conceptuel — une relation à examiner, pas des données mesurées."
+    "caption": "Schéma conceptuel — une relation à examiner, pas des données mesurées.",
+    "algorithm": {
+      "title": "Une boucle algorithmique",
+      "step1": "Définir l’entrée",
+      "step2": "Appliquer les étapes dans l’ordre",
+      "step3": "Vérifier le résultat"
+    },
+    "python": {
+      "title": "Le flux de contrôle en Python",
+      "step1": "Lire une valeur",
+      "step2": "Tester une condition",
+      "step3": "Choisir ou répéter une étape"
+    },
+    "aiml": {
+      "title": "Flux de travail du machine learning",
+      "step1": "Exemples représentatifs",
+      "step2": "Entraîner ou ajuster le modèle",
+      "step3": "Évaluer sur des cas séparés"
+    },
+    "rag": {
+      "title": "Génération augmentée par récupération",
+      "step1": "Question",
+      "step2": "Récupérer les sources pertinentes",
+      "step3": "Réponse fondée sur les sources et vérifiée"
+    },
+    "agent": {
+      "title": "Boucle de tâche d’un agent",
+      "step1": "Objectif et contexte",
+      "step2": "Choisir une action d’outil limitée",
+      "step3": "Observer, vérifier, puis continuer ou arrêter"
+    }
   },
   "tour": {
     "back": "Retour",

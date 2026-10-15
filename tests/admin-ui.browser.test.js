@@ -60,6 +60,7 @@ async function fixture(t, mode = 'admin') {
     }
   }, { mode });
   await context.route('**/cdn.jsdelivr.net/**', route => route.fulfill({ status: 200, contentType: 'text/javascript', body: '' }));
+  await context.route('**/api/auth/session-cookie', route => route.fulfill({ status: 204, body: '' }));
   await context.route('**/api/admin/**', route => {
     if (mode === 'nonadmin') return route.fulfill({ status: 403, contentType: 'application/json', body: JSON.stringify({ error: 'Administrator access required' }) });
     const path = new URL(route.request().url()).pathname.replace('/api/admin/', '');

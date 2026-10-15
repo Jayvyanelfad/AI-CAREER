@@ -7,7 +7,7 @@ function getSafeAuthReturnTarget() {
 
     try {
         const target = new URL(next, window.location.origin);
-        const allowedPath = /^\/(?:courses(?:\.html)?|course-detail\.html|programming(?:\.html)?|dashboard\.html|profile\.html|career-test\.html|exam\.html|certificate\.html)$/i;
+        const allowedPath = /^\/(?:courses(?:\.html)?|course-detail\.html|programming(?:\.html)?|dashboard\.html|profile\.html|career-test\.html|exam\.html|certificate\.html|admin\.html)$/i;
         if (target.origin !== window.location.origin || !allowedPath.test(target.pathname)) return null;
         return `${target.pathname}${target.search}${target.hash}`;
     } catch (_error) {
@@ -129,6 +129,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (sessionError) throw sessionError;
                 if (!sessionData || !sessionData.session) throw new Error('We could not establish a secure sign-in session. Please try again.');
                 localStorage.setItem("token", sessionData.session.access_token);
+                if (window.syncCareerPathSessionCookie && !(await window.syncCareerPathSessionCookie(sessionData.session))) throw new Error('Sign-in worked, but the secure page session could not be saved. Please try again.');
             }
             localStorage.setItem("user", JSON.stringify(data.user));
 

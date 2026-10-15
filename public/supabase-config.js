@@ -4,12 +4,43 @@
 //
 // SETUP: Get these two values from Supabase Dashboard > Project Settings > API
 //   - Project URL          -> SUPABASE_URL
-//   - anon / public key    -> SUPABASE_ANON_KEY
-// The anon key is safe to put in frontend code (unlike the service_role key).
+//   - Publishable API key  -> obtained from Supabase Project Settings > API
+// Only a public/publishable key belongs in the browser; never expose service_role.
 // ============================================================
 // FIXED: Corrected Supabase URL (was missing an 'i')
 const SUPABASE_URL = "https://bfjkjiizmlsbfszyhxfe.supabase.co";
-const SUPABASE_ANON_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJmamtqaWl6bWxzYmZzenloeGZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY0NTY4OTgsImV4cCI6MjEwMjAzMjg5OH0.fIaE9Voe5bsXV-z-2UV0-DL4xwdpvOWVwRk_-KDprew";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_i5n21yJ7e4egEHfBfFeokg_-ALYlAT0";
+
+// Mirror Auth state into an HttpOnly cookie for server-side page gates.
+// Supabase continues to own token refresh in the browser.
+let careerPathCookieSyncChain = Promise.resolve(true);
+window.syncCareerPathSessionCookie = function (session) {
+  const accessToken = session && typeof session.access_token === 'string' ? session.access_token : null;
+  const request = async () => {
+    try {
+      const response = await fetch('/api/auth/session-cookie', {
+        method: accessToken ? 'POST' : 'DELETE', credentials: 'same-origin',
+        headers: accessToken ? { 'Content-Type': 'application/json' } : {},
+        body: accessToken ? JSON.stringify({ accessToken }) : undefined
+      });
+      return response.ok;
+    } catch (_error) { return false; }
+  };
+  careerPathCookieSyncChain = careerPathCookieSyncChain.catch(() => false).then(request);
+  return careerPathCookieSyncChain;
+};
+window.clearCareerPathSessionCookie = () => window.syncCareerPathSessionCookie(null);
+function attachCareerPathCookieSync(client) {
+  if (!client || !client.auth || typeof client.auth.getSession !== 'function' ||
+      typeof client.auth.onAuthStateChange !== 'function' ||
+      window.__careerPathCookieSyncClient === client) return;
+  window.__careerPathCookieSyncClient = client;
+  client.auth.onAuthStateChange((_event, session) => { void window.syncCareerPathSessionCookie(session || null); });
+  client.auth.getSession().then(({ data, error }) => {
+    if (!error) void window.syncCareerPathSessionCookie(data && data.session ? data.session : null);
+  }).catch(() => {});
+}
+
 
 // Function to initialize Supabase client when the global is available
 function initSupabaseClient() {
@@ -17,13 +48,14 @@ function initSupabaseClient() {
   if (window.supabase) {
     // Keep one client per page so the verifier created during OAuth initiation
     // is available to the callback page through the same origin storage.
-    if (window.supabase.auth) {
+    if (window.supabase.auth && typeof window.supabase.auth.getSession === 'function') {
       window.API_BASE = window.API_BASE || "/api";
+      attachCareerPathCookieSync(window.supabase);
       return true;
     }
 
     // Create Supabase client and attach to window for global access
-    window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
       auth: {
         flowType: "pkce",
         detectSessionInUrl: true,
@@ -31,6 +63,7 @@ function initSupabaseClient() {
       }
     });
     console.log('✅ Supabase client initialized successfully');
+    attachCareerPathCookieSync(window.supabase);
 
     // Also set up the API base
     window.API_BASE = "/api";

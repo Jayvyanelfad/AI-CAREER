@@ -186,6 +186,9 @@
     if (!profileResponse.ok) throw new Error(t('coverage.callbackSetupFail', 'Could not finish setting up the account profile.'));
 
     localStorage.setItem("token", token);
+    if (window.syncCareerPathSessionCookie && !(await window.syncCareerPathSessionCookie(session))) {
+      throw new Error(t('coverage.callbackSetupFail', 'Could not finish setting up the secure session. Please return to login and try again.'));
+    }
 
     // Abort if the server never answers, instead of hanging on this page forever.
     const controller = new AbortController();

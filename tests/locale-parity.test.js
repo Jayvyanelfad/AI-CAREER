@@ -36,6 +36,19 @@ function referencedKeys() {
   return found;
 }
 
+function flatEntries(obj, prefix = '', out = {}) {
+  for (const key of Object.keys(obj)) {
+    const value = obj[key];
+    const fullKey = `${prefix}${key}`;
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
+      flatEntries(value, `${fullKey}.`, out);
+    } else {
+      out[fullKey] = value;
+    }
+  }
+  return out;
+}
+
 function flatKeys(obj, prefix = '', out = []) {
   for (const key of Object.keys(obj)) {
     const value = obj[key];
@@ -64,11 +77,40 @@ test('full locales have zero missing interface keys', () => {
   }
 });
 
+test('full locale dictionaries have the same canonical key set as English', () => {
+  const canonical = new Set(flatKeys(dict('en')));
+  for (const locale of ['fr', 'hinglish', 'sw', 'ar']) {
+    const available = new Set(flatKeys(dict(locale)));
+    const missing = [...canonical].filter(key => !available.has(key));
+    const extra = [...available].filter(key => !canonical.has(key));
+    assert.deepEqual(missing, [], `${locale} is missing canonical keys: ${missing.slice(0, 20).join(', ')}`);
+    assert.deepEqual(extra, [], `${locale} has unexpected keys: ${extra.slice(0, 20).join(', ')}`);
+  }
+});
+
+test('all locale strings preserve interpolation placeholders from English', () => {
+  const english = flatEntries(dict('en'));
+  const placeholders = value => [...new Set(String(value).match(/\{[A-Za-z_][A-Za-z0-9_]*\}/g) || [])].sort();
+  for (const locale of ['fr', 'hinglish', 'sw', 'ar', 'ha', 'pcm', 'wo']) {
+    const translated = flatEntries(dict(locale));
+    const mismatches = [];
+    for (const [key, value] of Object.entries(translated)) {
+      if (typeof english[key] !== 'string') continue;
+      const expected = placeholders(english[key]);
+      const actual = placeholders(value);
+      if (JSON.stringify(expected) !== JSON.stringify(actual)) {
+        mismatches.push({ key, expected, actual });
+      }
+    }
+    assert.deepEqual(mismatches, [], `${locale} lost or changed interpolation placeholders`);
+  }
+});
+
 test('partial locales stay parseable with their documented core subset', () => {
-  const core = ['common.loading', 'nav.home', 'nav.courses', 'programming.runCode', 'settings.language'];
+  const core = ['common.loading', 'common.startLearning', 'nav.home', 'nav.courses', 'programming.runCode', 'settings.language', 'profile.language', 'career.test', 'assessment.stronglyAgree', 'ui.myCourses'];
   for (const locale of ['ha', 'pcm', 'wo']) {
     const available = new Set(flatKeys(dict(locale)));
-    assert.ok(available.size > 0 && available.size < 100, `${locale} must remain an intentional subset, got ${available.size}`);
+    assert.ok(available.size > 100 && available.size < 300, `${locale} must remain an intentional subset, got ${available.size}`);
     for (const key of core) assert.ok(available.has(key), `${locale} must keep core key ${key}`);
   }
 });
