@@ -1,9 +1,6 @@
 name: Test suite
 
 on:
-  push:
-    branches:
-      - fix/pidgin-localization-and-assessment-review
   pull_request:
     branches:
       - main
