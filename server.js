@@ -1,6 +1,8 @@
 // CUSTOM IDENTIFIER TO VERIFY WHICH FILE IS LOADING - SUPABASE ONLY IMPLEMENTATION
 console.log('SERVER STARTING - LOADED SERVER.JS (SUPABASE ONLY)');
 const express = require('express');
+const fs = require('fs');
+const path = require('path');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const { createClient } = require('@supabase/supabase-js');
@@ -44,6 +46,26 @@ app.use((_req, res, next) => {
   next();
 });
 app.use(express.json());
+
+// Serve HTML through a small shared injector so the floating assistant is
+// available on every public page, including pages added in the future.
+// Existing explicit widget tags are detected to avoid duplicate loading.
+app.use(async (req, res, next) => {
+  if (req.method !== 'GET' || !(/\\.html?$/i.test(req.path) || req.path === '/')) return next();
+  try {
+    const requested = req.path === '/' ? 'index.html' : path.basename(decodeURIComponent(req.path));
+    if (!/^[a-z0-9._-]+\\.html?$/i.test(requested)) return next();
+    const filePath = path.join(__dirname, 'public', requested);
+    let html;
+    try { html = await fs.promises.readFile(filePath, 'utf8'); }
+    catch (error) { if (error.code === 'ENOENT') return next(); throw error; }
+    if (!html.includes('assistant-widget.css')) html = html.replace(/<\\/head>/i, '  <link rel="stylesheet" href="assistant-widget.css" />\\n</head>');
+    if (!html.includes('assistant-widget.js')) html = html.replace(/<\\/body>/i, '  <script src="assistant-widget.js" defer></script>\\n</body>');
+    res.type('html').send(html);
+  } catch (error) {
+    next(error);
+  }
+});
 app.use(express.static("public"));
 
 // Keep the short product routes available while the browser-side shared auth
