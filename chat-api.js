@@ -16,7 +16,15 @@ function createChatRouter({ supabase, authenticateToken, generateReply, logger =
 
       let text;
       try {
-        text = await generateReply(message);
+        const assistantMode = req.body?.assistantMode === 'admin' ? 'admin' : 'student';
+        const claims = req.user || {};
+        const appRole = claims.app_metadata?.role || claims.app_metadata?.user_role;
+        const userRole = claims.user_metadata?.role || claims.user_metadata?.user_role;
+        const role = String(claims.role || appRole || userRole || '').toLowerCase();
+        if (assistantMode === 'admin' && !['admin', 'super_admin', 'superadmin'].includes(role)) {
+          return res.status(403).json({ error: 'Administrator access is required for the admin assistant.' });
+        }
+        text = await generateReply(message, { ...claims, verifiedAssistantRole: assistantMode === 'admin' ? role : 'student' });
       } catch (error) {
         if ((error.error && error.error.code === 429) || error.status === 429) {
           return res.status(503).json({ error: 'AI service temporarily unavailable due to quota exceeded. Please try again later.' });
