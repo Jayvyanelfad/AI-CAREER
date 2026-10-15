@@ -222,6 +222,15 @@
     document.querySelectorAll('[data-i18n]').forEach(element => {
       const vars = element.dataset.i18nVars ? safeJsonVars(element.dataset.i18nVars) : undefined;
       const fallback = element.dataset.i18nFallback || element.textContent;
+      // Do not replace an element's entire contents when it contains nested
+      // markup (icons, badges, emphasized text, etc.). The text-node pass below
+      // localizes matching text while preserving those child elements.
+      if (element.children.length > 0) {
+        if (typeof console !== 'undefined' && console.debug) {
+          console.debug('[i18n] preserving nested markup for', element.dataset.i18n);
+        }
+        return;
+      }
       element.textContent = translate(element.dataset.i18n, fallback, vars);
     });
     document.querySelectorAll('[data-i18n-placeholder], [data-i18n-aria-label]').forEach(element => {
