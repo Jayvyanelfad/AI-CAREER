@@ -1,78 +1,21 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>CareerPath Guide - CareerPath AI</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-  <script src="i18n.js"></script>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0d2b21">
+  <title>CareerPath Guide · CareerPath AI</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="assistant-widget.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="theme.js"></script><script src="i18n.js"></script>
 </head>
-<body>
-
-  <button class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">
-    <i class="fas fa-moon moon-icon"></i>
-    <i class="fas fa-sun sun-icon"></i>
-  </button>
-
-  <header>
-    <div class="logo"><i class="fas fa-robot"></i> AI Career Platform</div>
-    <nav>
-      <a href="index.html">Home</a>
-      <a href="courses.html">Career Courses</a>
-      <a href="career-test.html">Career Test</a>
-      <a href="dashboard.html">Dashboard</a>
-      <a href="profile.html">Profile</a>
-      <button class="cta-button" onclick="location.href='register.html'">Get Started</button>
-    </nav>
-  </header>
-
-  <main class="dashboard-container" style="max-width: 500px; margin: 0 auto; padding: var(--space-4); min-height: calc(100vh - 120px);">
-    <section class="dashboard-card">
-      <div class="dashboard-header" style="margin-bottom: var(--space-6);">
-        <h2><i class="fas fa-compass"></i> CareerPath Guide</h2>
-        <p style="color: var(--text-muted);">Need help finding something? I can guide you to login, courses, demos, and the right page.</p>
-      </div>
-
-      <!-- Chatbot Interface -->
-      <div id="chatbot-container">
-        <div id="chatbot-window" class="chatbox">
-          <div class="chat-header">
-            <h3><i class="fas fa-robot" aria-hidden="true"></i> Career Assistant</h3>
-            <button id="chatbot-close-btn" class="btn-outline" aria-label="Close chat">
-              <i class="fas fa-times" aria-hidden="true"></i>
-            </button>
-          </div>
-
-          <div class="chat-body" id="chatbot-body" role="log" aria-live="polite" aria-label="Chat messages">
-            <!-- Messages will appear here -->
-          </div>
-
-          <div id="quick-replies" class="quick-replies"></div>
-
-          <div class="chat-input-container">
-            <input type="text" id="chat-input" placeholder="Ask where to go or what to click…" aria-label="Type your message" />
-            <button id="send-message" class="btn-primary" aria-label="Send message">
-              <i class="fas fa-paper-plane" aria-hidden="true"></i>
-            </button>
-          </div>
-        </div>
-
-        <!-- Floating Chatbot Button -->
-        <button class="floating-chatbot" id="floating-chatbot" aria-label="Open chat with CareerPath AI" hidden>
-          <i class="fas fa-robot" aria-hidden="true"></i>
-        </button>
-      </div>
-    </section>
+<body class="home-page">
+  <header class="container" style="padding:24px 0"><a href="index.html" class="home-brand"><span><em>CareerPath</em> AI</span></a><a href="index.html">Back to Home</a></header>
+  <main class="container" style="max-width:900px;padding:clamp(32px,8vw,88px) 24px;min-height:65vh">
+    <p style="color:var(--bege);letter-spacing:.14em;text-transform:uppercase;font-weight:700">CAREERPATH SUPPORT</p>
+    <h1 style="font-family:var(--font-display);font-size:clamp(2.5rem,6vw,5rem);line-height:1.05;margin:18px 0">A little help goes a long way.</h1>
+    <p style="max-width:600px;font-size:1.15rem;color:var(--text-secondary)">The CareerPath Guide is available in the corner of this page and throughout the platform. Open it to find courses, coding practice, account pages and more.</p>
+    <button type="button" class="home-button home-button-primary" style="margin-top:28px" onclick="document.querySelector('.cp-launcher')?.click()">Open CareerPath Guide ↗</button>
   </main>
-
-  <footer>
-    <p>© 2025 AI Career Development Platform. All Rights Reserved.</p>
-  </footer>
-
-  <script src="supabase-config.js"></script>
-  <script src="theme.js"></script>
-  <script src="chatbot.js"></script>
-</body>
-</html>
+  <script src="assistant-widget.js" defer></script>
+</body></html>
