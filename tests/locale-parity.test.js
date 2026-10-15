@@ -72,3 +72,9 @@ test('partial locales stay parseable with their documented core subset', () => {
     for (const key of core) assert.ok(available.has(key), `${locale} must keep core key ${key}`);
   }
 });
+
+
+test('explicit translation preserves nested markup instead of replacing child elements', () => {
+  const source = fs.readFileSync(path.join(PUBLIC, 'i18n.js'), 'utf8');
+  assert.match(source, /if\s*\(element\.children\.length\s*>\s*0\)\s*\{\s*return;\s*\}/);
+});

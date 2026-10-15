@@ -16,7 +16,8 @@
     "profile": "Profile",
     "login": "Log in",
     "register": "Register",
-    "logout": "Log out"
+    "logout": "Log out",
+    "admin": "Admin"
   },
   "common": {
     "start": "Start",
@@ -29,7 +30,28 @@
     "loading": "E dey load…",
     "error": "Something no work",
     "tryAgain": "Try again",
-    "pleaseSignIn": "Abeg log in"
+    "pleaseSignIn": "Abeg log in",
+    "saveChanges": "Save the changes",
+    "close": "Close am",
+    "submit": "Submit",
+    "view": "View",
+    "explore": "Explore",
+    "learnMore": "Learn more",
+    "startLearning": "Start to learn",
+    "enrollFree": "Join free",
+    "getStarted": "Start now",
+    "takeQuiz": "Do quiz",
+    "practice": "Practise",
+    "buildProject": "Build project",
+    "viewCourse": "View course",
+    "viewProject": "View project",
+    "complete": "Complete",
+    "completed": "Don complete am",
+    "noResults": "No result",
+    "comingSoon": "E dey come soon",
+    "notAvailable": "E no dey available",
+    "signInRequired": "You gats log in",
+    "noResultsFound": "No result dey"
   },
   "settings": {
     "language": "Language"
@@ -40,7 +62,26 @@
     "output": "Output",
     "stdinLabel": "Standard input (if you need am)",
     "unavailable": "Code execution no dey available now.",
-    "timedOut": "Execution take too long."
+    "timedOut": "Execution take too long.",
+    "studio": "Programming Studio",
+    "heroTitle": "Learn the language. Build something real.",
+    "heroCopy": "Understand how a language works. Practise the ideas, solve real problems, build a project, and learn to present am.",
+    "chooseStartingPoint": "Choose where you wan start",
+    "findDirection": "Find your direction",
+    "exploreTracks": "Explore the tracks",
+    "projectPresentation": "Project presentation",
+    "startLearning": "Start learning",
+    "continue": "Continue",
+    "completed": "Don complete",
+    "error": "Error",
+    "success": "Done",
+    "runtimeError": "Runtime error",
+    "tooMany": "You don run code plenty times. Wait small and try again.",
+    "signInToRun": "Log in before you run code.",
+    "failedRequest": "Code no run. Try again later.",
+    "clearOutput": "Clear output",
+    "resetCode": "Reset code",
+    "comingSoon": "E dey come soon"
   },
   "notifications": {
     "eyebrow": "UPDATES",
@@ -54,17 +95,220 @@
     "update": "Update"
   },
   "ui": {
-    "copyrightProject": "© CareerPath AI · B.Tech Final Year Project"
+    "copyrightProject": "© CareerPath AI · B.Tech Final Year Project",
+    "discoverDirection": "Discover your direction.",
+    "learnStories": "Learn modern tech through stories.",
+    "practiceLearn": "Practise wetin you learn.",
+    "discoverPath": "Discover my career path",
+    "exploreCourses": "Explore courses",
+    "exploreJourney": "Explore the journey",
+    "careerAssessment": "Career assessment",
+    "takeAssessment": "Take the career assessment",
+    "exploreSkills": "Explore the tech skills you fit learn.",
+    "learningPaths": "Explore the learning paths.",
+    "oneJourney": "One connected journey.",
+    "assessmentHero": "Discover where your strengths fit take you.",
+    "yourCareerProfile": "Your career profile",
+    "recommendedCourses": "Explore recommended courses",
+    "goDashboard": "Go to dashboard",
+    "retakeTest": "Take test again",
+    "allCourses": "All courses",
+    "beginner": "Beginner",
+    "intermediate": "Intermediate",
+    "advanced": "Advanced",
+    "loadingCourses": "E dey load courses...",
+    "backCourses": "Back to courses",
+    "currentCatalog": "Explore tech courses around AI, software, data and product design.",
+    "profileHub": "CAREER AND LEARNING HUB",
+    "profileDescription": "Your career profile, learning path and achievements for one place.",
+    "fullName": "Full name",
+    "calculatingPath": "E dey calculate your career path...",
+    "chooseStarting": "Choose where you wan start",
+    "learn": "Learn",
+    "understand": "Understand",
+    "solve": "Solve",
+    "build": "Build",
+    "present": "Present",
+    "objective": "Objective",
+    "story": "Story",
+    "concept": "Concept",
+    "example": "Example",
+    "challenge": "Challenge",
+    "takeaway": "Main thing to remember",
+    "submitTest": "Submit test",
+    "takeCareerTest": "Take career test",
+    "myCourses": "My courses",
+    "yourProgress": "Your progress",
+    "noCourses": "No courses found.",
+    "signIn": "Log in",
+    "register": "Register",
+    "logout": "Log out",
+    "home": "Home",
+    "courses": "Courses",
+    "dashboard": "Dashboard",
+    "profile": "Profile",
+    "careerTest": "Career test",
+    "language": "Language",
+    "settings": "Settings",
+    "editProfile": "Edit profile",
+    "saveChanges": "Save changes",
+    "account": "Account",
+    "loading": "E dey load...",
+    "noResults": "No results",
+    "somethingWrong": "Something no work",
+    "tryAgain": "Try again",
+    "comingSoon": "E dey come soon",
+    "notAvailable": "E no dey available",
+    "pleaseSignIn": "Abeg log in",
+    "signInRequired": "You gats log in"
   },
   "coverage": {
     "toggleThemeAria": "Change theme",
     "lightTheme": "Light",
     "darkTheme": "Dark",
-    "switchTheme": "Change theme",
-    "switchThemeTitle": "Change between light and dark theme",
+    "switchTheme": "Change am to {theme} theme",
+    "switchThemeTitle": "Change theme to {theme} (current: {current})",
     "menuLabel": "Menu"
   },
   "page": {
     "openNavigation": "Open navigation"
+  },
+  "courseMetadata": {
+    "intro_to_ai": {
+      "description": "Learn the difference between AI and machine learning, how data and models dey make predictions, and how to check results responsibly. Build one small guided classifier with test plan and clear limitations. You no need AI experience before."
+    },
+    "python_for_careers": {
+      "description": "Start with Python basics: values, conditions and loops. Then use functions, collections, files, JSON and one simple API request. Finish by building, safely testing and presenting a local file-organizing assistant. You no need coding experience before."
+    },
+    "data_analytics_basics": {
+      "description": "Set one clear analysis question, clean small data, look for patterns with summaries and charts, then explain wetin you find and where the result no fit tell the full story."
+    },
+    "web_dev": {
+      "description": "Build one semantic, responsive web page with HTML, CSS and JavaScript. Practise accessible forms, browser-side interactions and the basics of publishing a frontend."
+    },
+    "dsa": {
+      "description": "Choose and apply common data structures and algorithms, compare how much time and memory they use, and explain the trade-offs behind your solution."
+    },
+    "devops": {
+      "description": "Use Linux commands and shell scripts, package an app with Docker, and explain how cloud services help you deploy and operate software."
+    },
+    "cybersecurity": {
+      "description": "Recognize common threats, reduce basic web-app risks, check security signals, and outline a responsible incident response only in an environment you are allowed to test."
+    },
+    "ui_ux": {
+      "description": "Turn users' needs into one simple flow and interface, make a prototype, check accessibility basics, then improve the design with usability feedback."
+    },
+    "advanced_ml": {
+      "description": "Compare neural methods for text and image tasks, think about training and evaluation trade-offs, and explain how to monitor a model after deployment."
+    },
+    "aws_architect": {
+      "description": "Choose AWS compute, storage, database, networking and security services to sketch a resilient architecture and explain its trade-offs. You no need to deploy to a real cloud."
+    },
+    "data_science": {
+      "description": "Prepare and explore a dataset, build and evaluate a suitable model, then explain what the evidence supports and where its limits are."
+    },
+    "full_stack": {
+      "description": "Plan the parts of one full-stack app, build responsive frontend interactions, connect server APIs to data, and explain why testing and delivery workflows matter."
+    }
+  },
+  "lessonVisual": {
+    "algorithm": {
+      "title": "An algorithm loop",
+      "step1": "Define the input",
+      "step2": "Apply steps in order",
+      "step3": "Check the result"
+    },
+    "python": {
+      "title": "Python control flow",
+      "step1": "Read one value",
+      "step2": "Check one condition",
+      "step3": "Choose or repeat a step"
+    },
+    "aiml": {
+      "title": "Machine-learning workflow",
+      "step1": "Representative examples",
+      "step2": "Train or tune the model",
+      "step3": "Evaluate on separate cases"
+    },
+    "rag": {
+      "title": "Retrieval-augmented generation",
+      "step1": "Question",
+      "step2": "Retrieve relevant sources",
+      "step3": "Grounded answer with checks"
+    },
+    "agent": {
+      "title": "Agent task loop",
+      "step1": "Goal and context",
+      "step2": "Choose a bounded tool action",
+      "step3": "Observe, check, then continue or stop"
+    }
+  },
+  "learning": {
+    "course": "Course",
+    "courses": "Courses",
+    "module": "Module",
+    "modules": "Modules",
+    "lesson": "Lesson",
+    "lessons": "Lessons",
+    "challenge": "Challenge",
+    "takeaway": "Main thing to remember",
+    "project": "Project",
+    "projectPresentation": "Project presentation",
+    "progress": "Progress",
+    "journey": "Learning journey",
+    "learn": "Learn"
+  },
+  "career": {
+    "test": "Career test",
+    "profile": "Career profile",
+    "alignment": "Career match",
+    "topDirections": "Top career directions",
+    "exploreCareers": "Explore careers",
+    "yourResults": "Your results",
+    "continueToTest": "Continue career test",
+    "instructions": "Answer each statement based on wetin really fit you."
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "myCourses": "My courses",
+    "continueLearning": "Continue learning",
+    "yourProgress": "Your progress",
+    "inProgress": "E dey progress",
+    "notStarted": "You never start"
+  },
+  "profile": {
+    "title": "Profile",
+    "account": "Account",
+    "language": "Language",
+    "settings": "Settings",
+    "edit": "Edit profile",
+    "saveChanges": "Save changes",
+    "photo": "Profile photo",
+    "savePhoto": "Save photo",
+    "removePhoto": "Remove photo",
+    "bio": "About you",
+    "bioHint": "Tell us small about your career interest (maximum 240 characters).",
+    "noBio": "You never add intro yet.",
+    "saved": "Your profile don update.",
+    "photoTypeError": "Choose JPEG, PNG or WebP photo.",
+    "photoSizeError": "Choose photo wey no reach 5 MB.",
+    "photoUploadFailed": "Photo no save. Abeg try again.",
+    "photoSaved": "Profile photo don save.",
+    "photoRemoved": "Profile photo don remove.",
+    "preferenceHint": "Your preferences dey save for your profile and this browser.",
+    "preferenceSaving": "E dey save preference...",
+    "preferenceSaved": "Preference don save.",
+    "preferenceLocalOnly": "E don save for this browser; profile sync no dey available."
+  },
+  "assessment": {
+    "stronglyDisagree": "I strongly no agree",
+    "disagree": "I no agree",
+    "neutral": "I no agree or disagree",
+    "agree": "I agree",
+    "stronglyAgree": "I strongly agree",
+    "questionProgress": "Question {current} of {total}",
+    "submitting": "E dey submit your answers...",
+    "resultsTitle": "Your career profile",
+    "validation": "Abeg answer every question before you continue."
   }
 }

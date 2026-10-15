@@ -1,0 +1,30 @@
+name: Test suite
+
+on:
+  push:
+    branches:
+      - fix/full-site-localization
+  pull_request:
+    branches:
+      - feature/premium-role-aware-chat-assistant
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Run automated tests
+        run: npm test
