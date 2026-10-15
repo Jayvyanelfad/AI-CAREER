@@ -323,7 +323,33 @@
     "notAvailable": "Not available",
     "pleaseSignIn": "Please sign in",
     "signInRequired": "Sign in required",
-    "copyrightProject": "© CareerPath AI · B.Tech Final Year Project"
+    "copyrightProject": "© CareerPath AI · B.Tech Final Year Project",
+    "homeEyebrow": "CAREER DISCOVERY × STORY-DRIVEN TECH LEARNING",
+    "homeHeadlineOne": "Discover your direction.",
+    "homeHeadlineTwo": "Learn modern tech through stories.",
+    "homeHeadlineThree": "Practice what you learn.",
+    "homeHeroDescription": "Explore technology directions, then learn the skills behind them through short stories, clear explanations, examples, and hands-on challenges.",
+    "homeDiscoverCareer": "Discover My Career Path",
+    "homeJourneySteps": "Discover a direction → learn connected skills → practice through lesson challenges → track lesson progress",
+    "homeLearningHeadline": "Learning shouldn’t feel like reading a manual.",
+    "homeLearningDescription": "Lessons move through a repeatable story-driven sequence: meet a situation, understand the problem, learn the concept, see an example, try a challenge, and take away a useful idea.",
+    "homeLearningCaveat": "Course activities vary; the six-stage sequence is shown in the Introduction to AI & ML learning experience.",
+    "homeStageStory": "Story",
+    "homeStageStoryDescription": "Start with a situation that makes the problem real.",
+    "homeStageDiscovery": "Discovery",
+    "homeStageDiscoveryDescription": "Understand what is happening and why it matters.",
+    "homeStageConcept": "Concept",
+    "homeStageConceptDescription": "Learn the technical idea behind it.",
+    "homeStageExample": "Example",
+    "homeStageExampleDescription": "See the idea applied in practice.",
+    "homeStageChallenge": "Challenge",
+    "homeStageChallengeDescription": "Try the idea yourself.",
+    "homeStageTakeaway": "Takeaway",
+    "homeStageTakeawayDescription": "Leave with a useful mental model or skill.",
+    "homeLessonPreview": "LESSON PREVIEW · INTRODUCTION TO AI & ML",
+    "homeRulesOrLearning": "Rules or learning?",
+    "homeFilterExplanation": "A fixed filter follows instructions. A learning system looks for patterns in examples.",
+    "homeExploreCourse": "Explore course"
   },
   "coverage": {
     "signInToBrowseCourses": "Sign in to load the course catalog.",
@@ -1130,7 +1156,7 @@
       "then": "Then",
       "continue": "Continue"
     },
-    "calculationBody": "Each answer is 1 to 5 and is normalized with (answer - 1) / 4. Normalized answers are averaged within each of the 8 dimensions. The resulting 8-dimensional learner vector is compared with 11 fixed career reference vectors using mean absolute difference (L1 distance). Similarity is 1 minus mean absolute difference; fit percentage is similarity times 100. This deterministic mathematical similarity algorithm identifies the highest-aligned career profiles.",
+    "calculationBody": "Each answer is 1 to 5 and is normalized with (answer - 1) / 4. Normalized answers are averaged within each of the 8 dimensions. The resulting 8-dimensional learner vector is compared with 11 fixed career reference vectors using mean absolute difference (L1 distance). Similarity is 1 minus mean absolute difference; fit percentage is similarity times 100. This deterministic mathematical similarity algorithm identifies the highest-aligned career profiles. This percentage is a profile-similarity score, not a probability of succeeding in that career or a validated psychometric prediction. Use it as a starting point for exploration, not a final verdict.",
     "whatNoticed": "What we noticed",
     "startLearningHeading": "Start learning",
     "viewDetails": "View detailed assessment",
@@ -1156,7 +1182,8 @@
       "product": "Interest in understanding user needs",
       "design": "Interest in design and human experience",
       "delivery": "Strength in organizing and delivering work"
-    }
+    },
+    "scoreDisclaimer": "Your match score shows similarity to a career profile. It is not a probability of success or a validated prediction."
   },
   "project": {
     "eyebrow": "Built as a B.Tech Project",

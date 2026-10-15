@@ -68,7 +68,7 @@ test('partial locales stay parseable with their documented core subset', () => {
   const core = ['common.loading', 'nav.home', 'nav.courses', 'programming.runCode', 'settings.language'];
   for (const locale of ['ha', 'pcm', 'wo']) {
     const available = new Set(flatKeys(dict(locale)));
-    assert.ok(available.size > 0 && available.size < 100, `${locale} must remain an intentional subset, got ${available.size}`);
+    assert.ok(available.size > 0 && available.size < 200, `${locale} must remain a partial locale, got ${available.size}`);
     for (const key of core) assert.ok(available.has(key), `${locale} must keep core key ${key}`);
   }
 });

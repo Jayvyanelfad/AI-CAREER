@@ -570,6 +570,10 @@
     domain.className = 'career-result-domain';
     domain.textContent = directionKey ? t(`careerResult.domain.${directionKey}`) : topCareers[0].career;
     hero.appendChild(domain);
+    const scoreDisclaimer = document.createElement('p');
+    scoreDisclaimer.className = 'career-result-score-disclaimer';
+    scoreDisclaimer.textContent = t('careerResult.scoreDisclaimer');
+    hero.appendChild(scoreDisclaimer);
     resultsContent.appendChild(hero);
 
     const observed = document.createElement('section');
