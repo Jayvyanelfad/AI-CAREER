@@ -8,10 +8,10 @@
     "langTag": "pcm"
   },
   "nav": {
-    "home": "House",
-    "careerTest": "Career Test",
+    "home": "Home",
+    "careerTest": "Career test wey go help you find your path",
     "courses": "Courses",
-    "programming": "Programming",
+    "programming": "Coding",
     "dashboard": "Dashboard",
     "profile": "Profile",
     "login": "Log in",
@@ -169,7 +169,10 @@
     "homeLessonPreview": "SMALL LESSON PREVIEW · INTRODUCTION TO AI & ML",
     "homeRulesOrLearning": "Na rules e dey follow, or na learning?",
     "homeFilterExplanation": "One normal filter just dey follow the instructions wey person give am. But learning system dey study examples to find patterns and understand how things dey work.",
-    "homeExploreCourse": "Explore this course"
+    "homeExploreCourse": "Explore this course",
+    "exploreCourses": "Explore courses",
+    "exploreJourney": "Explore your journey",
+    "howLearningWorks": "HOW YOU GO LEARN"
   },
   "coverage": {
     "toggleThemeAria": "Change theme",
