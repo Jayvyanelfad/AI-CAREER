@@ -165,6 +165,8 @@ class Chatbot {
         typingDiv.remove();
         this.addMessage("bot", "I couldn't match that to a quick website action. Try one of the shortcuts below, or sign in if you need account-specific help.");
         this.addActionButton("Go to login", "login.html");
+        this.isSending = false;
+        if (sendButton) sendButton.disabled = false;
         this.showQuickReplies();
         return;
       }
@@ -187,8 +189,8 @@ class Chatbot {
         // The AI provider is unavailable or refused the request. Offer
         // deterministic navigation help from a fixed, verified route map
         // instead of pretending the AI answered. Never links admin pages.
-        const guide = this.guideReply(message);
-        this.addMessage("bot", guide || data.error || t("coverage.chatbotUnknown", "❌ Sorry, I couldn't understand. Can you rephrase?"));
+        this.addMessage("bot", data.error || "The guide is temporarily unavailable. Please try one of the shortcuts below.");
+        this.showQuickReplies();
       } else {
         this.addMessage("bot", data.error || t("coverage.chatbotUnknown", "❌ Sorry, I couldn't understand. Can you rephrase?"));
       }
@@ -201,6 +203,8 @@ class Chatbot {
       if (fallback?.route) this.addActionButton(fallback.label || "Open page", fallback.route);
     }
 
+    this.isSending = false;
+    if (sendButton) sendButton.disabled = false;
     this.showQuickReplies();
   }
 
