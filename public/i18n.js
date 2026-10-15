@@ -226,9 +226,6 @@
       // markup (icons, badges, emphasized text, etc.). The text-node pass below
       // localizes matching text while preserving those child elements.
       if (element.children.length > 0) {
-        if (typeof console !== 'undefined' && console.debug) {
-          console.debug('[i18n] preserving nested markup for', element.dataset.i18n);
-        }
         return;
       }
       element.textContent = translate(element.dataset.i18n, fallback, vars);
