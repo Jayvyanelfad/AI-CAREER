@@ -1130,7 +1130,7 @@
       "then": "Then",
       "continue": "Continue"
     },
-    "calculationBody": "Each answer is 1 to 5 and is normalized with (answer - 1) / 4. Normalized answers are averaged within each of the 8 dimensions. The resulting 8-dimensional learner vector is compared with 11 fixed career reference vectors using mean absolute difference (L1 distance). Similarity is 1 minus mean absolute difference; fit percentage is similarity times 100. This deterministic mathematical similarity algorithm identifies the highest-aligned career profiles.",
+    "calculationBody": "Each answer is 1 to 5 and is normalized with (answer - 1) / 4. Normalized answers are averaged within each of the 8 dimensions. The resulting 8-dimensional learner vector is compared with 11 fixed career reference vectors using mean absolute difference (L1 distance). Similarity is 1 minus mean absolute difference; fit percentage is similarity times 100. This deterministic mathematical similarity algorithm identifies the highest-aligned career profiles. This percentage is a profile-similarity score, not a probability of succeeding in that career or a validated psychometric prediction. Use it as a starting point for exploration, not a final verdict.",
     "whatNoticed": "What we noticed",
     "startLearningHeading": "Start learning",
     "viewDetails": "View detailed assessment",
