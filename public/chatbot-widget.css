@@ -1,0 +1,157 @@
+/* Floating platform-help chatbot widget. Fixed bottom-inline-end so it mirrors
+   correctly in RTL layouts. Panel sits below modal layers but above content. */
+#chatbot .chatbot-button {
+  position: fixed;
+  bottom: max(1rem, env(safe-area-inset-bottom));
+  right: max(1rem, env(safe-area-inset-right));
+  z-index: 901;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  padding: 0.6rem 1rem;
+  border: 1px solid rgba(220, 168, 133, .5);
+  border-radius: 999px;
+  background: #29483b;
+  color: #f4eee7;
+  font: inherit;
+  cursor: pointer;
+}
+
+#chatbot .chatbot-button:hover {
+  background: #24483d;
+}
+
+#chatbot .chatbot-button:focus-visible {
+  outline: 3px solid var(--nav-hover, #e3b99d);
+  outline-offset: 3px;
+}
+
+#chatbot .chatbox {
+  position: fixed;
+  bottom: max(4.5rem, calc(env(safe-area-inset-bottom) + 3.5rem));
+  right: max(1rem, env(safe-area-inset-right));
+  z-index: 900;
+  width: min(380px, calc(100vw - 2rem));
+  max-height: min(560px, calc(100dvh - 8rem));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid rgba(220, 168, 133, .5);
+  border-radius: 12px;
+  background: var(--surface, #151618);
+  color: var(--text, #f4eee7);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, .45);
+}
+
+#chatbot .chat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem;
+  padding: .7rem .9rem;
+  border-block-end: 1px solid rgba(220, 168, 133, .25);
+}
+
+#chatbot .chat-header h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+#chatbot .chat-header button {
+  min-width: 40px;
+  min-height: 40px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+#chatbot .chat-header button:focus-visible,
+#chatbot .chat-input-container button:focus-visible,
+#chatbot .quick-reply-btn:focus-visible {
+  outline: 3px solid var(--nav-hover, #e3b99d);
+  outline-offset: 2px;
+}
+
+#chatbot .chat-body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: .8rem .9rem;
+  min-height: 120px;
+}
+
+#chatbot .chat-input-container {
+  display: flex;
+  gap: .5rem;
+  padding: .7rem .9rem;
+  border-block-start: 1px solid rgba(220, 168, 133, .25);
+}
+
+#chatbot .chat-input-container input {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 44px;
+  padding: .5rem .7rem;
+  border: 1px solid rgba(220, 168, 133, .4);
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+
+#chatbot .chat-input-container button {
+  min-width: 44px;
+  min-height: 44px;
+  border-radius: 8px;
+  border: 1px solid rgba(220, 168, 133, .5);
+  background: #29483b;
+  color: #f4eee7;
+  cursor: pointer;
+}
+
+#chatbot .quick-replies {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .4rem;
+  padding: 0 .9rem .6rem;
+}
+
+#chatbot .quick-reply-btn {
+  min-height: 36px;
+  padding: .35rem .7rem;
+  border-radius: 999px;
+  border: 1px solid rgba(220, 168, 133, .4);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: .85rem;
+  cursor: pointer;
+}
+
+[dir="rtl"] #chatbot .chatbot-button {
+  right: auto;
+  left: max(1rem, env(safe-area-inset-left));
+}
+
+[dir="rtl"] #chatbot .chatbox {
+  right: auto;
+  left: max(1rem, env(safe-area-inset-left));
+}
+
+@media (max-width: 480px) {
+  #chatbot .chatbox {
+    left: .5rem;
+    right: .5rem;
+    width: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #chatbot .chatbox,
+  #chatbot .chatbot-button {
+    transition: none;
+  }
+}
