@@ -6,7 +6,7 @@
   "type": "commonjs",
   "scripts": {
     "start": "node server.js",
-    "test": "node --test tests/*.test.js"
+    "test": "node --test --test-timeout=30000 tests/*.test.js"
   },
   "engines": {
     "node": "24.x"
