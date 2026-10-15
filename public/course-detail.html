@@ -53,6 +53,7 @@
             .course-detail-title { font-size: clamp(2rem, 5vw, 2.5rem); }
         }
     </style>
+  <link rel="stylesheet" href="assistant-widget.css" />
 </head>
 <body>
     <!-- ===== NAVIGATION ===== -->
@@ -174,5 +175,6 @@
         }, observerOptions);
         document.querySelectorAll('.animate-on-scroll').forEach(el => observer.observe(el));
     </script>
+  <script src="assistant-widget.js" defer></script>
 </body>
 </html>
