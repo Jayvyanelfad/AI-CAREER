@@ -6289,3 +6289,63 @@ body:has(#free-courses) #enroll-modal .modal-footer .course-btn { margin: 0; }
 .lesson-visual figcaption { margin-top: .7rem; color: var(--text-muted); font-size: .9rem; }
 html[dir="rtl"] .lesson-visual__arrow { transform: scaleX(-1); }
 @media (max-width: 600px) { .lesson-visual__plot { align-items: center; } .lesson-visual__step { min-width: 12rem; } }
+
+
+/* CareerPath Guide — polished navigation-first chatbot */
+#chatbot-container { width: 100%; }
+#chatbot-window.chatbox, .chatbox {
+  display: flex; flex-direction: column; width: 100%; min-height: 510px;
+  max-height: min(72vh, 720px); overflow: hidden; border: 1px solid var(--border);
+  border-radius: 22px; background: linear-gradient(155deg, rgba(18, 48, 38, .98), rgba(8, 25, 19, .99));
+  box-shadow: 0 22px 65px rgba(0,0,0,.28);
+}
+.chat-header {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 17px 19px; background: linear-gradient(110deg, rgba(234,210,191,.12), rgba(134,164,142,.07));
+  border-bottom: 1px solid var(--border);
+}
+.chat-header h3 { display: flex; align-items: center; gap: 10px; color: var(--bege_light); font-size: 1rem; font-weight: 650; }
+.chat-header h3 i { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 12px; background: var(--accent-light); color: var(--bege); }
+.chat-body {
+  display: flex; flex: 1; flex-direction: column; align-items: flex-start; gap: 12px;
+  min-height: 240px; padding: 20px; overflow-y: auto; scroll-behavior: smooth;
+}
+.message { max-width: 88%; padding: 12px 15px; border-radius: 16px; line-height: 1.55; font-size: .94rem; overflow-wrap: anywhere; }
+.message.bot { align-self: flex-start; color: var(--text); background: rgba(134,164,142,.11); border: 1px solid rgba(134,164,142,.16); border-bottom-left-radius: 5px; }
+.message.user { align-self: flex-end; color: #17251e; background: var(--bege); border: 1px solid rgba(234,210,191,.6); border-bottom-right-radius: 5px; }
+.message.typing { color: var(--text-muted); }
+.quick-replies { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 16px 15px; }
+.quick-reply-btn {
+  border: 1px solid var(--border); border-radius: 999px; padding: 8px 12px;
+  color: var(--text); background: rgba(255,255,255,.025); font-size: .82rem; line-height: 1.25;
+}
+.quick-reply-btn:hover, .quick-reply-btn:focus-visible { border-color: var(--bege); background: var(--accent-light); outline: none; }
+.guide-action {
+  display: inline-flex; align-items: center; gap: 9px; margin: 0 0 2px 2px; padding: 10px 15px;
+  border: 1px solid rgba(234,210,191,.45); border-radius: 12px; color: #17251e !important;
+  background: var(--bege); font-weight: 650; font-size: .88rem; box-shadow: 0 5px 18px rgba(0,0,0,.12);
+}
+.guide-action::after { content: "↗"; font-size: 1rem; }
+.guide-action:hover { transform: translateY(-1px); filter: brightness(1.04); }
+.chat-input-container {
+  display: flex; align-items: center; gap: 10px; padding: 14px 16px;
+  border-top: 1px solid var(--border); background: rgba(0,0,0,.12);
+}
+.chat-input-container input {
+  min-width: 0; flex: 1; border: 1px solid var(--border); border-radius: 14px;
+  padding: 13px 14px; color: var(--text); background: rgba(255,255,255,.045); outline: none;
+}
+.chat-input-container input:focus { border-color: rgba(234,210,191,.7); box-shadow: 0 0 0 3px rgba(234,210,191,.09); }
+.chat-input-container input::placeholder { color: var(--text-muted); }
+.chat-input-container button { display: grid; place-items: center; width: 45px; height: 45px; flex: 0 0 45px; border-radius: 13px; color: #17251e; background: var(--bege); }
+.chat-input-container button:disabled { opacity: .55; cursor: wait; }
+.floating-chatbot { position: fixed; z-index: 1000; right: 22px; bottom: 22px; width: 58px; height: 58px; border-radius: 50%; color: #17251e; background: var(--bege); box-shadow: 0 10px 30px rgba(0,0,0,.3); font-size: 1.25rem; }
+.floating-chatbot:hover { transform: translateY(-2px); }
+@media (max-width: 600px) {
+  #chatbot-window.chatbox, .chatbox { min-height: 460px; max-height: 72vh; border-radius: 18px; }
+  .chat-body { padding: 14px; }
+  .message { max-width: 94%; font-size: .9rem; }
+  .quick-replies { padding: 0 12px 12px; gap: 7px; }
+  .quick-reply-btn { font-size: .78rem; }
+  .floating-chatbot { right: 14px; bottom: 14px; }
+}
