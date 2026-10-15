@@ -7,14 +7,21 @@ async function staticServer(t) {
   const app = express(); app.use(express.static('public'));
   const server = app.listen(0, '127.0.0.1');
   await new Promise(resolve => server.once('listening', resolve));
-  t.after(() => new Promise(resolve => server.close(resolve)));
-  return `http://127.0.0.1:${server.address().port}`;
+  t.after(async () => {
+    if (server.closeAllConnections) server.closeAllConnections();
+    await new Promise(resolve => server.close(resolve));
+  });
+  return { base: `http://127.0.0.1:${server.address().port}`, server };
+}
+
+async function closeBrowser(t, browser) {
+  t.after(async () => { await browser.close().catch(() => {}); });
 }
 
 test('chatbot page renders exactly one chat widget', async t => {
-  const base = await staticServer(t);
+  const { base } = await staticServer(t);
   const browser = await chromium.launch({ headless: true });
-  t.after(() => browser.close());
+  closeBrowser(t, browser);
   const page = await browser.newPage();
   await page.route('**/cdn.jsdelivr.net/**', route => route.fulfill({ status: 200, contentType: 'text/javascript', body: '' }));
   await page.route('**/fonts.googleapis.com/**', route => route.abort());
@@ -24,6 +31,7 @@ test('chatbot page renders exactly one chat widget', async t => {
   assert.equal(await page.locator('#chat-input').count(), 1);
   assert.equal(await page.locator('#send-message').count(), 1);
   assert.equal(await page.locator('#chatbot-window').count(), 1);
+  await page.close();
 });
 
 test('chatbot answers navigation questions honestly when AI is down', async t => {
@@ -34,9 +42,12 @@ test('chatbot answers navigation questions honestly when AI is down', async t =>
   app.post('/api/ai/chat', (req, res) => res.status(503).json({ error: 'AI unavailable' }));
   const server = app.listen(0, '127.0.0.1');
   await new Promise(resolve => server.once('listening', resolve));
-  t.after(() => new Promise(resolve => server.close(resolve)));
+  t.after(async () => {
+    if (server.closeAllConnections) server.closeAllConnections();
+    await new Promise(resolve => server.close(resolve));
+  });
   const browser = await chromium.launch({ headless: true });
-  t.after(() => browser.close());
+  closeBrowser(t, browser);
   const context = await browser.newContext();
   await context.addInitScript(() => {
     localStorage.setItem('token', 't');
@@ -93,12 +104,14 @@ test('chatbot answers navigation questions honestly when AI is down', async t =>
   }
   const unknown = await ask('what is the meaning of life?');
   assert.doesNotMatch(unknown.text, /\.html/, 'unknown questions get no fabricated route');
+  await page.close();
+  await context.close();
 });
 
 test('public certificate verification stays public, private views stay gated', async t => {
-  const base = await staticServer(t);
+  const { base } = await staticServer(t);
   const browser = await chromium.launch({ headless: true });
-  t.after(() => browser.close());
+  closeBrowser(t, browser);
   const page = await browser.newPage();
   await page.goto(`${base}/certificate.html?verify=11111111-1111-4111-8111-111111111111`, { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(1500);
@@ -106,4 +119,5 @@ test('public certificate verification stays public, private views stay gated', a
   await page.goto(`${base}/certificate.html`, { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(1500);
   assert.ok(page.url().includes('login.html'), `private certificate view must redirect to login, got ${page.url()}`);
+  await page.close();
 });
