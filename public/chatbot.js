@@ -7,14 +7,8 @@ class Chatbot {
   constructor() {
     this.isOpen = false;
     this.messages = [];
-    this.quickReplies = [
-      "Career recommendations",
-      "Best courses for me",
-      "Resume tips",
-      "Interview prep",
-      "Interview questions",
-      "What the purpose of this website?",
-    ];
+    this.quickReplies = ["Login / Sign up", "Explore courses", "Find a course type", "Try a demo", "Practise coding", "I need help"];
+    this.isSending = false;
     this.init();
   }
 
@@ -57,7 +51,7 @@ class Chatbot {
       });
     }
 
-    this.addMessage("bot", t("coverage.chatbotWelcome", "👋 Hi! I'm CareerPath AI Assistant. I can help with career advice, courses, resume tips, and interview prep. What would you like to know?"));
+    this.addMessage("bot", "Hi! I’m your CareerPath Guide 👋 I can help you find pages, courses, and demos. Choose a shortcut below or ask me where to go.");
     this.showQuickReplies();
   }
 
@@ -127,8 +121,10 @@ class Chatbot {
       const btn = document.createElement("button");
       btn.className = "quick-reply-btn";
       btn.textContent = reply;
+      btn.type = "button";
       btn.onclick = () => {
-        document.getElementById("chat-input").value = reply;
+        const input = document.getElementById("chat-input");
+        if (input) input.value = reply;
         this.sendMessage();
       };
       container.appendChild(btn);
@@ -137,12 +133,25 @@ class Chatbot {
 
   async sendMessage() {
     const input = document.getElementById("chat-input");
+    if (this.isSending) return;
     const message = input.value.trim();
 
     if (!message) return;
 
     this.addMessage("user", message);
     input.value = "";
+
+    const guide = this.guideReply(message);
+    if (guide) {
+      this.addMessage("bot", guide.text);
+      if (guide.route) this.addActionButton(guide.label || "Open page", guide.route);
+      this.showQuickReplies();
+      return;
+    }
+
+    this.isSending = true;
+    const sendButton = document.getElementById("send-message");
+    if (sendButton) sendButton.disabled = true;
 
     const typingDiv = document.createElement("div");
     typingDiv.className = "message bot typing";
@@ -154,7 +163,8 @@ class Chatbot {
 
       if (!token) {
         typingDiv.remove();
-        this.addMessage("bot", t("coverage.chatbotNeedsLogin", "Please log in first — the AI assistant needs your account to save your conversation and give personalized advice."));
+        this.addMessage("bot", "I couldn't match that to a quick website action. Try one of the shortcuts below, or sign in if you need account-specific help.");
+        this.addActionButton("Go to login", "login.html");
         this.showQuickReplies();
         return;
       }
@@ -186,42 +196,69 @@ class Chatbot {
       console.error("Chat error:", error);
       typingDiv.remove();
       // Preserve the submitted message for offline guidance; the input was cleared above.
-      const guide = this.guideReply(message);
-      this.addMessage("bot", guide || t("coverage.chatbotConnectionError", "⚠️ Connection error. Please try again."));
+      const fallback = this.guideReply(message);
+      this.addMessage("bot", fallback ? fallback.text : "I can help with navigation, courses, and demos. Choose one of the shortcuts below.");
+      if (fallback?.route) this.addActionButton(fallback.label || "Open page", fallback.route);
     }
 
     this.showQuickReplies();
   }
 
-  // Deterministic website guide used only when the AI provider cannot answer.
-  // Returns a short navigation hint or null when nothing matches. Routes are
-  // hard-coded to real pages; admin and private records are never referenced.
+  addActionButton(label, route) {
+    if (!route || /^(https?:|javascript:|\/\/)/i.test(route)) return;
+    const body = document.getElementById("chatbot-body");
+    if (!body) return;
+    const link = document.createElement("a");
+    link.className = "guide-action";
+    link.href = route;
+    link.textContent = label;
+    link.setAttribute("aria-label", label);
+    body.appendChild(link);
+    body.scrollTop = body.scrollHeight;
+  }
+
+  // Local-first routing: common tasks never need a Gemini API call.
   guideReply(message) {
-    const text = String(message || '').toLowerCase();
-    if (!text.trim()) return null;
-    const prefix = t('coverage.chatbotGuidePrefix', 'The AI assistant is unavailable right now, but I can still point you the right way.');
-    const topics = [
-      { keys: ['quiz', 'quizzes', 'exam', 'exams', 'final', 'grade', 'score', 'pass', 'attempt'], label: t('nav.courses', 'Courses'), route: 'courses.html' },
-      { keys: ['assessment', 'result', 'results', 'career direction', 'career path', 'career test', 'take the test'], label: t('nav.careerTest', 'Career Test'), route: 'career-test.html' },
-      { keys: ['recommend', 'which course', 'choose a course', 'selection'], label: t('nav.courses', 'Courses'), route: 'courses.html' },
-      { keys: ['course', 'courses', 'catalog', 'learn'], label: t('nav.courses', 'Courses'), route: 'courses.html' },
-      { keys: ['enrol', 'enroll', 'access', 'premium', 'locked'], label: t('nav.courses', 'Courses'), route: 'courses.html' },
-      { keys: ['lesson', 'lessons', 'module', 'modules', 'curriculum'], label: t('nav.courses', 'Courses'), route: 'courses.html' },
-      { keys: ['certificate', 'certificates', 'verify'], label: 'Certificate verification', route: 'certificate.html' },
-      { keys: ['dashboard', 'progress', 'journey'], label: t('nav.dashboard', 'Dashboard'), route: 'dashboard.html' },
-      { keys: ['profile', 'avatar', 'photo', 'account'], label: t('nav.profile', 'Profile'), route: 'profile.html' },
-      { keys: ['language', 'french', 'arabic', 'rtl', 'translate', 'swahili', 'hinglish', 'hausa', 'pidgin', 'wolof'], label: t('nav.profile', 'Profile'), route: 'profile.html' },
-      { keys: ['programming', 'code', 'python', 'javascript', 'run', 'sandbox', 'execution', 'error in code', 'piston'], label: t('nav.programming', 'Programming'), route: 'programming.html' },
-      { keys: ['password', 'reset', 'forgot'], label: t('nav.login', 'Login'), route: 'login.html' },
-      { keys: ['register', 'sign up', 'create account'], label: t('nav.register', 'Register'), route: 'register.html' },
-      { keys: ['login', 'sign in'], label: t('nav.login', 'Login'), route: 'login.html' },
-      { keys: ['contact', 'human', 'support', 'help'], label: 'Contact', route: 'contactus.html' }
-    ];
-    const hit = topics.find(topic => topic.keys.some(keyword => keyword.includes(' ')
-      ? text.includes(keyword)
-      : new RegExp(`\\b${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`).test(text)));
-    if (!hit) return null;
-    return `${prefix} ${hit.label}: ${hit.route}`;
+    const text = String(message || "").toLowerCase().replace(/[^a-z0-9\\s-]/g, " ").replace(/\\s+/g, " ").trim();
+    if (!text) return null;
+    const has = (...words) => words.some(word => text.includes(word));
+    const go = (reply, label, route) => ({ text: reply, label, route });
+
+    if (has("login", "log in", "sign in", "password", "forgot password", "can't access my account")) {
+      return go("You can sign in here. New to CareerPath AI? Use the sign-up page to create an account.", "Go to login", "login.html");
+    }
+    if (has("register", "sign up", "signup", "create account", "new account", "join")) {
+      return go("Let’s get your account set up. Open the registration page to create one.", "Create an account", "register.html");
+    }
+    if (has("demo", "try it", "try out", "sample", "show me")) {
+      if (has("code", "coding", "program", "python", "javascript")) return go("Want to try coding? Open the Programming Studio.", "Open Programming Studio", "programming.html");
+      return go("For a quick introduction, start with the guided platform tour. For hands-on coding, use the Programming Studio.", "View platform tour", "tour.html");
+    }
+    if (has("programming", "coding", "code editor", "python", "javascript", "run code", "practice code", "practise code")) {
+      return go("The Programming Studio is where you can practise coding and try code examples.", "Open Programming Studio", "programming.html");
+    }
+    if (has("course", "courses", "catalog", "catalogue", "learn", "learning", "curriculum", "lesson", "module", "enroll", "enrol")) {
+      if (has("ai", "artificial intelligence", "machine learning", "ml")) return go("Browse the course catalogue to explore AI and machine-learning learning options.", "Explore courses", "courses.html");
+      if (has("cyber", "security")) return go("Browse the catalogue for cybersecurity-related learning options.", "Browse courses", "courses.html");
+      if (has("data", "analytics")) return go("Browse the catalogue for data and analytics learning options.", "Browse courses", "courses.html");
+      return go("Start in the course catalogue. Open a course to review its topics and decide whether it fits your level.", "Explore courses", "courses.html");
+    }
+    if (has("career test", "assessment", "career path", "career direction", "test result")) {
+      return go("The Career Test helps you explore possible directions. Open it to get started.", "Open Career Test", "career-test.html");
+    }
+    if (has("dashboard", "progress", "my learning", "my courses")) {
+      return go("Your dashboard is the place to check your learning overview and progress.", "Open dashboard", "dashboard.html");
+    }
+    if (has("profile", "account settings", "change my name", "change language", "language")) {
+      return go("Open your profile to review your account details and available preferences.", "Open profile", "profile.html");
+    }
+    if (has("contact", "support", "human", "contact us", "need help")) {
+      return go("Open the Contact page to find the platform’s support options.", "Contact support", "contactus.html");
+    }
+    if (has("what is this website", "purpose of this website", "what can i do", "how do i use", "where do i start", "i am lost", "i'm lost", "help me")) {
+      return go("CareerPath AI helps you explore courses, take a career test, and practise programming. You can start with courses or take the guided tour.", "Explore courses", "courses.html");
+    }
+    return null;
   }
 }
 
