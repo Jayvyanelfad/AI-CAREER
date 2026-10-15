@@ -5,7 +5,11 @@
   "main": "server.js",
   "type": "commonjs",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "test": "node --test --test-concurrency=1 --test-timeout=60000 tests/*.test.js",
+    "test:unit": "node --test --test-concurrency=2 --test-timeout=30000 tests/locale-parity.test.js tests/lesson-visuals-and-locales.test.js tests/career-assessment.test.js tests/career-assessment-store.test.js tests/course-learning-store.test.js tests/enrollment-store.test.js tests/lesson-progress-store.test.js tests/programming-studio-honesty.test.js tests/seed-idempotency.test.js tests/student-facing-fixes.test.js tests/debug-pages-removed.test.js",
+    "test:api": "node --test --test-concurrency=2 --test-timeout=30000 tests/admin-api.test.js tests/admin-classification.test.js tests/auth-api.test.js tests/certificate-api.test.js tests/chat-api.test.js tests/course-enrollment-api.test.js tests/notification-api.test.js tests/profile-api.test.js tests/progress-api.test.js tests/programming-execution-api.test.js",
+    "test:browser": "node --test --test-concurrency=1 --test-timeout=90000 tests/*.browser.test.js"
   },
   "engines": {
     "node": "24.x"
