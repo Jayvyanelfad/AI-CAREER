@@ -156,5 +156,8 @@
   },
   "page": {
     "openNavigation": "Open navigation"
+  },
+  "careerResult": {
+    "calculationBody": "This score show how close your answers match each career profile. E no be percentage chance say you go succeed for that job. The test compare your answers across eight areas with fixed career profiles, so use am as guide to explore options, no be final verdict."
   }
 }
