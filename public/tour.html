@@ -9,8 +9,14 @@
   <meta name="theme-color" content="#0a1914" />
   <title data-i18n="tour.pageTitle" data-i18n-fallback="Guided Tour - CareerPath AI">Guided Tour - CareerPath AI</title>
   <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="chatbot-widget.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <style>
+    /* Keep the fixed site header clear of the tour heading. */
+    body:has(.tour-shell) .dashboard-container { padding: 120px 16px 48px; }
+    @media (max-width: 700px) {
+      body:has(.tour-shell) .dashboard-container { padding-top: 96px; }
+    }
     .tour-shell { width: min(880px, calc(100% - 2rem)); margin-inline: auto; }
     .tour-stepper { display: flex; align-items: center; gap: .75rem; margin-block: 1rem; }
     .tour-progress { flex: 1; height: 6px; border-radius: 999px; background: rgba(134,164,142,.25); overflow: hidden; }
@@ -69,5 +75,6 @@
   </footer>
 
   <script src="tour.js"></script>
+  <script src="chatbot.js" defer></script>
 </body>
 </html>

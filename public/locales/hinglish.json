@@ -1028,7 +1028,7 @@
     "examAnswered": "Answered: {answered} / {total} MCQs",
     "examConfirmCrossword": "Part B submit karke final exam finish karein?",
     "examCrosswordError": "Crossword submit nahi ho saka.",
-    "chatbotWelcome": "Hi! Main CareerPath AI Assistant hoon. Career advice, courses, resume tips aur interview prep mein help kar sakta hoon. Aap kya jaanna chahenge?",
+    "chatbotWelcome": "Hi! Main aapka CareerPath Guide hoon 👋 Main pages, courses aur demos dhundhne mein help kar sakta hoon. Neeche se shortcut chunein ya poochhein kahaan jaana hai.",
     "chatbotNeedsLogin": "Pehle login karein — assistant ko chat save karne aur personalized advice dene ke liye account chahiye.",
     "chatbotUnknown": "Sorry, samajh nahi aaya. Dobara keh sakte hain?",
     "chatbotConnectionError": "Connection error. Phir try karein.",
@@ -1108,7 +1108,8 @@
     "Tell us more": "Thoda aur batayein…",
     "Ask about careers, courses, resume": "Careers, courses ya resume ke baare mein poochein…",
     "Thinking": "Soch raha hoon…",
-    "Loading exam": "Exam load ho raha hai…"
+    "Loading exam": "Exam load ho raha hai…",
+    "chatbotGuideLogin": "Main isko website ke quick action se match nahi kar paya. Neeche diye shortcuts try karein, ya account-specific help chahiye to sign in karein."
   },
   "careerResult": {
     "eyebrow": "AAPKI CAREER DIRECTION",

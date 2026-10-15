@@ -81,21 +81,29 @@ test('chatbot controls are named, live, and closable', () => {
   assert.match(js, /getElementById\("floating-chatbot"\)/);
   // The floating widget must not duplicate the dedicated page's static window.
   assert.match(js, /if \(document\.getElementById\("chatbot-window"\)\) return;/);
-  // Offline fallback: deterministic navigation help from verified routes only.
+  // Offline fallback: local-first navigation help from verified routes only.
+  // The Guide returns {text,label,route} objects and renders them through
+  // addActionButton, which rejects absolute and javascript: URLs.
   assert.match(js, /guideReply\(message\)/);
-  assert.match(js, /coverage\.chatbotGuidePrefix/);
+  assert.match(js, /addActionButton\(guide\.label \|\| "Open page", guide\.route\)/);
+  assert.match(js, /if \(fallback\?\.route\) this\.addActionButton\(fallback\.label \|\| "Open page", fallback\.route\)/);
+  assert.match(js, /\^\(https\?:\|javascript:\|\\\/\\\/\)\/i\.test\(route\)/);
   assert.doesNotMatch(js, /['"]admin\.html['"]/);
   assert.match(js, /aria-label="Type your message"/);
   assert.match(js, /aria-label="Send message"/);
   assert.match(js, /role="log" aria-live="polite"/);
 });
 
-test('dashboard grids ship loading states and the floating chat link works', () => {
+test('dashboard grids ship loading states and uses the shared chat widget', () => {
   const html = read('dashboard.html');
   for (const id of ['career-summary', 'courses-grid', 'explore-grid', 'certificates-grid']) {
     assert.match(html, new RegExp(`id="${id}"[^>]*aria-busy="true">[\\s\\S]*?loading-copy`));
   }
-  assert.match(html, /<a class="floating-chatbot" id="floating-chatbot" href="chatbot\.html" aria-label=/);
+  // One launcher per page: dashboard loads the shared widget scripts and has
+  // no duplicate floating anchor of its own (the widget provides it).
+  assert.match(html, /<script src="chatbot\.js" defer><\/script>/);
+  assert.match(html, /<link rel="stylesheet" href="chatbot-widget\.css" \/>/);
+  assert.doesNotMatch(html, /id="floating-chatbot"/);
 });
 
 test('admin shortcut is hidden until the server confirms membership', () => {

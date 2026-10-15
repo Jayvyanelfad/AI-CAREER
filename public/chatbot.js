@@ -320,6 +320,12 @@ class Chatbot {
     if (has("career test", "assessment", "career path", "career direction", "test result")) {
       return go("The Career Test helps you explore possible directions. Open it to get started.", "Open Career Test", "career-test.html");
     }
+    if (has("certificate", "certificates", "verify", "certification")) {
+      return go("Certificates are issued per course after you complete the lessons and pass the final assessment. You can verify an issued certificate at any time.", "Verify a certificate", "certificate.html");
+    }
+    if (has("exam", "exams", "quiz", "quizzes", "final", "grade", "attempt") || (has("score") && !has("career"))) {
+      return go("Exams unlock from inside an enrolled course. Open the course catalogue to find your course and check its final assessment.", "Explore courses", "courses.html");
+    }
     if (has("dashboard", "progress", "my learning", "my courses")) {
       return go("Your dashboard is the place to check your learning overview and progress.", "Open dashboard", "dashboard.html");
     }

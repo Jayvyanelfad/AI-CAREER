@@ -70,7 +70,11 @@ test('quick question through the widget yields platform guidance', async t => {
   await page.locator('[data-chatbot-open]').click();
   await page.locator('#chat-input').fill('where are the courses?');
   await page.locator('#send-message').click();
-  await page.waitForFunction(() => [...document.querySelectorAll('#chatbot-body .message.bot')].some(el => el.textContent.includes('courses.html')), null, { timeout: 15000 });
+  // Local-first guide: verified route surfaces as an action link, and the
+  // explanatory message never exposes admin pages or invented URLs.
+  await page.waitForSelector('.guide-action[href="courses.html"]', { timeout: 15000 });
+  const bodyText = await page.locator('#chatbot-body').innerText();
+  assert.doesNotMatch(bodyText, /admin\.html/);
   await context.close();
 });
 
@@ -105,7 +109,7 @@ test('widget welcome re-localizes after language change', async t => {
   await page.goto(`${base}/index.html`, { waitUntil: 'domcontentloaded', timeout: 90000 });
   await page.waitForTimeout(1200);
   await page.evaluate(() => window.setCareerPathLanguage && window.setCareerPathLanguage('pcm'));
-  await page.waitForFunction(() => [...document.querySelectorAll('#chatbot-body .message.bot')].some(el => /Wetin you wan know/.test(el.textContent)), null, { timeout: 15000 });
+  await page.waitForFunction(() => [...document.querySelectorAll('#chatbot-body .message.bot')].some(el => /Na your CareerPath Guide/.test(el.textContent)), null, { timeout: 15000 });
   const launcherText = await page.locator('[data-chatbot-open]').innerText();
   assert.match(launcherText, /AI Assistant/);
   await context.close();
@@ -123,10 +127,15 @@ test('signed-out follow-ups explain login once instead of repeating', async t =>
     await page.locator('#send-message').click();
     await page.waitForTimeout(400);
   }
-  const loginWarnings = await page.evaluate(() =>
+  // The first two sends match no shortcut and hit the signed-out notice;
+  // the third matches the course guide and bypasses auth. The notice and
+  // its login action must each appear exactly once.
+  const notices = await page.evaluate(() =>
     [...document.querySelectorAll('#chatbot-body .message.bot')]
-      .filter(el => /log in first/i.test(el.textContent)).length);
-  assert.equal(loginWarnings, 1, 'login requirement is stated once across follow-ups');
+      .filter(el => /quick website action/i.test(el.textContent)).length);
+  assert.equal(notices, 1, 'signed-out notice is stated once across follow-ups');
+  assert.equal(await page.locator('.guide-action[href="login.html"]').count(), 1, 'one login action');
+  assert.equal(await page.locator('.guide-action[href="courses.html"]').count(), 1, 'guide match still answers');
   await context.close();
 });
 

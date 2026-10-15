@@ -56,38 +56,43 @@ test('chatbot answers navigation questions honestly when AI is down', async t =>
   await page.waitForTimeout(1000);
   await page.locator('#chat-input').fill('where are the courses?');
   await page.locator('#send-message').click();
-  await page.waitForFunction(() => [...document.querySelectorAll('#chatbot-body .message.bot')].some(el => el.textContent.includes('courses.html')), null, { timeout: 15000 });
-  const reply = await page.locator('#chatbot-body .message.bot').last().innerText();
-  assert.match(reply, /unavailable right now/);
-  assert.match(reply, /courses\.html/);
-  assert.doesNotMatch(reply, /admin/i);
+  // Local-first guide: the route surfaces as a verified action link, the
+  // message stays honest, and admin pages are never referenced.
+  await page.waitForSelector('.guide-action[href="courses.html"]', { timeout: 15000 });
+  const firstReply = await page.locator('#chatbot-body .message.bot').last().innerText();
+  assert.doesNotMatch(firstReply, /admin/i);
+  assert.doesNotMatch(firstReply, /\.html/, 'route travels in the action link, not the prose');
 
   async function ask(question) {
     const before = await page.locator('#chatbot-body .message.bot').count();
+    const linksBefore = await page.locator('#chatbot-body .guide-action').count();
     await page.locator('#chat-input').fill(question);
     await page.locator('#send-message').click();
     await page.waitForFunction(prev => {
       const items = [...document.querySelectorAll('#chatbot-body .message.bot')];
       return items.length > prev && !items[items.length - 1].textContent.includes('Thinking');
     }, before, { timeout: 15000 });
-    return page.locator('#chatbot-body .message.bot').last().innerText();
+    return {
+      text: await page.locator('#chatbot-body .message.bot').last().innerText(),
+      links: await page.locator('#chatbot-body .guide-action').count() - linksBefore
+    };
   }
   const cases = [
-    ['how do I reset my password?', /login\.html/],
-    ['where is my exam?', /courses\.html/],
-    ['how do I change language to arabic?', /profile\.html/],
-    ['why does run code fail?', /programming\.html/],
-    ['how do I verify a certificate?', /certificate\.html/],
-    ['how do I register?', /register\.html/]
+    ['how do I reset my password?', 'login.html'],
+    ['where is my exam?', 'courses.html'],
+    ['how do I change language to arabic?', 'profile.html'],
+    ['why does run code fail?', 'programming.html'],
+    ['how do I verify a certificate?', 'certificate.html'],
+    ['how do I register?', 'register.html']
   ];
   for (const [question, route] of cases) {
     const answer = await ask(question);
-    assert.match(answer, /unavailable right now/, `honest prefix for: ${question}`);
-    assert.match(answer, route, `correct route for: ${question}`);
-    assert.doesNotMatch(answer, /admin/i, `no admin exposure for: ${question}`);
+    assert.doesNotMatch(answer.text, /admin/i, `no admin exposure for: ${question}`);
+    const hrefs = await page.locator('#chatbot-body .guide-action').evaluateAll(els => els.map(e => e.getAttribute('href')));
+    assert.ok(hrefs.includes(route), `verified route ${route} for: ${question}`);
   }
   const unknown = await ask('what is the meaning of life?');
-  assert.doesNotMatch(unknown, /\.html/, 'unknown questions get no fabricated route');
+  assert.doesNotMatch(unknown.text, /\.html/, 'unknown questions get no fabricated route');
 });
 
 test('public certificate verification stays public, private views stay gated', async t => {

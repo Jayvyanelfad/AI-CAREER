@@ -1028,7 +1028,7 @@
     "examAnswered": "Réponses : {answered} / {total} QCM",
     "examConfirmCrossword": "Soumettre la partie B et terminer l’évaluation finale ?",
     "examCrosswordError": "Impossible de soumettre les mots croisés.",
-    "chatbotWelcome": "Bonjour ! Je suis l’assistant CareerPath AI. Je peux vous conseiller sur les carrières, les cours, le CV et les entretiens. Que souhaitez-vous savoir ?",
+    "chatbotWelcome": "Salut ! Je suis votre Guide CareerPath 👋 Je peux vous aider à trouver des pages, des cours et des démos. Choisissez un raccourci ci-dessous ou demandez-moi où aller.",
     "chatbotNeedsLogin": "Connectez-vous d’abord : l’assistant a besoin de votre compte pour enregistrer la conversation et personnaliser ses conseils.",
     "chatbotUnknown": "Désolé, je n’ai pas compris. Pouvez-vous reformuler ?",
     "chatbotConnectionError": "Erreur de connexion. Réessayez.",
@@ -1108,7 +1108,8 @@
     "Tell us more": "Dites-nous en plus…",
     "Ask about careers, courses, resume": "Posez vos questions sur les carrières, les cours ou le CV…",
     "Thinking": "Réflexion…",
-    "Loading exam": "Chargement de l’évaluation…"
+    "Loading exam": "Chargement de l’évaluation…",
+    "chatbotGuideLogin": "Je n'ai pas trouvé d'action rapide correspondant sur le site. Essayez l'un des raccourcis ci-dessous, ou connectez-vous si vous avez besoin d'aide liée à votre compte."
   },
   "careerResult": {
     "eyebrow": "VOTRE ORIENTATION PROFESSIONNELLE",

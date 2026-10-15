@@ -1028,7 +1028,7 @@
     "examAnswered": "Yaliyojibiwa: {answered} / {total} maswali ya kuchagua",
     "examConfirmCrossword": "Wasilisha sehemu B na umalize mtihani huu wa mwisho?",
     "examCrosswordError": "Imeshindikana kuwasilisha chemshabongo.",
-    "chatbotWelcome": "Habari! Mimi ni msaidizi wa CareerPath AI. Naweza kusaidia kuhusu taaluma, kozi, wasifu na maandalizi ya usaili. Ungependa kujua nini?",
+    "chatbotWelcome": "Habari! Mimi ni Mwongozo wako wa CareerPath 👋 Ninaweza kukusaidia kupata kurasa, kozi na maonyesho. Chagua njia ya mkato hapa chini au niulize uende wapi.",
     "chatbotNeedsLogin": "Ingia kwanza — msaidizi anahitaji akaunti yako ili kuhifadhi mazungumzo na kutoa ushauri binafsi.",
     "chatbotUnknown": "Samahani, sijaelewa. Unaweza kusema kwa njia nyingine?",
     "chatbotConnectionError": "Hitilafu ya muunganisho. Jaribu tena.",
@@ -1108,7 +1108,8 @@
     "Tell us more": "Tuambie zaidi…",
     "Ask about careers, courses, resume": "Uliza kuhusu taaluma, kozi au wasifu…",
     "Thinking": "Inafikiria…",
-    "Loading exam": "Inapakia mtihani…"
+    "Loading exam": "Inapakia mtihani…",
+    "chatbotGuideLogin": "Sikuweza kulinganisha hilo na hatua ya haraka ya tovuti. Jaribu mojawapo ya njia za mkato hapa chini, au ingia ikiwa unahitaji usaidizi wa akaunti."
   },
   "project": {
     "eyebrow": "Umetengenezwa kama mradi wa B.Tech",

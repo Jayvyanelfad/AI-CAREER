@@ -1028,7 +1028,7 @@
     "examAnswered": "Answered: {answered} / {total} MCQs",
     "examConfirmCrossword": "Submit Part B and finish this final exam?",
     "examCrosswordError": "Could not submit the crossword.",
-    "chatbotWelcome": "Hi! I'm CareerPath AI Assistant. I can help with career advice, courses, resume tips, and interview prep. What would you like to know?",
+    "chatbotWelcome": "Hi! I’m your CareerPath Guide 👋 I can help you find pages, courses, and demos. Choose a shortcut below or ask me where to go.",
     "chatbotNeedsLogin": "Please log in first — the AI assistant needs your account to save your conversation and give personalized advice.",
     "chatbotUnknown": "Sorry, I couldn't understand. Can you rephrase?",
     "chatbotConnectionError": "Connection error. Please try again.",
@@ -1108,7 +1108,8 @@
     "Tell us more": "Tell us more...",
     "Ask about careers, courses, resume": "Ask about careers, courses, resume...",
     "Thinking": "Thinking...",
-    "Loading exam": "Loading exam..."
+    "Loading exam": "Loading exam...",
+    "chatbotGuideLogin": "I couldn't match that to a quick website action. Try one of the shortcuts below, or sign in if you need account-specific help."
   },
   "careerResult": {
     "eyebrow": "YOUR CAREER DIRECTION",

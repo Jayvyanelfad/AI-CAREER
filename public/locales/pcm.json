@@ -214,7 +214,7 @@
     "rulesOrLearning": "Na rules e dey follow, or na learning?",
     "homeEyebrow": "CAREER DISCOVERY × STORY-DRIVEN TECH LEARNING",
     "lessonSequenceDescription": "Lessons dey follow repeatable story-driven sequence: meet situation, understand problem, learn the main idea, see example, try challenge, and carry one better idea.",
-    "chatbotWelcome": "How far! CareerPath AI Assistant be this. I fit help with career advice, courses, resume tips, and interview prep. Wetin you wan know?",
+    "chatbotWelcome": "How far! Na your CareerPath Guide be this 👋 I fit help you find pages, courses, and demos. Choose one shortcut below or ask me where to go.",
     "chatbotNeedsLogin": "Abeg log in first — the AI assistant need your account to save your conversation and give you better advice.",
     "chatbotUnknown": "Sorry, I no understand. Abeg talk am another way?",
     "chatbotConnectionError": "Connection error. Abeg try again.",
@@ -985,7 +985,8 @@
     "About - CareerPath AI": "About - CareerPath AI",
     "AI Career Mentor - CareerPath AI": "AI Career Mentor - CareerPath AI",
     "Contact Us - CareerPath AI": "Contact Us - CareerPath AI",
-    "Exam - CareerPath AI": "Exam - CareerPath AI"
+    "Exam - CareerPath AI": "Exam - CareerPath AI",
+    "chatbotGuideLogin": "I no fit match that to quick website action. Try one of the shortcuts below, or sign in if you need account-specific help."
   },
   "page": {
     "openNavigation": "Open navigation",
