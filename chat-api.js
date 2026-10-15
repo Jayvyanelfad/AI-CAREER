@@ -17,14 +17,14 @@ function createChatRouter({ supabase, authenticateToken, generateReply, logger =
       let text;
       try {
         const assistantMode = req.body?.assistantMode === 'admin' ? 'admin' : 'student';
-        const claims = req.user || {};
-        const appRole = claims.app_metadata?.role || claims.app_metadata?.user_role;
-        const userRole = claims.user_metadata?.role || claims.user_metadata?.user_role;
-        const role = String(claims.role || appRole || userRole || '').toLowerCase();
-        if (assistantMode === 'admin' && !['admin', 'super_admin', 'superadmin'].includes(role)) {
-          return res.status(403).json({ error: 'Administrator access is required for the admin assistant.' });
+        if (assistantMode === 'admin') {
+          // Match the same server-side membership table used by the admin API.
+          const { data: membership, error: membershipError } = await supabase.from('admin_users')
+            .select('user_id').eq('user_id', req.user.id).maybeSingle();
+          if (membershipError) return res.status(503).json({ error: 'Admin authorization is unavailable.' });
+          if (!membership) return res.status(403).json({ error: 'Administrator access is required for the admin assistant.' });
         }
-        text = await generateReply(message, { ...claims, verifiedAssistantRole: assistantMode === 'admin' ? role : 'student' });
+        text = await generateReply(message, { verifiedAssistantRole: assistantMode === 'admin' ? 'admin' : 'student' });
       } catch (error) {
         if ((error.error && error.error.code === 429) || error.status === 429) {
           return res.status(503).json({ error: 'AI service temporarily unavailable due to quota exceeded. Please try again later.' });
