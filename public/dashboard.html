@@ -8,6 +8,7 @@
   <title data-i18n="dashboardHome.title">Your CareerPath</title>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,600;1,400&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="chatbot-widget.css" />
   <link rel="stylesheet" href="dashboard.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -48,10 +49,10 @@
 
     <section class="dashboard-block" id="certificates-section" aria-labelledby="certificates-title"><div class="section-heading"><p class="eyebrow" data-i18n="dashboardHome.milestonesEyebrow">MILESTONES</p><h2 id="certificates-title" data-i18n="dashboardHome.certificatesTitle">Certificates</h2></div><div id="certificates-grid" class="certificates-grid" aria-live="polite" aria-busy="true"><p class="loading-copy" data-i18n="common.loading" data-i18n-fallback="Loading…">Loading…</p></div></section>
     <section class="dashboard-block notifications-panel" aria-labelledby="notifications-title"><div class="section-heading section-heading-row"><div><p class="eyebrow" data-i18n="notifications.eyebrow">UPDATES</p><h2 id="notifications-title" data-i18n="notifications.title">Notifications</h2></div><button id="notifications-mark-all" class="text-link" type="button" hidden data-i18n="notifications.markAll">Mark all as read</button></div><p id="notifications-status" role="status" aria-live="polite"></p><div id="notifications-list" aria-live="polite"></div></section>
-    <nav class="dashboard-shortcuts" aria-label="Quick links"><a href="career-test.html" data-i18n="nav.careerTest">Career Test</a><a href="courses.html" data-i18n="nav.courses">Courses</a><a href="programming.html" data-i18n="dashboardHome.studioLink">Programming Studio</a><a href="profile.html" data-i18n="nav.profile">Profile</a><a href="admin.html" id="admin-shortcut" data-i18n="nav.admin" hidden>Admin</a></nav>
+    <nav class="dashboard-shortcuts" aria-label="Quick links"><a href="career-test.html" data-i18n="nav.careerTest">Career Test</a><a href="courses.html" data-i18n="nav.courses">Courses</a><a href="programming.html" data-i18n="dashboardHome.studioLink">Programming Studio</a><a href="profile.html" data-i18n="nav.profile">Profile</a><a href="tour.html" data-i18n="tour.dashboardLink" data-i18n-fallback="Take a guided tour">Take a guided tour</a><a href="admin.html" id="admin-shortcut" data-i18n="nav.admin" hidden>Admin</a></nav>
   </div></main>
-  <a class="floating-chatbot" id="floating-chatbot" href="chatbot.html" aria-label="Open chat with CareerPath AI"><i class="fas fa-robot" aria-hidden="true"></i></a>
   <footer><p data-i18n="ui.copyrightProject">© CareerPath AI · B.Tech Final Year Project</p></footer>
   <script src="supabase-config.js"></script><script src="career-direction-config.js"></script><script src="dashboard.js"></script><script src="auth-navigation.js"></script><script src="notifications.js"></script>
+  <script src="chatbot.js" defer></script>
 </body>
 </html>
