@@ -2474,7 +2474,9 @@ html[dir="rtl"] .nav-item::after {
 
 .home-scroll-cue {
   position: absolute;
-  right: max(32px, calc((100vw - 1200px) / 2));
+  /* Clear the fixed bottom-right chatbot launcher so the cue stays visible
+     and clickable on wide screens. */
+  right: max(190px, calc((100vw - 1200px) / 2 + 160px));
   bottom: 26px;
   display: flex;
   align-items: center;
@@ -3291,7 +3293,8 @@ html[dir="rtl"] .nav-item::after {
   }
 
   .home-scroll-cue {
-    right: 18px;
+    right: auto;
+    left: 18px;
     bottom: 18px;
   }
 
@@ -4438,7 +4441,8 @@ body:not(.home-page) .auth-google-button:hover {
   }
 
   .home-scroll-cue {
-    right: 18px;
+    right: auto;
+    left: 18px;
     bottom: 17px;
   }
 

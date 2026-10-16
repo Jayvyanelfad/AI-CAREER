@@ -13,6 +13,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,600;1,400;1,500&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="chatbot-widget.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 </head>
 <body class="home-page">
@@ -51,10 +52,11 @@
                 <div class="home-hero-copy">
                     <p class="home-eyebrow">CAREER DISCOVERY × STORY-DRIVEN TECH LEARNING</p>
                     <h1 id="home-title">Discover your direction.<br /><em>Learn modern tech through stories.</em><br />Practice what you learn.</h1>
-                    <p class="home-hero-description">Explore technology directions, then learn the skills behind them through short stories, clear explanations, examples, and hands-on challenges.</p>
+                    <p class="home-hero-description" data-i18n="ui.heroDescription" data-i18n-fallback="Explore technology careers, learn difficult concepts through relatable stories, and build practical programming skills at your own pace.">Explore technology careers, learn difficult concepts through relatable stories, and build practical programming skills at your own pace.</p>
                     <div class="home-hero-actions">
                         <a class="home-button home-button-primary" href="career-test.html">Discover My Career Path <span aria-hidden="true">→</span></a>
                         <a class="home-button home-button-secondary" href="courses.html" data-i18n="ui.exploreCourses" data-i18n-fallback="Explore Courses">Explore Courses</a>
+                        <a class="home-button home-button-secondary" href="tour.html" data-i18n="tour.heroLink" data-i18n-fallback="Explore the platform">Explore the platform</a>
                     </div>
                     <p class="home-hero-note"><a class="text-link" href="tour.html" data-i18n="tour.entryLink" data-i18n-fallback="New here? Take a guided sample tour">New here? Take a guided sample tour</a></p>
                     <p class="home-hero-note">Discover a direction <span aria-hidden="true">→</span> learn connected skills <span aria-hidden="true">→</span> practice through lesson challenges <span aria-hidden="true">→</span> track lesson progress</p>
@@ -262,5 +264,6 @@
     <script src="supabase-config.js"></script>
     <script src="auth-navigation.js"></script>
     <script src="index.js" defer></script>
+    <script src="chatbot.js" defer></script>
 </body>
 </html>

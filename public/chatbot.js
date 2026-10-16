@@ -13,6 +13,11 @@ class Chatbot {
   }
 
   init() {
+    // Guard against double initialization (e.g. the script being evaluated
+    // twice): re-binding would duplicate every handler and welcome message.
+    // The flag is global because each `new Chatbot()` gets a fresh instance.
+    if (window.__careerpathChatbotBound) return;
+    window.__careerpathChatbotBound = true;
     // Only build the widget if the page didn't already include its own
     // #chatbot markup (index.html ships one inline).
     this.createChatbotHTML();
@@ -51,8 +56,47 @@ class Chatbot {
       });
     }
 
-    this.addMessage("bot", "Hi! I’m your CareerPath Guide 👋 I can help you find pages, courses, and demos. Choose a shortcut below or ask me where to go.");
+    this.addMessage("bot", t("coverage.chatbotWelcome", "Hi! I’m your CareerPath Guide 👋 I can help you find pages, courses, and demos. Choose a shortcut below or ask me where to go."));
     this.showQuickReplies();
+    // Dictionaries load asynchronously: the welcome above may have rendered
+    // in the fallback language. Re-localize widget chrome (and an untouched
+    // welcome) whenever the language changes.
+    document.addEventListener('careerpath:language-change', () => this.relocalize());
+  }
+
+  relocalize() {
+    const launcherText = document.querySelector('[data-chatbot-open] span');
+    if (launcherText) launcherText.textContent = t('coverage.chatbotLauncherText', 'AI Assistant');
+    const openBtn = document.querySelector('[data-chatbot-open]');
+    if (openBtn) openBtn.setAttribute('aria-label', t('coverage.chatbotOpenChat', 'Open chat with CareerPath AI'));
+    const panel = document.getElementById('chatbot-window');
+    if (panel) panel.setAttribute('aria-label', t('coverage.chatbotDialogTitle', 'Career assistant chat'));
+    const closer = document.querySelector('[data-chatbot-close]');
+    if (closer) closer.setAttribute('aria-label', t('coverage.chatbotCloseChat', 'Close chat'));
+    const input = document.getElementById('chat-input');
+    if (input) {
+      input.setAttribute('placeholder', t('coverage.chatbotInputPlaceholder', 'Ask about careers, courses, resume...'));
+      input.setAttribute('aria-label', t('coverage.chatbotInputLabel', 'Type your message'));
+    }
+    const sendBtn = document.getElementById('send-message');
+    if (sendBtn) sendBtn.setAttribute('aria-label', t('coverage.chatbotSendLabel', 'Send message'));
+    const log = document.getElementById('chatbot-body');
+    if (log) log.setAttribute('aria-label', t('coverage.chatbotLogLabel', 'Chat messages'));
+    const header = document.querySelector('#chatbot .chat-header h3');
+    // Keep markup (icon) intact while translating the header text.
+    if (header) {
+      const icon = header.querySelector('i');
+      header.textContent = t('coverage.chatbotHeaderText', 'Career Assistant');
+      if (icon) header.prepend(icon, document.createTextNode(' '));
+    }
+    // Only the pristine welcome (no conversation yet) is re-worded; real
+    // history is never rewritten.
+    if (this.messages.length === 1 && this.messages[0].sender === 'bot' && log) {
+      const fresh = t("coverage.chatbotWelcome", "Hi! I’m your CareerPath Guide 👋 I can help you find pages, courses, and demos. Choose a shortcut below or ask me where to go.");
+      this.messages[0].text = fresh;
+      const first = log.querySelector('.message.bot');
+      if (first) first.textContent = fresh;
+    }
   }
 
   createChatbotHTML() {
@@ -62,15 +106,18 @@ class Chatbot {
     // (chatbot-window, chatbot-body, chat-input, send-message).
     if (document.getElementById("chatbot-window")) return;
 
+    // Widget chrome keeps literal English labels (also asserted by the
+    // static regression suite); relocalize() translates them once the
+    // dictionaries arrive. Only interpolated values are escaped.
     const html = `
       <div id="chatbot">
-        <button class="chatbot-button" onclick="window.bot.toggleChat()" aria-label="Open chat with CareerPath AI">
-          <i class="fas fa-robot" aria-hidden="true"></i> AI Assistant
+        <button type="button" class="chatbot-button" data-chatbot-open aria-expanded="false" aria-controls="chatbot-window" aria-label="Open chat with CareerPath AI">
+          <i class="fas fa-robot" aria-hidden="true"></i> <span>AI Assistant</span>
         </button>
-        <div class="chatbox" id="chatbot-window" style="display: none;">
+        <div class="chatbox" id="chatbot-window" role="dialog" aria-modal="false" aria-label="Career assistant chat" style="display: none;">
           <div class="chat-header">
             <h3><i class="fas fa-robot" aria-hidden="true"></i> Career Assistant</h3>
-            <button onclick="window.bot.toggleChat()" aria-label="Close chat">
+            <button type="button" data-chatbot-close aria-label="Close chat">
               <i class="fas fa-times" aria-hidden="true"></i>
             </button>
           </div>
@@ -78,7 +125,7 @@ class Chatbot {
           <div id="quick-replies" class="quick-replies"></div>
           <div class="chat-input-container">
             <input type="text" id="chat-input" placeholder="Ask about careers, courses, resume..." aria-label="Type your message" />
-            <button id="send-message" aria-label="Send message"><i class="fas fa-paper-plane" aria-hidden="true"></i></button>
+            <button type="button" id="send-message" aria-label="Send message"><i class="fas fa-paper-plane" aria-hidden="true"></i></button>
           </div>
         </div>
       </div>
@@ -87,13 +134,27 @@ class Chatbot {
     const wrapper = document.createElement("div");
     wrapper.innerHTML = html;
     document.body.appendChild(wrapper);
+    const launcher = wrapper.querySelector('[data-chatbot-open]');
+    const panel = wrapper.querySelector('#chatbot-window');
+    const closer = wrapper.querySelector('[data-chatbot-close]');
+    if (launcher) launcher.addEventListener('click', () => this.toggleChat());
+    if (closer) closer.addEventListener('click', () => this.toggleChat());
+    if (panel) panel.addEventListener('keydown', event => {
+      if (event.key === 'Escape') this.toggleChat(false);
+    });
   }
 
-  toggleChat() {
+  toggleChat(force) {
     const chatWindow = document.getElementById("chatbot-window");
     if (!chatWindow) return;
-    this.isOpen = !this.isOpen;
+    this.isOpen = typeof force === 'boolean' ? force : !this.isOpen;
     chatWindow.style.display = this.isOpen ? "flex" : "none";
+    const launcher = document.querySelector('[data-chatbot-open]');
+    if (launcher) launcher.setAttribute('aria-expanded', String(this.isOpen));
+    const focusTarget = this.isOpen
+      ? document.getElementById("chat-input")
+      : launcher;
+    if (focusTarget && typeof focusTarget.focus === 'function') focusTarget.focus();
   }
 
   addMessage(sender, text) {
@@ -158,15 +219,25 @@ class Chatbot {
     typingDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Thinking...';
     document.getElementById("chatbot-body").appendChild(typingDiv);
 
+    const done = () => {
+      this.isSending = false;
+      if (sendButton) sendButton.disabled = false;
+    };
+
     try {
       const token = localStorage.getItem("token");
 
       if (!token) {
         typingDiv.remove();
-        this.addMessage("bot", "I couldn't match that to a quick website action. Try one of the shortcuts below, or sign in if you need account-specific help.");
-        this.addActionButton("Go to login", "login.html");
-        this.isSending = false;
-        if (sendButton) sendButton.disabled = false;
+        const notice = t("coverage.chatbotGuideLogin", "I couldn't match that to a quick website action. Try one of the shortcuts below, or sign in if you need account-specific help.");
+        // State the signed-out notice once: consecutive unmatched follow-ups
+        // must not stack identical messages and action buttons.
+        const lastBot = [...this.messages].reverse().find(entry => entry.sender === "bot");
+        if (!(lastBot && lastBot.text === notice)) {
+          this.addMessage("bot", notice);
+          this.addActionButton("Go to login", "login.html");
+        }
+        done();
         this.showQuickReplies();
         return;
       }
@@ -203,8 +274,7 @@ class Chatbot {
       if (fallback?.route) this.addActionButton(fallback.label || "Open page", fallback.route);
     }
 
-    this.isSending = false;
-    if (sendButton) sendButton.disabled = false;
+    done();
     this.showQuickReplies();
   }
 
@@ -223,7 +293,7 @@ class Chatbot {
 
   // Local-first routing: common tasks never need a Gemini API call.
   guideReply(message) {
-    const text = String(message || "").toLowerCase().replace(/[^a-z0-9\\s-]/g, " ").replace(/\\s+/g, " ").trim();
+    const text = String(message || "").toLowerCase().replace(/[^a-z0-9\s-]/g, " ").replace(/\s+/g, " ").trim();
     if (!text) return null;
     const has = (...words) => words.some(word => text.includes(word));
     const go = (reply, label, route) => ({ text: reply, label, route });
@@ -250,6 +320,12 @@ class Chatbot {
     if (has("career test", "assessment", "career path", "career direction", "test result")) {
       return go("The Career Test helps you explore possible directions. Open it to get started.", "Open Career Test", "career-test.html");
     }
+    if (has("certificate", "certificates", "verify", "certification")) {
+      return go("Certificates are issued per course after you complete the lessons and pass the final assessment. You can verify an issued certificate at any time.", "Verify a certificate", "certificate.html");
+    }
+    if (has("exam", "exams", "quiz", "quizzes", "final", "grade", "attempt") || (has("score") && !has("career"))) {
+      return go("Exams unlock from inside an enrolled course. Open the course catalogue to find your course and check its final assessment.", "Explore courses", "courses.html");
+    }
     if (has("dashboard", "progress", "my learning", "my courses")) {
       return go("Your dashboard is the place to check your learning overview and progress.", "Open dashboard", "dashboard.html");
     }
@@ -267,8 +343,9 @@ class Chatbot {
 }
 
 // Initialize chatbot when page loads.
-// IMPORTANT: exposed as window.bot because every page's inline HTML calls
-// onclick="bot.toggleChat()" — it must match this exact name.
+// IMPORTANT: exposed as window.bot because some pages call
+// bot.toggleChat() — it must match this exact name.
 document.addEventListener("DOMContentLoaded", () => {
+  if (window.bot) return;
   window.bot = new Chatbot();
 });

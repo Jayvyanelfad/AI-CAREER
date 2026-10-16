@@ -172,8 +172,12 @@ test('AI provider failure does not claim a reply', async t => {
     headers: { 'Content-Type': 'application/json', Authorization: 'Bearer alice' },
     body: JSON.stringify({ message: 'hello' })
   });
-  assert.equal(res.status, 500);
-  assert.deepEqual(await res.json(), { error: 'Failed to generate response' });
+  assert.equal(res.status, 502);
+  // A provider outage is a bad gateway, not a server bug: no reply is
+  // claimed and nothing is persisted.
+  const body = await res.json();
+  assert.equal(body.error, 'The AI assistant could not generate a response. Please try again.');
+  assert.ok(!('reply' in body));
   assert.deepEqual(db.seen.inserts, []);
 });
 

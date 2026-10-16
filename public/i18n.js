@@ -20,6 +20,7 @@
   const originalText = new WeakMap();
   const originalAttributes = new WeakMap();
   const missingKeys = new Set();
+  let dictionariesReady = false;
   let activeLanguage = 'en';
   let activeDictionary = {};
   let englishDictionary = {};
@@ -35,9 +36,27 @@
 
   function lookup(dictionary, key) {
     if (!dictionary || typeof key !== 'string' || !key) return undefined;
-    return key.split('.').reduce((value, part) => (
-      value && typeof value === 'object' ? value[part] : undefined
-    ), dictionary);
+    if (Object.prototype.hasOwnProperty.call(dictionary, key)) return dictionary[key];
+    // Keys are usually dot paths, but sentence keys may themselves contain
+    // dots (e.g. "B.Tech"). Match greedily segment by segment so a literal
+    // dot inside a key segment still resolves instead of warning + fallback.
+    const parts = key.split('.');
+    let node = dictionary;
+    for (let i = 0; i < parts.length; i++) {
+      if (!node || typeof node !== 'object') return undefined;
+      let matched = false;
+      for (let j = parts.length; j > i; j--) {
+        const candidate = parts.slice(i, j).join('.');
+        if (Object.prototype.hasOwnProperty.call(node, candidate)) {
+          node = node[candidate];
+          i = j - 1;
+          matched = true;
+          break;
+        }
+      }
+      if (!matched) return undefined;
+    }
+    return node;
   }
 
   function safeString(value) {
@@ -61,7 +80,9 @@
       const selected = lookup(activeDictionary, key);
       const english = lookup(englishDictionary, key);
       template = safeString(selected) || safeString(english);
-      if (!template && activeLanguage !== 'en' && !missingKeys.has(key)) {
+      // Warn only for keys that are genuinely absent after dictionaries have
+      // loaded — never for the pre-load window, where every key would warn.
+      if (!template && dictionariesReady && activeLanguage !== 'en' && !missingKeys.has(key)) {
         missingKeys.add(key);
         if (typeof console !== 'undefined' && console.warn) {
           console.warn(`[i18n] missing translation for "${key}" (${activeLanguage}); used English fallback.`);
@@ -265,6 +286,7 @@
       activeDictionary = selected;
       activeMeta = metaOf(selected, next);
       activeLanguage = next;
+      dictionariesReady = true;
       try { localStorage.setItem(STORAGE_KEY, next); } catch (_error) { /* current-page change still applies */ }
     } catch (_error) {
       if (request !== languageRequest) return;
@@ -281,7 +303,9 @@
   window.getCareerPathLanguages = () => SUPPORTED.map(entry => ({ ...entry }));
 
   function initialize() {
-    renderTranslations();
+    // Do not render before the dictionaries arrive: translating with empty
+    // dictionaries logs a spurious "missing translation" warning for every
+    // key (including keys that exist). setLanguage() renders once loaded.
     const observer = new MutationObserver(records => {
       records.forEach(record => record.addedNodes.forEach(node => {
         if (node.nodeType === Node.ELEMENT_NODE || node.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {

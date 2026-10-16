@@ -25,6 +25,7 @@ async function tourPage(t, { width = 1280, language = 'en' } = {}) {
     localStorage.setItem('aicareer-language', lang);
   }, language);
   await context.route('**/cdn.jsdelivr.net/**', route => route.fulfill({ status: 200, contentType: 'text/javascript', body: '' }));
+  await context.route('https://cdnjs.cloudflare.com/**', route => route.abort());
   await context.route('**/fonts.googleapis.com/**', route => route.abort());
   const page = await context.newPage();
   page.on('request', request => { if (request.url().includes('/api/') && request.method() !== 'GET') apiCalls.push(`${request.method()} ${request.url()}`); });
@@ -32,6 +33,35 @@ async function tourPage(t, { width = 1280, language = 'en' } = {}) {
   await page.locator('#tour-stage').waitFor();
   return { page, apiCalls };
 }
+
+test('French tour page logs no missing-translation warnings', async t => {
+  const { page } = await tourPage(t, { width: 1280, language: 'fr' });
+  const warnings = [];
+  page.on('console', message => {
+    if (message.type() === 'warning' && message.text().includes('[i18n] missing')) {
+      warnings.push(message.text());
+    }
+  });
+  // Trigger a re-render after locale dictionaries have loaded.
+  await page.evaluate(() => window.setCareerPathLanguage && window.setCareerPathLanguage('fr'));
+  await page.waitForTimeout(2500);
+  assert.deepEqual(warnings, [], `unexpected i18n warnings: ${warnings.slice(0, 5).join(' | ')}`);
+});
+
+test('tour header never overlaps the page heading', async t => {
+  for (const width of [1440, 390]) {
+    const { page } = await tourPage(t, { width });
+    const overlap = await page.evaluate(() => {
+      const header = document.querySelector('header');
+      const h1 = document.querySelector('main h1');
+      if (!header || !h1) return null;
+      const hr = header.getBoundingClientRect();
+      const r1 = h1.getBoundingClientRect();
+      return r1.top < hr.bottom - 1;
+    });
+    assert.equal(overlap, false, `header/h1 overlap at ${width}px`);
+  }
+});
 
 test('guided tour walks six steps with next, back, restart, and exit', async t => {
   const { page, apiCalls } = await tourPage(t);
@@ -68,6 +98,55 @@ test('tour practice exam gives feedback and completes without recording', async 
   assert.match(second, /not quite/i);
   await page.waitForFunction(() => document.getElementById('tour-exam-done')?.textContent.includes('1 of 3'));
   assert.deepEqual(apiCalls, [], 'practice exam is checked locally only');
+});
+
+test('homepage hero tour button opens the guided tour', async t => {
+  const app = express();
+  app.use(express.static('public'));
+  const server = app.listen(0, '127.0.0.1');
+  await new Promise(resolve => server.once('listening', resolve));
+  t.after(() => new Promise(resolve => server.close(resolve)));
+  const browser = await chromium.launch({ headless: true });
+  t.after(() => browser.close());
+  const context = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+  await context.route('**/cdn.jsdelivr.net/**', route => route.fulfill({ status: 200, contentType: 'text/javascript', body: '' }));
+  await context.route('https://cdnjs.cloudflare.com/**', route => route.abort());
+  await context.route('**/fonts.googleapis.com/**', route => route.abort());
+  const page = await context.newPage();
+  await page.goto(`http://127.0.0.1:${server.address().port}/index.html`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+  const heroLink = page.locator('.home-hero-actions a[href="tour.html"]');
+  assert.equal(await heroLink.count(), 1, 'hero has one prominent tour button');
+  await heroLink.click();
+  await page.waitForURL('**/tour.html', { timeout: 10000 });
+  await page.locator('#tour-stage').waitFor({ timeout: 15000 });
+  await context.close();
+});
+
+test('dashboard shortcuts include a guided tour link', async t => {
+  const app = express();
+  app.use(express.static('public'));
+  const server = app.listen(0, '127.0.0.1');
+  await new Promise(resolve => server.once('listening', resolve));
+  t.after(() => new Promise(resolve => server.close(resolve)));
+  const browser = await chromium.launch({ headless: true });
+  t.after(() => browser.close());
+  const context = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+  await context.addInitScript(() => {
+    localStorage.setItem('token', 't');
+    window.supabase = { auth: {
+      getSession: async () => ({ data: { session: { access_token: 't', user: { id: 'u1' } } }, error: null }),
+      getUser: async () => ({ data: { user: { id: 'u1' } }, error: null }),
+      onAuthStateChange: () => ({ data: { subscription: { unsubscribe() {} } } })
+    } };
+  });
+  await context.route('**/cdn.jsdelivr.net/**', route => route.fulfill({ status: 200, contentType: 'text/javascript', body: '' }));
+  await context.route('https://cdnjs.cloudflare.com/**', route => route.abort());
+  await context.route('**/fonts.googleapis.com/**', route => route.abort());
+  const page = await context.newPage();
+  await page.goto(`http://127.0.0.1:${server.address().port}/dashboard.html`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+  const link = page.locator('.dashboard-shortcuts a[href="tour.html"]');
+  assert.equal(await link.count(), 1, 'dashboard has one tour link');
+  await context.close();
 });
 
 test('tour renders mobile and Arabic RTL without overflow', async t => {

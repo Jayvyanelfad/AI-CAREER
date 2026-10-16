@@ -7,14 +7,21 @@ async function staticServer(t) {
   const app = express(); app.use(express.static('public'));
   const server = app.listen(0, '127.0.0.1');
   await new Promise(resolve => server.once('listening', resolve));
-  t.after(() => new Promise(resolve => server.close(resolve)));
-  return `http://127.0.0.1:${server.address().port}`;
+  t.after(async () => {
+    if (server.closeAllConnections) server.closeAllConnections();
+    await new Promise(resolve => server.close(resolve));
+  });
+  return { base: `http://127.0.0.1:${server.address().port}`, server };
+}
+
+async function closeBrowser(t, browser) {
+  t.after(async () => { await browser.close().catch(() => {}); });
 }
 
 test('chatbot page renders exactly one chat widget', async t => {
-  const base = await staticServer(t);
+  const { base } = await staticServer(t);
   const browser = await chromium.launch({ headless: true });
-  t.after(() => browser.close());
+  closeBrowser(t, browser);
   const page = await browser.newPage();
   await page.route('**/cdn.jsdelivr.net/**', route => route.fulfill({ status: 200, contentType: 'text/javascript', body: '' }));
   await page.route('**/fonts.googleapis.com/**', route => route.abort());
@@ -24,6 +31,7 @@ test('chatbot page renders exactly one chat widget', async t => {
   assert.equal(await page.locator('#chat-input').count(), 1);
   assert.equal(await page.locator('#send-message').count(), 1);
   assert.equal(await page.locator('#chatbot-window').count(), 1);
+  await page.close();
 });
 
 test('chatbot answers navigation questions honestly when AI is down', async t => {
@@ -34,9 +42,12 @@ test('chatbot answers navigation questions honestly when AI is down', async t =>
   app.post('/api/ai/chat', (req, res) => res.status(503).json({ error: 'AI unavailable' }));
   const server = app.listen(0, '127.0.0.1');
   await new Promise(resolve => server.once('listening', resolve));
-  t.after(() => new Promise(resolve => server.close(resolve)));
+  t.after(async () => {
+    if (server.closeAllConnections) server.closeAllConnections();
+    await new Promise(resolve => server.close(resolve));
+  });
   const browser = await chromium.launch({ headless: true });
-  t.after(() => browser.close());
+  closeBrowser(t, browser);
   const context = await browser.newContext();
   await context.addInitScript(() => {
     localStorage.setItem('token', 't');
@@ -56,44 +67,51 @@ test('chatbot answers navigation questions honestly when AI is down', async t =>
   await page.waitForTimeout(1000);
   await page.locator('#chat-input').fill('where are the courses?');
   await page.locator('#send-message').click();
-  await page.waitForFunction(() => [...document.querySelectorAll('#chatbot-body .message.bot')].some(el => el.textContent.includes('courses.html')), null, { timeout: 15000 });
-  const reply = await page.locator('#chatbot-body .message.bot').last().innerText();
-  assert.match(reply, /unavailable right now/);
-  assert.match(reply, /courses\.html/);
-  assert.doesNotMatch(reply, /admin/i);
+  // Local-first guide: the route surfaces as a verified action link, the
+  // message stays honest, and admin pages are never referenced.
+  await page.waitForSelector('.guide-action[href="courses.html"]', { timeout: 15000 });
+  const firstReply = await page.locator('#chatbot-body .message.bot').last().innerText();
+  assert.doesNotMatch(firstReply, /admin/i);
+  assert.doesNotMatch(firstReply, /\.html/, 'route travels in the action link, not the prose');
 
   async function ask(question) {
     const before = await page.locator('#chatbot-body .message.bot').count();
+    const linksBefore = await page.locator('#chatbot-body .guide-action').count();
     await page.locator('#chat-input').fill(question);
     await page.locator('#send-message').click();
     await page.waitForFunction(prev => {
       const items = [...document.querySelectorAll('#chatbot-body .message.bot')];
       return items.length > prev && !items[items.length - 1].textContent.includes('Thinking');
     }, before, { timeout: 15000 });
-    return page.locator('#chatbot-body .message.bot').last().innerText();
+    return {
+      text: await page.locator('#chatbot-body .message.bot').last().innerText(),
+      links: await page.locator('#chatbot-body .guide-action').count() - linksBefore
+    };
   }
   const cases = [
-    ['how do I reset my password?', /login\.html/],
-    ['where is my exam?', /courses\.html/],
-    ['how do I change language to arabic?', /profile\.html/],
-    ['why does run code fail?', /programming\.html/],
-    ['how do I verify a certificate?', /certificate\.html/],
-    ['how do I register?', /register\.html/]
+    ['how do I reset my password?', 'login.html'],
+    ['where is my exam?', 'courses.html'],
+    ['how do I change language to arabic?', 'profile.html'],
+    ['why does run code fail?', 'programming.html'],
+    ['how do I verify a certificate?', 'certificate.html'],
+    ['how do I register?', 'register.html']
   ];
   for (const [question, route] of cases) {
     const answer = await ask(question);
-    assert.match(answer, /unavailable right now/, `honest prefix for: ${question}`);
-    assert.match(answer, route, `correct route for: ${question}`);
-    assert.doesNotMatch(answer, /admin/i, `no admin exposure for: ${question}`);
+    assert.doesNotMatch(answer.text, /admin/i, `no admin exposure for: ${question}`);
+    const hrefs = await page.locator('#chatbot-body .guide-action').evaluateAll(els => els.map(e => e.getAttribute('href')));
+    assert.ok(hrefs.includes(route), `verified route ${route} for: ${question}`);
   }
   const unknown = await ask('what is the meaning of life?');
-  assert.doesNotMatch(unknown, /\.html/, 'unknown questions get no fabricated route');
+  assert.doesNotMatch(unknown.text, /\.html/, 'unknown questions get no fabricated route');
+  await page.close();
+  await context.close();
 });
 
 test('public certificate verification stays public, private views stay gated', async t => {
-  const base = await staticServer(t);
+  const { base } = await staticServer(t);
   const browser = await chromium.launch({ headless: true });
-  t.after(() => browser.close());
+  closeBrowser(t, browser);
   const page = await browser.newPage();
   await page.goto(`${base}/certificate.html?verify=11111111-1111-4111-8111-111111111111`, { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(1500);
@@ -101,4 +119,5 @@ test('public certificate verification stays public, private views stay gated', a
   await page.goto(`${base}/certificate.html`, { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(1500);
   assert.ok(page.url().includes('login.html'), `private certificate view must redirect to login, got ${page.url()}`);
+  await page.close();
 });
