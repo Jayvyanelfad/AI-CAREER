@@ -13,7 +13,7 @@ const { fetchLatestCareerAttempt } = require('./career-assessment-store');
 const { createProgrammingExecutionRouter } = require('./programming-execution-api');
 const { createNotificationRouter, createNotification } = require('./notification-api');
 const { createProgressRouter } = require('./progress-api');
-const { createAuthRouter } = require('./auth-api');
+const { createAuthRouter, getCareerTestCompleted } = require('./auth-api');
 const { createCertificateRouter } = require('./certificate-api');
 const { createChatRouter } = require('./chat-api');
 const { persistLessonCompletion } = require('./lesson-progress-store');
@@ -342,6 +342,19 @@ app.post('/api/auth/login', async (req, res) => {
       return res.status(503).json({ error: 'User profile is temporarily unavailable' });
     }
 
+    // login.js routes on data.user.careerTestCompleted (dashboard when the
+    // assessment is done, career test otherwise). Reuse the same check as
+    // GET /api/auth/me. A lookup failure must not break login and must not
+    // masquerade as "not completed": it resolves to null (unknown), which
+    // login.js treats like false AND career-test.js itself reloads any saved
+    // completed result, so a returning user is never trapped or misrouted.
+    let careerTestCompleted = null;
+    try {
+      careerTestCompleted = await getCareerTestCompleted(supabase, user.id);
+    } catch (assessmentError) {
+      console.error('Error checking career test completion on login:', assessmentError?.code || 'database error');
+    }
+
     res.json({
       token: session.access_token,
       refresh_token: session.refresh_token,
@@ -349,7 +362,8 @@ app.post('/api/auth/login', async (req, res) => {
         id: user.id,
         email: user.email,
         name: userMetadata?.full_name || user.user_metadata?.full_name || user.email?.split('@')[0] || user.phone || 'User',
-        careerGoal: userMetadata?.career_goal || user.user_metadata?.career_goal || 'undecided'
+        careerGoal: userMetadata?.career_goal || user.user_metadata?.career_goal || 'undecided',
+        careerTestCompleted
       }
     });
   } catch (error) {

@@ -4,6 +4,16 @@
 // and repaired idempotently via complete-registration, which only fills
 // missing values and never overwrites user-edited fields.
 const express = require('express');
+const { fetchLatestCareerAttempt } = require('./career-assessment-store');
+
+// Whether the user completed a career assessment, from the same data
+// source as GET /api/auth/me (latest career_test_attempts row). Returns a
+// strict boolean; database failures propagate so callers decide how to
+// degrade (login resolves null for unknown, /me reports 500).
+async function getCareerTestCompleted(supabaseClient, userId) {
+  const attempt = await fetchLatestCareerAttempt(supabaseClient, userId);
+  return Boolean(attempt && attempt.completed);
+}
 
 function createAuthRouter({ supabase, authenticateToken, createAuthClient, getAuthCallbackUrl }) {
   const router = express.Router();
@@ -180,4 +190,4 @@ function createAuthRouter({ supabase, authenticateToken, createAuthClient, getAu
   return router;
 }
 
-module.exports = { createAuthRouter };
+module.exports = { createAuthRouter, getCareerTestCompleted };
