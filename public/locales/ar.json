@@ -323,7 +323,8 @@
     "notAvailable": "غير متاح",
     "pleaseSignIn": "يرجى تسجيل الدخول",
     "signInRequired": "تسجيل الدخول مطلوب",
-    "copyrightProject": "© CareerPath AI · مشروع التخرج B.Tech"
+    "copyrightProject": "© CareerPath AI · مشروع التخرج B.Tech",
+    "heroDescription": "استكشف المهن التقنية، وتعلّم المفاهيم الصعبة من خلال قصص قريبة منك، وابنِ مهارات برمجية عملية بالسرعة التي تناسبك."
   },
   "coverage": {
     "signInToBrowseCourses": "???? ?????? ?????? ????? ???????.",

@@ -323,7 +323,8 @@
     "notAvailable": "Abhi available nahi",
     "pleaseSignIn": "Please sign in karo",
     "signInRequired": "Sign in required",
-    "copyrightProject": "© CareerPath AI · B.Tech Final Year Project"
+    "copyrightProject": "© CareerPath AI · B.Tech Final Year Project",
+    "heroDescription": "Technology careers explore karein, mushkil concepts ko relatable stories se seekhein, aur apne pace par practical programming skills banayein."
   },
   "coverage": {
     "signInToBrowseCourses": "Course catalog load karne ke liye sign in karo.",

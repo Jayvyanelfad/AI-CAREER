@@ -323,7 +323,8 @@
     "notAvailable": "Indisponible",
     "pleaseSignIn": "Veuillez vous connecter",
     "signInRequired": "Connexion requise",
-    "copyrightProject": "© CareerPath AI · Projet de fin d’études B.Tech"
+    "copyrightProject": "© CareerPath AI · Projet de fin d’études B.Tech",
+    "heroDescription": "Explorez les carrières technologiques, apprenez des concepts difficiles grâce à des histoires accessibles, et développez des compétences pratiques en programmation à votre rythme."
   },
   "coverage": {
     "signInToBrowseCourses": "Connectez-vous pour charger le catalogue des cours.",

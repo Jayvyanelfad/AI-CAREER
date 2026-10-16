@@ -323,7 +323,8 @@
     "notAvailable": "Haipatikani",
     "pleaseSignIn": "Tafadhali ingia",
     "signInRequired": "Inahitaji kuingia",
-    "copyrightProject": "© CareerPath AI · Mradi wa Mwaka wa Mwisho wa B.Tech"
+    "copyrightProject": "© CareerPath AI · Mradi wa Mwaka wa Mwisho wa B.Tech",
+    "heroDescription": "Chunguza taaluma za teknolojia, jifunze dhana ngumu kupitia hadithi zinazoeleweka, na jenga ujuzi wa kupanga programu kwa mwendo wako."
   },
   "coverage": {
     "signInToBrowseCourses": "Ingia ili kupakia orodha ya kozi.",
