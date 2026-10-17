@@ -1,5 +1,11 @@
 ﻿// Course Detail Page - Backend API version
 (function() {
+    // Escape text before it is placed into markup. Lesson and module titles come
+    // from the database and the outstanding-lesson button echoes one back.
+    function esc(value) {
+        return String(value ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]);
+    }
+
     // State variables
     let course = null;
     let modules = [];
@@ -1002,6 +1008,24 @@ async function fetchCompletedLessons() {
     }
 
     // Render enrollment, exam, and certificate state.
+    // The first lesson the learner has not yet completed, resolved from the
+    // authoritative module/lesson list that was already loaded for this course
+    // and the server-provided completed lesson ids. Returns null once every
+    // required lesson is done. This is what makes "25/26" actionable instead of
+    // leaving the learner on an already-completed lesson with no pointer.
+    function findNextIncompleteLesson() {
+        for (let moduleIndex = 0; moduleIndex < modules.length; moduleIndex++) {
+            const lessons = lessonsByModuleId.get(modules[moduleIndex].id) || [];
+            for (let lessonIndex = 0; lessonIndex < lessons.length; lessonIndex++) {
+                const lesson = lessons[lessonIndex];
+                if (lesson && !completedLessonIds.has(lesson.id)) {
+                    return { moduleIndex, lessonIndex, id: lesson.id, title: lesson.title };
+                }
+            }
+        }
+        return null;
+    }
+
     function renderExamButton() {
         examButtonContainer.innerHTML = '';
 
@@ -1040,7 +1064,28 @@ async function fetchCompletedLessons() {
         }
 
         if (completedLessonsCount < totalLessons) {
-            examButtonContainer.innerHTML = enrollmentNotice + `<p>${t("coverage.unlockExam", "Complete all lessons ({completed}/{total}) to unlock the exam.", { completed: completedLessonsCount, total: totalLessons })}</p>`;
+            const outstanding = findNextIncompleteLesson();
+            const remaining = totalLessons - completedLessonsCount;
+            const remainingText = remaining === 1
+                ? t('coverage.oneLessonRemaining', '1 lesson left to finish', { completed: completedLessonsCount, total: totalLessons })
+                : t('coverage.lessonsRemaining', '{count} lessons left to finish', { count: remaining });
+            let html = `<p class="course-requirement-summary" role="status">${t("coverage.unlockExam", "Complete all lessons ({completed}/{total}) to unlock the exam.", { completed: completedLessonsCount, total: totalLessons })}</p>`;
+            if (outstanding) {
+                html += `<p class="course-outstanding">${esc(remainingText)}</p>`;
+                html += `<button type="button" class="component-button" id="btn-continue-outstanding">${esc(t('coverage.continueOutstanding', 'Continue: {title}', { title: outstanding.title }))}</button>`;
+            } else {
+                // Counts disagree with the lesson list: say so plainly instead
+                // of sending the learner to a lesson that may not exist.
+                html += `<p role="status">${esc(t('coverage.progressMismatch', 'Your saved progress and the course lesson list do not match yet. Please refresh the page.'))}</p>`;
+            }
+            examButtonContainer.innerHTML = enrollmentNotice + html;
+            const continueButton = document.getElementById('btn-continue-outstanding');
+            if (continueButton) {
+                continueButton.addEventListener('click', () => {
+                    const target = findNextIncompleteLesson();
+                    if (target) selectLesson(target.moduleIndex, target.lessonIndex);
+                });
+            }
             return;
         }
 
@@ -1048,8 +1093,9 @@ async function fetchCompletedLessons() {
         let html = '';
 
         if (currentExam) {
-            // Show exam button to take the exam
-            html += `<a href="exam.html?id=${currentExam.id}" class="component-button">${t("coverage.startExam", "Start Exam")}</a>`;
+            // All required lessons are complete: surface the final exam clearly.
+            html += `<p class="course-complete-notice" role="status">${esc(t('coverage.allLessonsComplete', 'Course complete. All {total} lessons are done.', { total: totalLessons }))}</p>`;
+            html += `<a href="exam.html?id=${encodeURIComponent(currentExam.id)}" class="component-button course-exam-cta" id="btn-take-final-exam">${esc(t('coverage.takeFinalExam', 'Take Final Exam'))}</a>`;
         }
 
         // If eligible for certificate, show certificate button
