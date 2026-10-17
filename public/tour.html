@@ -9,35 +9,11 @@
   <meta name="theme-color" content="#0a1914" />
   <title data-i18n="tour.pageTitle" data-i18n-fallback="Guided Tour - CareerPath AI">Guided Tour - CareerPath AI</title>
   <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="tour.css" />
   <link rel="stylesheet" href="chatbot-widget.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-  <style>
-    /* Keep the fixed site header clear of the tour heading. */
-    body:has(.tour-shell) .dashboard-container { padding: 120px 16px 48px; }
-    @media (max-width: 700px) {
-      body:has(.tour-shell) .dashboard-container { padding-top: 96px; }
-    }
-    .tour-shell { width: min(880px, calc(100% - 2rem)); margin-inline: auto; }
-    .tour-stepper { display: flex; align-items: center; gap: .75rem; margin-block: 1rem; }
-    .tour-progress { flex: 1; height: 6px; border-radius: 999px; background: rgba(134,164,142,.25); overflow: hidden; }
-    .tour-progress > span { display: block; height: 100%; background: linear-gradient(90deg, var(--green_light), var(--bege)); transition: width .25s ease; }
-    .tour-samplebar { height: 8px; border-radius: 999px; background: rgba(134,164,142,.25); overflow: hidden; margin-block: .6rem; }
-    .tour-samplebar > span { display: block; height: 100%; background: linear-gradient(90deg, var(--green_light), var(--bege)); }
-    @media (prefers-reduced-motion: reduce) { .tour-progress > span { transition: none; } }
-    .tour-controls { display: flex; flex-wrap: wrap; gap: .6rem; margin-block-start: 1.25rem; }
-    .tour-sample-badge { display: inline-block; font-size: .72rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; border: 1px dashed currentColor; border-radius: 999px; padding: .2rem .7rem; margin-block-end: .6rem; }
-    .tour-cert { position: relative; overflow: hidden; }
-    .tour-cert-watermark { position: absolute; inset-inline: 0; top: 42%; transform: rotate(-12deg); text-align: center; font-size: clamp(1.6rem, 6vw, 3rem); font-weight: 800; letter-spacing: .2em; color: currentColor; opacity: .18; pointer-events: none; }
-    .tour-eligibility { text-align: start; margin-block-start: 1rem; padding-inline-start: 1.2rem; }
-    .tour-eligibility li { margin-block: .3rem; }
-    .tour-feedback { min-height: 1.6em; font-weight: 600; }
-    .tour-feedback[data-state="correct"] { color: var(--green_light); }
-    .tour-feedback[data-state="wrong"] { color: #d98c8c; }
-    .tour-sample-options { display: grid; gap: .5rem; margin-block: .8rem; }
-    .tour-sample-options label { display: flex; gap: .6rem; align-items: flex-start; cursor: pointer; }
-  </style>
 </head>
-<body>
+<body class="tour-page">
   <header>
     <div class="logo"><a href="index.html" style="color: inherit; text-decoration: none;"><i class="fas fa-robot" aria-hidden="true"></i> CareerPath AI</a></div>
     <nav aria-label="Main navigation">
@@ -45,33 +21,51 @@
       <a href="courses.html" data-i18n="nav.courses" data-i18n-fallback="Career Courses">Career Courses</a>
       <a href="dashboard.html" data-i18n="nav.dashboard" data-i18n-fallback="Dashboard">Dashboard</a>
     </nav>
+    <div class="tour-header-tools">
+      <select data-language-preference data-i18n-aria-label="settings.language" aria-label="Language"></select>
+      <button type="button" class="theme-toggle auth-theme-toggle" data-i18n="coverage.switchTheme" data-i18n-fallback="Switch theme">Switch theme</button>
+    </div>
   </header>
 
   <main class="dashboard-container">
-    <div class="tour-shell">
-      <p class="editorial-eyebrow" data-i18n="tour.eyebrow" data-i18n-fallback="GUIDED SAMPLE TOUR">GUIDED SAMPLE TOUR</p>
-      <h1 data-i18n="tour.title" data-i18n-fallback="See how CareerPath AI works">See how CareerPath AI works</h1>
-      <p><span class="tour-sample-badge" data-i18n="tour.sampleBadge" data-i18n-fallback="Sample demonstration only">Sample demonstration only</span></p>
-      <p class="text-body_small color-green_light" data-i18n="tour.intro" data-i18n-fallback="Walk through a sample learner journey. Everything here is illustrative and never touches real enrollments, progress, exams, or certificates.">Walk through a sample learner journey. Everything here is illustrative and never touches real enrollments, progress, exams, or certificates.</p>
+    <div class="tour-shell" id="tour-shell">
+
+      <section class="tour-hero">
+        <p class="editorial-eyebrow" data-i18n="tour.eyebrow" data-i18n-fallback="GUIDED SAMPLE TOUR">GUIDED SAMPLE TOUR</p>
+        <h1 data-i18n="tour.title" data-i18n-fallback="Six steps from first question to certificate">Six steps from first question to certificate</h1>
+        <p data-i18n="tour.intro" data-i18n-fallback="Walk through a sample learner journey. Everything here is illustrative and never touches real enrollments, progress, exams, or certificates.">Walk through a sample learner journey. Everything here is illustrative and never touches real enrollments, progress, exams, or certificates.</p>
+        <p class="tour-hero-badges">
+          <span class="tour-sample-badge" data-i18n="tour.sampleBadge" data-i18n-fallback="Sample demonstration only">Sample demonstration only</span>
+          <span class="tour-sample-badge" data-i18n="tour.overviewTitle" data-i18n-fallback="Six interactive steps, about three minutes">Six interactive steps, about three minutes</span>
+        </p>
+      </section>
+
+      <div id="tour-rail-host"></div>
 
       <div class="tour-stepper">
-        <span id="tour-step-label" role="status" aria-live="polite"></span>
-        <div class="tour-progress" role="progressbar" id="tour-progress" aria-label="Tour progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="tour-progress-fill" style="width: 0%"></span></div>
+        <span id="tour-step-label" class="tour-step-label" role="status" aria-live="polite"></span>
+        <div class="tour-progress" role="progressbar" id="tour-progress" data-i18n-aria-label="tour.progressLabel" aria-label="Tour progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="tour-progress-fill" style="width: 0%"></span></div>
       </div>
 
-      <section class="dashboard-card" id="tour-stage" aria-live="polite"></section>
+      <section class="tour-stage" id="tour-stage" aria-labelledby="tour-step-title"></section>
 
       <div class="tour-controls">
-        <button type="button" class="btn-outline" id="tour-back" data-i18n="tour.back" data-i18n-fallback="Back">Back</button>
-        <button type="button" class="btn-primary" id="tour-next" data-i18n="tour.next" data-i18n-fallback="Next">Next</button>
-        <button type="button" class="btn-outline" id="tour-restart" data-i18n="tour.restart" data-i18n-fallback="Restart tour">Restart tour</button>
-        <button type="button" class="btn-outline" id="tour-exit" data-i18n="tour.exit" data-i18n-fallback="Exit tour">Exit tour</button>
+        <div class="tour-primary-group">
+          <button type="button" class="tour-button is-ghost" id="tour-back" data-i18n="tour.back" data-i18n-fallback="Back">Back</button>
+          <button type="button" class="tour-button" id="tour-next" data-i18n="tour.next" data-i18n-fallback="Next">Next</button>
+        </div>
+        <div class="tour-secondary-group">
+          <button type="button" class="tour-button is-ghost" id="tour-restart" data-i18n="tour.restart" data-i18n-fallback="Restart tour">Restart tour</button>
+          <button type="button" class="tour-button is-ghost" id="tour-exit" data-i18n="tour.exit" data-i18n-fallback="Exit tour">Exit tour</button>
+        </div>
+        <p class="tour-nav-hint" id="tour-nav-hint" role="status" aria-live="polite"></p>
       </div>
+
     </div>
   </main>
 
   <footer>
-    <p>© CareerPath AI · B.Tech Final Year Project</p>
+    <p data-i18n="ui.copyrightProject" data-i18n-fallback="© CareerPath AI · B.Tech Final Year Project">© CareerPath AI · B.Tech Final Year Project</p>
   </footer>
 
   <script src="tour.js"></script>

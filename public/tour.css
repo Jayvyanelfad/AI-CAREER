@@ -1,0 +1,609 @@
+/* ============================================================
+   Guided sample tour — CareerPath AI
+   Scoped entirely to .tour-page so no shared rule is affected.
+   Uses the site design tokens (deep green, warm ivory, bronze).
+   ============================================================ */
+
+.tour-page {
+  /* The site header is absolutely positioned on internal pages, so the tour
+     owns its own top spacing instead of relying on a global offset. */
+  --tour-gap: clamp(16px, 3vw, 24px);
+  --tour-radius: 14px;
+  --tour-line: 1px solid var(--border-light);
+}
+
+body:has(.tour-shell) .dashboard-container {
+  width: min(1120px, calc(100% - 2rem));
+  margin-inline: auto;
+  /* The bottom padding is deliberately larger than the chatbot launcher's band
+     (~16px margin + ~47px control) so the tour controls can never come to rest
+     underneath the fixed launcher when the page is scrolled to the end. */
+  padding: clamp(104px, 13vw, 148px) 0 calc(84px + env(safe-area-inset-bottom));
+}
+
+.tour-shell { display: flex; flex-direction: column; gap: var(--tour-gap); }
+
+/* The shared stylesheet hides `header nav` on small screens, so the language
+   selector and theme toggle live outside the nav to stay reachable on mobile. */
+.tour-page > header { flex-wrap: wrap; row-gap: 10px; }
+/* The shared stylesheet paints header links near-white for the photographic
+   heroes. The tour sits on a flat surface, so in the light theme that colour
+   disappears; re-point the links at the theme's own text token. Scoped to the
+   tour page so every other page keeps its existing header treatment. */
+html[data-theme="light"] .tour-page > header nav a,
+html[data-theme="light"] .tour-page > header .logo a { color: var(--text-primary, #282522); }
+html[data-theme="light"] .tour-page > header nav a:hover,
+html[data-theme="light"] .tour-page > header .logo a:hover { color: var(--accent); }
+.tour-header-tools { display: flex; align-items: center; gap: 8px; flex: none; }
+.tour-header-tools select {
+  min-height: 38px;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid rgba(220, 168, 133, 0.4);
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 0.82rem;
+}
+.tour-header-tools select option { color: #1d1f1e; background: #f4eee7; }
+.tour-header-tools select:focus-visible,
+.tour-header-tools .auth-theme-toggle:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+
+/* ---------------- Hero ---------------- */
+.tour-hero {
+  display: grid;
+  gap: var(--space-3);
+  min-width: 0;
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--border-light);
+}
+.tour-hero > * { min-width: 0; }
+.tour-hero h1 {
+  font-family: var(--font-display);
+  font-size: clamp(1.9rem, 4.4vw, 3.1rem);
+  font-weight: 300;
+  line-height: 1.12;
+  letter-spacing: -0.015em;
+  color: var(--text-primary, var(--bege_light));
+  max-width: 22ch;
+  margin: 0;
+}
+.tour-hero p { margin: 0; max-width: 62ch; color: var(--text-secondary); font-size: 0.97rem; line-height: 1.62; }
+.tour-hero-badges { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; }
+
+.tour-sample-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border: 1px dashed color-mix(in srgb, var(--accent) 62%, transparent);
+  border-radius: var(--radius-full);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  /* Text is allowed to wrap: a nowrap badge overflows narrow phones. */
+  max-width: 100%;
+  text-align: center;
+}
+.tour-sample-badge::before {
+  content: "";
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  flex: none;
+}
+
+/* ---------------- Step rail ---------------- */
+.tour-rail {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.tour-rail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+  min-width: 0;
+  padding: 10px 10px 11px;
+  border: var(--tour-line);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--surface) 62%, transparent);
+  transition: border-color var(--transition), background var(--transition), transform var(--transition);
+}
+.tour-rail-dot {
+  display: grid;
+  place-items: center;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  transition: background var(--transition), color var(--transition), border-color var(--transition);
+}
+.tour-rail-name {
+  font-size: 0.76rem;
+  line-height: 1.3;
+  color: var(--text-secondary);
+  /* Two lines maximum so the rail stays a constant height at every width. */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+.tour-rail-item.is-done .tour-rail-dot { background: color-mix(in srgb, var(--green_light) 26%, transparent); border-color: transparent; color: var(--text-primary); }
+.tour-rail-item.is-done .tour-rail-name { color: var(--text-secondary); }
+.tour-rail-item.is-active {
+  border-color: color-mix(in srgb, var(--accent) 58%, transparent);
+  background: color-mix(in srgb, var(--accent) 9%, var(--surface));
+  transform: translateY(-2px);
+}
+.tour-rail-item.is-active .tour-rail-dot { background: var(--accent); border-color: transparent; color: var(--green_dark); }
+.tour-rail-item.is-active .tour-rail-name { color: var(--text-primary); font-weight: 600; }
+
+/* ---------------- Progress ---------------- */
+.tour-stepper {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+.tour-step-label {
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  flex: none;
+}
+.tour-progress {
+  flex: 1 1 180px;
+  min-width: 120px;
+  height: 6px;
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--green_light) 24%, transparent);
+  overflow: hidden;
+}
+.tour-progress > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--green_light), var(--accent));
+  transition: width 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ---------------- Stage ---------------- */
+.tour-stage {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding: clamp(20px, 3.2vw, 32px);
+  border: var(--tour-line);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--surface) 84%, transparent);
+}
+.tour-stage > .tour-sample-badge { align-self: flex-start; }
+.tour-step-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.35rem, 2.9vw, 1.95rem);
+  font-weight: 400;
+  line-height: 1.2;
+  color: var(--text-primary, var(--bege_light));
+  margin: 0;
+}
+.tour-step-title:focus { outline: none; }
+.tour-step-title:focus-visible { outline: 2px solid var(--accent); outline-offset: 6px; border-radius: 4px; }
+
+.tour-lede { margin: 0; color: var(--text-secondary); line-height: 1.6; font-size: 0.94rem; max-width: 72ch; }
+.tour-disclaimer {
+  margin: 0;
+  padding: 11px 14px;
+  border-inline-start: 2px solid color-mix(in srgb, var(--accent) 70%, transparent);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  color: var(--text-secondary);
+  font-size: 0.86rem;
+  line-height: 1.55;
+}
+.tour-hint, .tour-context { margin: 0; color: var(--text-secondary); font-size: 0.88rem; }
+.tour-context { color: var(--text-secondary); font-weight: 600; }
+.tour-footnote { margin: 0; color: var(--text-secondary); font-size: 0.8rem; line-height: 1.55; max-width: 72ch; }
+.tour-account-note { margin: 0; color: var(--text-secondary); font-size: 0.78rem; }
+.tour-done { margin: 0; color: var(--green_light); font-weight: 600; font-size: 0.9rem; }
+
+/* ---------------- Blocks, questions, options ---------------- */
+.tour-block { margin: 0; padding: 0; border: 0; min-width: 0; }
+.tour-block + .tour-block { padding-top: var(--space-4); border-top: var(--tour-line); }
+.tour-block-title {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: baseline;
+  padding: 0;
+  margin-bottom: var(--space-3);
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--text-primary, var(--bege_light));
+  line-height: 1.42;
+}
+.tour-question-number {
+  flex: none;
+  font-family: var(--font-body);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.tour-options { display: grid; gap: 8px; }
+.tour-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 11px 13px;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--surface-elevated, var(--surface)) 52%, transparent);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  cursor: pointer;
+  transition: border-color var(--transition), background var(--transition);
+}
+.tour-option:hover { border-color: var(--border); background: color-mix(in srgb, var(--surface-elevated, var(--surface)) 78%, transparent); }
+.tour-option:has(input:checked) {
+  border-color: color-mix(in srgb, var(--accent) 66%, transparent);
+  background: color-mix(in srgb, var(--accent) 11%, transparent);
+}
+.tour-option:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
+.tour-option input {
+  margin: 3px 0 0;
+  accent-color: var(--accent);
+  width: 16px;
+  height: 16px;
+  /* The shared stylesheet gives every input a 44px min-height for tap targets.
+     min-height beats height, so it must be cleared here or the radio is
+     stretched into a tall box beside its own label. The tap target is the
+     whole option row. */
+  min-height: 0;
+  min-width: 0;
+  padding: 0;
+  flex: none;
+}
+.tour-option-text { color: var(--text); }
+
+.tour-feedback { margin: 10px 0 0; font-size: 0.86rem; line-height: 1.55; }
+.tour-feedback[data-state="correct"] { color: var(--green_light); }
+.tour-feedback[data-state="wrong"] { color: var(--danger, #e2725b); }
+.tour-feedback[data-state="unanswered"] { color: var(--warning, #e0b878); }
+.tour-feedback[data-state="pending"] { color: var(--text-secondary); }
+
+/* ---------------- Buttons and links ---------------- */
+.tour-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 10px 20px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-full);
+  background: var(--accent);
+  color: var(--green_dark);
+  font-size: 0.86rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-decoration: none;
+  transition: background var(--transition), color var(--transition), border-color var(--transition), opacity var(--transition);
+}
+.tour-button:hover { background: var(--accent-light); color: var(--accent); border-color: color-mix(in srgb, var(--accent) 45%, transparent); }
+.tour-button.is-ghost {
+  background: transparent;
+  border-color: var(--border);
+  color: var(--text-secondary);
+}
+.tour-button.is-ghost:hover { background: color-mix(in srgb, var(--green_light) 12%, transparent); color: var(--text-primary); }
+.tour-button:focus-visible, .tour-cta-link:focus-visible, .tour-option:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+.tour-button[disabled] { opacity: 0.4; cursor: not-allowed; }
+
+.tour-cta { margin: 0; }
+.tour-cta-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 44px;
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 0.9rem;
+  border-radius: var(--radius-sm);
+}
+.tour-cta-link:hover { color: var(--accent-light); text-decoration: underline; text-underline-offset: 4px; }
+
+/* ---------------- Result panel ---------------- */
+.tour-result {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: clamp(16px, 2.4vw, 22px);
+  border: 1px solid color-mix(in srgb, var(--accent) 38%, transparent);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--accent) 7%, var(--surface));
+}
+.tour-result-title {
+  font-family: var(--font-display);
+  font-size: 1.16rem;
+  font-weight: 400;
+  color: var(--text-primary, var(--bege_light));
+  margin: 0;
+}
+.tour-result-note { margin: 4px 0 0; font-size: 0.78rem; color: var(--text-secondary); }
+.tour-result-why { margin: 0; font-size: 0.92rem; line-height: 1.6; color: var(--text); }
+.tour-result p { margin: 0; }
+
+.tour-columns { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: var(--space-4); }
+.tour-col h4, .tour-stage h3, .tour-stage h4, .tour-stage h5 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  color: var(--text-primary, var(--bege_light));
+  margin: 0 0 var(--space-2);
+}
+.tour-col h4 { font-size: 0.94rem; }
+.tour-stage h3 { font-size: 1.1rem; }
+.tour-stage h4 { font-size: 1rem; }
+.tour-stage h5 { font-size: 0.78rem; font-family: var(--font-body); letter-spacing: 0.09em; text-transform: uppercase; color: var(--text-secondary); margin-top: var(--space-3); }
+.tour-list, .tour-eligibility { margin: 0; padding-inline-start: 1.1rem; display: grid; gap: 7px; }
+.tour-list li, .tour-eligibility li { font-size: 0.89rem; line-height: 1.55; color: var(--text-secondary); }
+.tour-list li::marker, .tour-eligibility li::marker { color: var(--accent); }
+
+.tour-details {
+  border-top: var(--tour-line);
+  padding-top: var(--space-3);
+}
+.tour-details > summary {
+  cursor: pointer;
+  min-height: 32px;
+  color: var(--accent);
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+}
+.tour-details > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+.tour-scores { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; }
+.tour-score { display: grid; grid-template-columns: minmax(0, 8.5rem) 1fr auto; align-items: center; gap: 10px; font-size: 0.83rem; }
+.tour-score-name { color: var(--text-secondary); }
+.tour-score.is-active .tour-score-name { color: var(--text-primary); font-weight: 600; }
+.tour-score-value { color: var(--text-secondary); font-variant-numeric: tabular-nums; font-size: 0.78rem; }
+.tour-meter {
+  display: block;
+  height: 5px;
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--green_light) 22%, transparent);
+  overflow: hidden;
+}
+.tour-meter.is-lg { height: 7px; }
+.tour-meter > span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--green_light), var(--accent)); transition: width 0.32s cubic-bezier(0.4, 0, 0.2, 1); }
+
+.tour-evidence { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.tour-evidence li { display: grid; gap: 2px; padding-inline-start: 10px; border-inline-start: 2px solid var(--border); }
+.tour-evidence-q { font-size: 0.78rem; color: var(--text-secondary); }
+.tour-evidence-a { font-size: 0.85rem; color: var(--text-secondary); }
+
+/* ---------------- Courses ---------------- */
+.tour-courses { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(272px, 1fr)); gap: var(--space-4); }
+.tour-course {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  padding: 16px 17px 17px;
+  border: var(--tour-line);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--surface-elevated, var(--surface)) 58%, transparent);
+  transition: border-color var(--transition);
+}
+.tour-course:hover { border-color: var(--border); }
+.tour-course.is-sample { border-style: dashed; background: transparent; }
+.tour-course-head { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; }
+.tour-course-title { font-size: 1rem !important; margin: 0 !important; }
+.tour-course.is-sample .tour-course-title { color: var(--text-secondary); }
+.tour-tag {
+  flex: none;
+  padding: 3px 9px;
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--green_light) 18%, transparent);
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+.tour-course-id { margin: 0; font-size: 0.74rem; color: var(--text-secondary); }
+.tour-course-id code { font-size: 0.74rem; color: var(--accent); word-break: break-word; }
+.tour-course-why { margin: 0; font-size: 0.85rem; line-height: 1.55; color: var(--text-secondary); flex: 1 1 auto; }
+.tour-course .tour-cta { margin-top: auto; }
+
+/* ---------------- Enrollment ---------------- */
+.tour-state {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 16px 18px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-light);
+  background: color-mix(in srgb, var(--surface-elevated, var(--surface)) 55%, transparent);
+  transition: border-color var(--transition), background var(--transition);
+}
+.tour-state.is-before { border-style: dashed; }
+.tour-state.is-after {
+  border-color: color-mix(in srgb, var(--green_light) 55%, transparent);
+  background: color-mix(in srgb, var(--green_light) 12%, transparent);
+}
+.tour-state-title { margin: 0; font-weight: 700; font-size: 0.95rem; color: var(--text-primary, var(--bege_light)); }
+.tour-state.is-before .tour-state-title { color: var(--text-secondary); font-weight: 600; }
+.tour-state.is-after .tour-state-title { color: var(--green_light); }
+.tour-state-detail { margin: 0; font-size: 0.84rem; color: var(--text-secondary); line-height: 1.5; }
+
+/* ---------------- Lesson ---------------- */
+.tour-lesson {
+  padding: clamp(15px, 2.2vw, 20px);
+  border-inline-start: 2px solid color-mix(in srgb, var(--accent) 55%, transparent);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  background: color-mix(in srgb, var(--surface-elevated, var(--surface)) 46%, transparent);
+}
+.tour-lesson p { margin: 0; font-size: 0.91rem; line-height: 1.65; color: var(--text-secondary); }
+.tour-challenge {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: clamp(15px, 2.2vw, 20px);
+  border: var(--tour-line);
+  border-radius: var(--radius);
+}
+.tour-challenge > p { margin: 0; font-size: 0.91rem; line-height: 1.6; color: var(--text); }
+.tour-progress-block { display: grid; gap: 7px; }
+.tour-progress-block .tour-meter { width: 100%; }
+.tour-progress-text { margin: 0; font-size: 0.8rem; color: var(--text-secondary); font-variant-numeric: tabular-nums; }
+
+/* ---------------- Certificate ---------------- */
+.tour-cert {
+  position: relative;
+  padding: 2px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 58%, transparent), color-mix(in srgb, var(--green_light) 42%, transparent));
+  overflow: hidden;
+}
+.tour-cert-inner {
+  position: relative;
+  padding: clamp(26px, 5vw, 46px) clamp(18px, 4vw, 40px);
+  border-radius: calc(var(--radius-md) - 2px);
+  background: var(--surface-elevated, var(--surface));
+  text-align: center;
+  overflow: hidden;
+}
+.tour-cert-body { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.tour-cert-kicker {
+  margin: 0;
+  padding: 4px 12px;
+  border: 1px dashed color-mix(in srgb, var(--accent) 65%, transparent);
+  border-radius: var(--radius-full);
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: var(--accent);
+}
+.tour-cert-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.2rem, 2.7vw, 1.65rem);
+  font-weight: 400;
+  color: var(--text-primary, var(--bege_light));
+  margin: 4px 0 0;
+}
+.tour-cert-name {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.05rem, 2.3vw, 1.35rem);
+  color: var(--accent);
+}
+.tour-cert-for { margin: 0; font-size: 0.92rem; color: var(--text-secondary); }
+.tour-cert-id { margin: 4px 0 0; font-size: 0.76rem; color: var(--text-secondary); }
+.tour-cert-watermark {
+  position: absolute;
+  z-index: 0;
+  inset-inline: 0;
+  top: 44%;
+  transform: rotate(-11deg);
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: clamp(1.3rem, 5.2vw, 2.6rem);
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: var(--accent);
+  opacity: 0.16;
+  pointer-events: none;
+  user-select: none;
+}
+
+.tour-summary { display: grid; gap: var(--space-3); }
+.tour-next-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+
+/* ---------------- Controls ---------------- */
+.tour-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding-top: var(--space-4);
+  border-top: var(--tour-line);
+}
+.tour-primary-group { display: flex; gap: 10px; margin-inline-end: auto; }
+.tour-secondary-group { display: flex; flex-wrap: wrap; gap: 10px; }
+.tour-nav-hint {
+  flex: 1 0 100%;
+  order: 3;
+  margin: 2px 0 0;
+  font-size: 0.76rem;
+  color: var(--text-secondary);
+}
+.tour-nav-hint:empty { display: none; }
+
+/* ---------------- Motion ---------------- */
+.tour-stage > * {
+  animation: tour-rise 0.34s cubic-bezier(0.22, 0.8, 0.3, 1) both;
+}
+@keyframes tour-rise {
+  from { opacity: 0; transform: translateY(9px); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tour-stage > * { animation: none; }
+  .tour-progress > span,
+  .tour-meter > span,
+  .tour-rail-item,
+  .tour-button,
+  .tour-option,
+  .tour-state { transition: none; }
+  .tour-rail-item.is-active { transform: none; }
+}
+
+/* ---------------- Responsive ---------------- */
+@media (max-width: 880px) {
+  .tour-rail { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .tour-score { grid-template-columns: minmax(0, 7rem) 1fr auto; }
+}
+@media (max-width: 620px) {
+  body:has(.tour-shell) .dashboard-container { width: calc(100% - 1.5rem); padding-top: 92px; }
+  .tour-header-tools { gap: 6px; }
+  .tour-header-tools select { font-size: 0.75rem; padding: 0.3rem 0.35rem; }
+  .tour-hero h1 { max-width: none; }
+  .tour-rail { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+  .tour-rail-item { padding: 8px 9px 9px; }
+  .tour-rail-name { font-size: 0.72rem; }
+  .tour-stage { gap: var(--space-4); }
+  .tour-primary-group { flex: 1 1 100%; }
+  .tour-primary-group .tour-button { flex: 1 1 0; }
+  .tour-secondary-group { flex: 1 1 100%; }
+  .tour-secondary-group .tour-button { flex: 1 1 0; }
+  .tour-next-actions .tour-button { flex: 1 1 100%; }
+  .tour-score { grid-template-columns: minmax(0, 1fr) auto; }
+  .tour-score .tour-meter { grid-column: 1 / -1; order: 3; }
+}
+
+/* Below this width the logo and the header tools no longer fit on one row, so
+   the taller two-row header needs more clearance above the tour content.
+   Placed after the 620px block so it wins for the narrowest phones. */
+@media (max-width: 400px) {
+  body:has(.tour-shell) .dashboard-container { padding-top: 146px; }
+}
+
+/* RTL: the certificate watermark and hairline accents mirror with the layout. */
+[dir="rtl"] .tour-cert-watermark { transform: rotate(11deg); }

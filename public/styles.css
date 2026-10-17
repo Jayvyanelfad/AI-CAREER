@@ -6353,3 +6353,93 @@ html[dir="rtl"] .lesson-visual__arrow { transform: scaleX(-1); }
   .quick-reply-btn { font-size: .78rem; }
   .floating-chatbot { right: 14px; bottom: 14px; }
 }
+
+/* ============================================================
+   Course curriculum summary: keep the module heading, its lesson
+   count and the "n/m completed" indicator inside the card.
+
+   .module-title is a three-column grid (title | meta | disclosure),
+   but the <summary> renders four children. Without an explicit
+   placement, auto-flow pushed the completion indicator into the
+   18px disclosure column, where it overflowed the card and pushed
+   the +/- control onto a second row. Every child now has an
+   explicit home, the title column can shrink, and the two meta
+   labels wrap on small screens instead of overflowing.
+   ============================================================ */
+body:has(.course-detail-container) .module-title > span:first-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+body:has(.course-detail-container) .module-lesson-count {
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: end;
+  text-align: end;
+}
+body:has(.course-detail-container) .module-progress-label {
+  grid-column: 1 / 3;
+  grid-row: 2;
+  justify-self: start;
+  text-align: start;
+  min-width: 0;
+  color: var(--text-secondary);
+  font: 500 .78rem/1.3 var(--font-body);
+  overflow-wrap: anywhere;
+}
+body:has(.course-detail-container) .module-disclosure {
+  grid-column: 3;
+  grid-row: 1 / 3;
+  justify-self: center;
+  align-self: center;
+}
+
+@media (max-width: 560px) {
+  body:has(.course-detail-container) .module-title {
+    grid-template-columns: minmax(0, 1fr) 16px;
+    row-gap: 4px;
+  }
+  body:has(.course-detail-container) .module-lesson-count {
+    grid-column: 1;
+    grid-row: 2;
+    justify-self: start;
+  }
+  body:has(.course-detail-container) .module-progress-label {
+    grid-column: 1;
+    grid-row: 3;
+  }
+  body:has(.course-detail-container) .module-disclosure {
+    grid-column: 2;
+    grid-row: 1 / 4;
+  }
+}
+
+/* Outstanding-lesson call to action and the completed-course exam call
+   to action. Scoped to the course page; no shared button restyling. */
+body:has(.course-detail-container) .course-outstanding {
+  margin: 6px 0 10px;
+  color: var(--text-secondary);
+  font-size: .88rem;
+}
+body:has(.course-detail-container) .course-complete-notice {
+  margin: 0 0 10px;
+  color: var(--green_light);
+  font-weight: 600;
+}
+body:has(.course-detail-container) #exam-button-container {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+}
+body:has(.course-detail-container) #exam-button-container > * { margin: 0; }
+/* The certificate recovery live region is empty until it has something to say;
+   as a flex item it would otherwise render as an empty bordered box. */
+body:has(.course-detail-container) #certificate-recovery-status:empty { display: none; }
+/* `#exam-button-container .component-button` sets a 40px min-height, so the
+   final-exam call to action needs the same ID specificity to grow to a
+   comfortable tap target. Later in the file, so it wins. */
+#exam-button-container .course-exam-cta {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
