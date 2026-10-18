@@ -162,7 +162,7 @@ test('lesson uncompletion is persisted through the authenticated API', () => {
 test('crossword supports continuous typing and keyboard navigation', () => {
   const exam = fs.readFileSync(path.join(__dirname, '..', 'public', 'exam.js'), 'utf8');
   assert.match(exam, /input\.addEventListener\('keydown', onCrosswordKeydown\)/);
-  assert.match(exam, /if \(letter\) focusClueCell\(clue, index \+ 1\)/);
+  assert.match(exam, /index >= 0 && index < cells\\.length - 1/);
   assert.match(exam, /ArrowLeft: 'across', ArrowRight: 'across', ArrowUp: 'down', ArrowDown: 'down'/);
   assert.match(exam, /event\.key === 'Backspace'/);
   assert.match(exam, /saveCrosswordCellAnswers\(key\)/);
