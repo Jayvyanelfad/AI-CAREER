@@ -7,11 +7,11 @@
   "scripts": {
     "start": "node server.js",
     "test": "node --test --test-concurrency=1 --test-timeout=60000 tests/*.test.js",
-    "test:unit": "node --test --test-concurrency=2 --test-timeout=30000 tests/locale-parity.test.js tests/lesson-visuals-and-locales.test.js tests/career-assessment.test.js tests/career-assessment-store.test.js tests/course-learning-store.test.js tests/enrollment-store.test.js tests/lesson-progress-store.test.js tests/programming-studio-honesty.test.js tests/seed-idempotency.test.js tests/student-facing-fixes.test.js tests/debug-pages-removed.test.js tests/login-completion.test.js",
+    "test:unit": "node --test --test-concurrency=2 --test-timeout=60000 tests/locale-parity.test.js tests/lesson-visuals-and-locales.test.js tests/career-assessment.test.js tests/career-assessment-store.test.js tests/course-learning-store.test.js tests/enrollment-store.test.js tests/lesson-progress-store.test.js tests/programming-studio-honesty.test.js tests/seed-idempotency.test.js tests/student-facing-fixes.test.js tests/debug-pages-removed.test.js tests/login-completion.test.js tests/server-startup.test.js tests/final-exam-seed.test.js",
     "test:api": "node --test --test-concurrency=2 --test-timeout=30000 tests/admin-api.test.js tests/admin-classification.test.js tests/auth-api.test.js tests/certificate-api.test.js tests/chat-api.test.js tests/course-enrollment-api.test.js tests/notification-api.test.js tests/profile-api.test.js tests/progress-api.test.js tests/programming-execution-api.test.js",
     "test:browser": "node --test --test-concurrency=1 --test-timeout=90000 tests/*.browser.test.js",
-    "test:browser-tour": "node --test --test-concurrency=1 --test-timeout=90000 tests/guided-tour.browser.test.js tests/chatbot-widget.browser.test.js tests/public-access.browser.test.js",
-    "test:browser-catalog": "node --test --test-concurrency=1 --test-timeout=90000 tests/admin-ui.browser.test.js tests/course-detail-content.browser.test.js tests/courses-ui.browser.test.js tests/dashboard-ui.browser.test.js",
+    "test:browser-tour": "node --test --test-concurrency=1 --test-timeout=90000 tests/guided-tour.browser.test.js tests/chatbot-widget.browser.test.js tests/public-access.browser.test.js tests/course-detail-alignment.browser.test.js",
+    "test:browser-catalog": "node --test --test-concurrency=1 --test-timeout=90000 tests/admin-ui.browser.test.js tests/course-detail-content.browser.test.js tests/courses-ui.browser.test.js tests/dashboard-ui.browser.test.js tests/lesson-completion-wizard.browser.test.js",
     "test:browser-journey": "node --test --test-concurrency=1 --test-timeout=90000 tests/career-result.browser.test.js tests/profile-layout.browser.test.js tests/profile-ui.browser.test.js tests/programming-studio.browser.test.js"
   },
   "engines": {

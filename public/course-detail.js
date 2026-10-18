@@ -23,6 +23,10 @@
     let courseProgress = null;
     let certificateEligible = false;
     let certificateResult = null;
+    // True only while the staged learning experience is showing its own
+    // "Complete Lesson" button. It decides whether the generic lesson-actions
+    // button is redundant, so it is read by renderLessonContent().
+    let lxpOwnCompleteVisible = false;
 
     async function authHeaders() {
         const token = await window.getAuthAccessToken();
@@ -307,33 +311,22 @@ async function fetchCompletedLessons() {
         }
     }
 
-    // Undo lesson completion (mark as incomplete)
+    // Undo lesson completion using the server-authoritative progress endpoint.
     async function undoLessonComplete(lessonId) {
-        // Note: We don't have a direct API to undo completion, but we can simulate by removing from our set
-        // and hoping the backend doesn't have a strict requirement? Actually, we should have an API for this.
-        // Since we don't, we'll just update our local state and hope the backend is idempotent?
-        // Better to call the same endpoint? But the endpoint only marks as complete.
-        // Let's assume that calling the same endpoint again would be an error?
-        // We'll just remove from our set and update UI without calling backend for now.
-        // This is a limitation, but we can note that the backend doesn't support undo.
-        // However, the lesson_progress table has a completed boolean, so we should be able to set it to false.
-        // We'll need to add an API for this? But the task says not to modify backend unnecessarily.
-        // Let's check the backend: we have an upsert in the complete lesson endpoint.
-        // We can call the same endpoint with completed: false? But the endpoint doesn't accept a body.
-        // Actually, the endpoint is fixed to set completed: true.
-        // We'll have to live with this limitation for now, or we can change the backend?
-        // The task says: "Do not modify other files, database schema, .env, or add new dependencies."
-        // We already modified server.js extensively, so we can add an undo endpoint if needed?
-        // But let's see if we can avoid it by using the same endpoint with a different method?
-        // We'll change our approach: we'll not implement undo for now, and just mark as complete.
-        // The UI can show a toggle, but we'll only allow marking as complete, not undoing.
-        // However, the existing course-detail.js had undo functionality.
-        // We'll keep the undo by removing from our set and updating UI, and we'll not call the backend.
-        // This means that if the user undoes, the backend still thinks it's complete, but our UI shows incomplete.
-        // This is not ideal, but we can note that the backend doesn't support undo and we'll fix it in a later phase if needed.
-        // For now, we'll just update our local state and UI.
-        completedLessonIds.delete(lessonId);
-        return { success: true };
+        const token = await window.getAuthAccessToken();
+        if (!token) throw new Error('Sign in to update lesson progress.');
+        const response = await fetch(`/api/lessons/${encodeURIComponent(lessonId)}/incomplete`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error || `Failed to undo lesson completion: ${response.status}`);
+        completedLessonIds = new Set(data.completedLessonIds || []);
+        completedLessonsCount = data.completedLessons;
+        totalLessons = data.totalLessons;
+        courseProgress = { totalLessons, completedLessons: completedLessonsCount, progress: data.progress };
+        lessonProgressUnavailable = false;
+        return data;
     }
 
     // ===== INTERACTIVE LEARNING EXPERIENCE =====
@@ -471,9 +464,19 @@ async function fetchCompletedLessons() {
     // Saved stage position. This only remembers *where the learner was reading*
     // inside the current lesson. It is never used as completion state - completion
     // always goes through markLessonComplete() -> the backend.
-    function getSavedLxpStage() {
+    //
+    // The key is built from the id of the lesson actually being rendered rather
+    // than from the id hard-coded above. The learning experience is selected by
+    // course + lesson title, so the configured id can drift from the database id
+    // after a re-seed. Keying on the real lesson keeps each lesson's saved
+    // position separate instead of inheriting a stale position.
+    function lxpStageKey(lessonId) {
+        return LXP_STAGE_KEY + lessonId;
+    }
+
+    function getSavedLxpStage(lessonId) {
         try {
-            const idx = parseInt(sessionStorage.getItem(LXP_STAGE_KEY + AI_LEARNING_EXPERIENCE.lessonId), 10);
+            const idx = parseInt(sessionStorage.getItem(lxpStageKey(lessonId)), 10);
             if (Number.isInteger(idx) && idx >= 0 && idx < AI_LEARNING_EXPERIENCE.stages.length) {
                 return idx;
             }
@@ -481,15 +484,15 @@ async function fetchCompletedLessons() {
         return 0;
     }
 
-    function saveLxpStage(index) {
+    function saveLxpStage(lessonId, index) {
         try {
-            sessionStorage.setItem(LXP_STAGE_KEY + AI_LEARNING_EXPERIENCE.lessonId, String(index));
+            sessionStorage.setItem(lxpStageKey(lessonId), String(index));
         } catch (e) { /* sessionStorage unavailable - non fatal */ }
     }
 
-    function clearSavedLxpStage() {
+    function clearSavedLxpStage(lessonId) {
         try {
-            sessionStorage.removeItem(LXP_STAGE_KEY + AI_LEARNING_EXPERIENCE.lessonId);
+            sessionStorage.removeItem(lxpStageKey(lessonId));
         } catch (e) { /* sessionStorage unavailable - non fatal */ }
     }
 
@@ -795,7 +798,7 @@ async function fetchCompletedLessons() {
 
         // Revisiting a finished lesson: everything is open, completion is already done.
         const freelyNavigable = !!alreadyCompleted;
-        let currentStage = getSavedLxpStage();
+        let currentStage = getSavedLxpStage(lesson.id);
         let maxReachedStage = currentStage;
         const answeredScenarios = {};
 
@@ -818,6 +821,7 @@ async function fetchCompletedLessons() {
             const isLastStage = currentStage === stages.length - 1;
             nextBtn.hidden = isLastStage;
             completeBtn.hidden = !isLastStage;
+            lxpOwnCompleteVisible = isLastStage;
 
             // The challenge gates progress until every scenario has been answered.
             const stage = stages[currentStage];
@@ -831,7 +835,7 @@ async function fetchCompletedLessons() {
 
             counterEl.textContent = t('coverage.lxpStageCounter', 'Stage {current} of {total}', { current: currentStage + 1, total: stages.length });
             progressFill.style.width = `${((currentStage + 1) / stages.length) * 100}%`;
-            saveLxpStage(currentStage);
+            saveLxpStage(lesson.id, currentStage);
         }
 
         function goToStage(index) {
@@ -916,7 +920,7 @@ async function fetchCompletedLessons() {
 
             try {
                 await markLessonComplete(lesson.id);
-                clearSavedLxpStage();
+                clearSavedLxpStage(lesson.id);
                 await loadAndRenderData();
             } catch (error) {
                 console.error('Error completing lesson:', error);
@@ -938,20 +942,24 @@ async function fetchCompletedLessons() {
             return;
         }
 
-        const courseTitle = t(`courseMetadata.${course.id}.title`, course.title);
+        const courseTitle = t(`courseMetadata.${course.id}.title`, course.title || t('coverage.untitledCourse', 'Untitled course'));
         const courseDescription = t(`courseMetadata.${course.id}.description`, course.description || '');
         const availability = course.status === 'coming_soon'
             ? t('ui.comingSoon', 'Coming soon')
             : course.status === 'available' ? '' : t('ui.notAvailable', 'Not available');
+        const durationWeeks = Number(course.duration_weeks);
+        const level = typeof course.level === 'string' && course.level.trim()
+            ? course.level.charAt(0).toUpperCase() + course.level.slice(1)
+            : '';
 
         courseHeaderDiv.innerHTML = `
-            <img src="${course.image_url}" alt="${courseTitle}" class="course-detail-image">
-            <h1 class="course-detail-title">${courseTitle}</h1>
-            <p class="course-detail-description">${courseDescription}</p>
-            ${availability ? `<p class="course-availability" role="status">${availability}</p>` : ''}
+            <img src="${esc(course.image_url || '')}" alt="${esc(courseTitle)}" class="course-detail-image">
+            <h1 class="course-detail-title">${esc(courseTitle)}</h1>
+            <p class="course-detail-description">${esc(courseDescription)}</p>
+            ${availability ? `<p class="course-availability" role="status">${esc(availability)}</p>` : ''}
             <div class="course-detail-meta">
-                <span><i class="fas fa-clock"></i> ${t('coverage.weekDuration', '{count} weeks', { count: course.duration_weeks })}</span>
-                <span><i class="fas fa-signal"></i> ${course.level.charAt(0).toUpperCase() + course.level.slice(1)}</span>
+                ${Number.isFinite(durationWeeks) && durationWeeks > 0 ? `<span><i class="fas fa-clock"></i> ${esc(t('coverage.weekDuration', '{count} weeks', { count: durationWeeks }))}</span>` : ''}
+                ${level ? `<span><i class="fas fa-signal"></i> ${esc(level)}</span>` : ''}
             </div>
         `;
     }
@@ -1301,8 +1309,14 @@ async function fetchCompletedLessons() {
             : t('coverage.markingComplete', 'Mark as Complete');
 
         // The learning experience owns completion at the end of its final stage, so the
-        // generic bar button is hidden while it is active to avoid two competing controls.
-        completeBtn.style.display = isLearningExperience ? 'none' : '';
+        // generic bar button is hidden only while that button is actually on
+        // screen. Before that point the bar button stays visible: it is the same
+        // endpoint, the same enrollment guard and the same server-side
+        // persistence, and hiding it outright used to leave this one lesson with
+        // no reachable completion control at all, which stranded the learner at
+        // 25/26 and, because exam eligibility requires every lesson, also locked
+        // the exam and the certificate.
+        completeBtn.style.display = (isLearningExperience && lxpOwnCompleteVisible) ? 'none' : '';
 
 // Disable completion button if not enrolled
         if (completed) {

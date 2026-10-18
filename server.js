@@ -19,6 +19,7 @@ const { createChatRouter } = require('./chat-api');
 const { persistLessonCompletion } = require('./lesson-progress-store');
 const { createCourseLearningStore } = require('./course-learning-store');
 const { createCourseEnrollmentRouter, formatEnrollment } = require('./course-enrollment-api');
+const { createLessonProgressRouter } = require('./lesson-progress-api');
 
 // Load environment variables
 dotenv.config();
@@ -1542,6 +1543,8 @@ app.post('/api/lessons/:lessonId/complete', authenticateToken, async (req, res) 
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+app.use('/api/lessons', createLessonProgressRouter({ supabase, authenticateToken, courseLearningStore }));
 
 // Profile update
 app.put('/api/user/profile', authenticateToken, async (req, res) => {

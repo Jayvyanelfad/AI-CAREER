@@ -67,8 +67,48 @@
     document.getElementById('certificate-print').onclick = () => window.print();
   }
 
+  // Design preview. Renders the certificate with clearly-labelled sample data so
+  // the artwork can be reviewed without an issued record. It never calls the API,
+  // never creates a certificate, and never claims to be verified: the visible
+  // banner travels with the paper into print, so a preview cannot be mistaken
+  // for a real credential. Real certificates are the only thing the API serves.
+  const PREVIEW_SAMPLE = {
+    certificateId: 'PREVIEW — not an issued certificate',
+    learnerName: 'Sample Learner',
+    courseId: 'intro_to_ai',
+    courseTitle: 'Introduction to AI & ML',
+    issuedAt: '2026-01-01T00:00:00.000Z',
+    status: 'preview',
+    valid: false
+  };
+
+  function renderPreview() {
+    state.hidden = true;
+    paper.hidden = false;
+    actions.hidden = false;
+    paper.classList.add('is-preview');
+    document.getElementById('certificate-preview-note').hidden = false;
+
+    pageTitle.textContent = 'Certificate design preview';
+    pageDescription.textContent = 'Sample content used to review the certificate layout. No record was created.';
+    document.getElementById('certificate-kicker').textContent = 'Certificate of Achievement — Preview';
+    document.getElementById('certificate-learner').textContent = PREVIEW_SAMPLE.learnerName;
+    document.getElementById('certificate-course').textContent = PREVIEW_SAMPLE.courseTitle;
+    document.getElementById('certificate-id').textContent = PREVIEW_SAMPLE.certificateId;
+    document.getElementById('certificate-issued').textContent = formatDate(PREVIEW_SAMPLE.issuedAt);
+    document.getElementById('certificate-verification-status').textContent = 'Sample data — not verified';
+
+    const cell = document.getElementById('certificate-verification-link');
+    cell.replaceChildren(document.createTextNode('Verification is available only for issued certificates.'));
+    document.getElementById('certificate-print').onclick = () => window.print();
+  }
+
   async function load() {
     const params = new URLSearchParams(window.location.search);
+    if (params.get('preview') === '1') {
+      renderPreview();
+      return;
+    }
     const verifyId = params.get('verify');
     const privateId = params.get('certificateId');
     const legacyCourseId = params.get('courseId');

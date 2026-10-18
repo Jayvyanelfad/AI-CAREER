@@ -1116,7 +1116,8 @@
     "continueOutstanding": "Continue: {title}",
     "progressMismatch": "Your saved progress and the course lesson list do not match yet. Please refresh the page.",
     "allLessonsComplete": "Course complete. All {total} lessons are done.",
-    "takeFinalExam": "Take Final Exam"
+    "takeFinalExam": "Take Final Exam",
+    "untitledCourse": "Untitled course"
   },
   "careerResult": {
     "eyebrow": "YOUR CAREER DIRECTION",

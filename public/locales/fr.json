@@ -1116,7 +1116,8 @@
     "continueOutstanding": "Continuer : {title}",
     "progressMismatch": "Votre progression enregistrée et la liste des leçons ne correspondent pas encore. Veuillez actualiser la page.",
     "allLessonsComplete": "Cours terminé. Les {total} leçons sont validées.",
-    "takeFinalExam": "Passer l’examen final"
+    "takeFinalExam": "Passer l’examen final",
+    "untitledCourse": "Cours sans titre"
   },
   "careerResult": {
     "eyebrow": "VOTRE ORIENTATION PROFESSIONNELLE",
@@ -1188,40 +1189,52 @@
   },
   "courseMetadata": {
     "intro_to_ai": {
-      "title": "Introduction à l’IA et au ML"
+      "title": "Introduction à l’IA et au ML",
+      "description": "Découvrez comment l'IA et l'apprentissage automatique diffèrent, comment les données et les modèles produisent des prédictions, et comment évaluer les résultats de manière responsable. Progressez des termes et méthodes fondamentaux vers les réseaux neuronaux, les applications concrètes et un projet guidé pour débutants : un petit classifieur avec un plan de test et des limites documentées. Aucune expérience préalable en IA n'est requise."
     },
     "python_for_careers": {
-      "title": "Python pour évoluer professionnellement"
+      "title": "Python pour évoluer professionnellement",
+      "description": "Commencez par les bases de Python : valeurs, conditions et boucles. Utilisez ensuite les fonctions, les collections, les fichiers, le JSON et une requête d'API pour débutants. Terminez en planifiant, construisant, testant en toute sécurité et présentant un assistant local d'organisation de fichiers. Aucune expérience en programmation n'est requise."
     },
     "data_analytics_basics": {
-      "title": "Bases de l’analyse de données"
+      "title": "Bases de l’analyse de données",
+      "description": "Formuler une question d'analyse, nettoyer un petit jeu de données, explorer les tendances avec des synthèses et des graphiques, et communicatez un résultat en précisant ses limites."
     },
     "web_dev": {
-      "title": "Fondamentaux du développement web"
+      "title": "Fondamentaux du développement web",
+      "description": "Construisez une page web sémantique et responsive avec HTML, CSS et JavaScript. Pratiquez les formulaires accessibles, les interactions côté client et les bases de la publication d'un frontend."
     },
     "dsa": {
-      "title": "Structures de données et algorithmes"
+      "title": "Structures de données et algorithmes",
+      "description": "Choisir et appliquer les structures de données et algorithmes fondamentaux à des problèmes courants, comparer les coûts en temps et en espace, et expliquer les compromis derrière une solution."
     },
     "devops": {
-      "title": "Bases du DevOps et du cloud"
+      "title": "Bases du DevOps et du cloud",
+      "description": "Utilisez les commandes Linux et des scripts shell, empaquetez une application avec Docker, et expliquez comment les services cloud soutiennent le déploiement et l'exploitation."
     },
     "cybersecurity": {
-      "title": "Fondamentaux de la cybersécurité"
+      "title": "Fondamentaux de la cybersécurité",
+      "description": "Reconnaître les menaces courantes, réduire les risques de base des applications web, examiner les signaux de sécurité, et définir une réponse responsable aux incidents dans un cadre autorisé."
     },
     "ui_ux": {
-      "title": "Principes du design UI/UX"
+      "title": "Principes du design UI/UX",
+      "description": "Transformez les besoins des utilisateurs en un parcours et une interface simples, prototypez-les, vérifiez les bases de l'accessibilité, et affinez la conception grâce aux retours d'utilisabilité."
     },
     "advanced_ml": {
-      "title": "Machine learning avancé"
+      "title": "Machine learning avancé",
+      "description": "Comparer les approches neuronales pour les tâches de texte et d'image, raisonner sur les compromis entre entraînement et évaluation, et expliquer comment un modèle peut être surveillé après son déploiement."
     },
     "aws_architect": {
-      "title": "Architecte de solutions AWS"
+      "title": "Architecte de solutions AWS",
+      "description": "Sélectionner des services AWS de calcul, de stockage, de bases de données, de réseau et de sécurité pour esquisser une architecture résiliente et en expliquer les compromis. Aucun déploiement cloud pratique n'est supposé."
     },
     "data_science": {
-      "title": "Data science professionnel"
+      "title": "Data science professionnel",
+      "description": "Préparer et explorer un jeu de données, construire et évaluer un modèle approprié, et communiquer ce que les preuves soutiennent et où elles sont insuffisantes."
     },
     "full_stack": {
-      "title": "Développement web full stack"
+      "title": "Développement web full stack",
+      "description": "Planifier les parties d'une application full stack, construire des interactions frontend responsives, connecter des API serveur aux données, et expliquer les rôles des tests et des processus de livraison."
     },
     "prompt_engineering": {
       "title": "Ingénierie des prompts et workflows LLM",

@@ -34,6 +34,9 @@
     .certificate-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin: 24px auto 0; }
     .certificate-state { max-width: 640px; margin: 0 auto; padding: 24px; border: 1px solid var(--border-light); border-radius: var(--radius-md); text-align: center; color: var(--text); background: var(--surface, rgba(255,255,255,.04)); }
     .certificate-state[hidden], .certificate-paper[hidden], .certificate-actions[hidden] { display: none; }
+    .certificate-preview-note[hidden] { display: none; }
+    .certificate-preview-note { margin: 0 0 26px; padding: 9px 13px; border: 1px solid #b16f4d; border-radius: 6px; background: rgba(177, 111, 77, .09); color: #8a4c2e; font: 600 .72rem/1.5 "IBM Plex Sans", sans-serif; letter-spacing: .06em; text-align: center; text-transform: uppercase; }
+    .certificate-paper.is-preview { border-style: dashed; border-color: #b16f4d; }
     .certificate-lookup { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 18px; }
     .certificate-lookup input { width: min(420px, 100%); min-height: 46px; padding: 10px 14px; color: var(--text); background: var(--bg); border: 1px solid var(--border-light); border-radius: var(--radius-sm); }
     .certificate-lookup button { min-height: 46px; }
@@ -85,6 +88,9 @@
     </section>
 
     <article class="certificate-paper" id="certificate-paper" aria-labelledby="certificate-title" hidden>
+      <p class="certificate-preview-note" id="certificate-preview-note" hidden role="note">
+        Design preview — sample data only. This is not an issued certificate and is not verifiable.
+      </p>
       <div class="certificate-seal" aria-hidden="true">CP</div>
       <p class="certificate-brand">CareerPath <span>Artificial Intelligence</span></p>
       <p class="certificate-kicker" id="certificate-kicker">Certificate of Achievement</p>
