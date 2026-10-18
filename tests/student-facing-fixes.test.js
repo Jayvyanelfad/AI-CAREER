@@ -159,6 +159,16 @@ test('lesson uncompletion is persisted through the authenticated API', () => {
   assert.match(fs.readFileSync(path.join(__dirname, '..', 'lesson-progress-api.js'), 'utf8'), /completed_hours: summary\.completedHours/);
 });
 
+test('crossword restores crossing letters without blank answers erasing them', () => {
+  const exam = fs.readFileSync(path.join(__dirname, '..', 'public', 'exam.js'), 'utf8');
+  assert.match(exam, /letter !== ' ' && !crosswordLetters\.has\(key\)/,
+    'blank cells from one clue must not overwrite a real letter from a crossing clue');
+  assert.match(exam, /containing\.find\(clue => clue\.id === activeCrosswordClueId && clue\.direction === direction\)/,
+    'at an intersection, navigation must preserve the selected clue');
+  assert.match(exam, /saveCrosswordCellAnswers\(key\)/,
+    'editing an intersection must schedule saves for every clue containing that cell');
+});
+
 test('crossword supports continuous typing and keyboard navigation', () => {
   const exam = fs.readFileSync(path.join(__dirname, '..', 'public', 'exam.js'), 'utf8');
   assert.match(exam, /input\.addEventListener\('keydown', onCrosswordKeydown\)/);
