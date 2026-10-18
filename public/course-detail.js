@@ -950,7 +950,6 @@ async function fetchCompletedLessons() {
             <p class="course-detail-description">${courseDescription}</p>
             ${availability ? `<p class="course-availability" role="status">${availability}</p>` : ''}
             <div class="course-detail-meta">
-                <span><i class="fas fa-clock"></i> ${t('coverage.weekDuration', '{count} weeks', { count: course.duration_weeks })}</span>
                 <span><i class="fas fa-signal"></i> ${course.level.charAt(0).toUpperCase() + course.level.slice(1)}</span>
             </div>
         `;
