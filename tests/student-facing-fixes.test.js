@@ -147,3 +147,14 @@ test('course page prefers the flagged final and explains a missing one', () => {
   assert.match(server, /is_final: exam\.is_final === true/);
   assert.match(server, /duration_minutes, is_final'\)/);
 });
+
+
+test('lesson uncompletion is persisted through the authenticated API', () => {
+  const detail = read('course-detail.js');
+  const server = fs.readFileSync(path.join(__dirname, '..', 'server.js'), 'utf8');
+  assert.match(detail, /\/api\/lessons\/\$\{encodeURIComponent\(lessonId\)\}\/incomplete/);
+  assert.match(detail, /completedLessonIds = new Set\(data\.completedLessonIds \|\| \[\]\)/);
+  assert.match(server, /app\.post\('\/api\/lessons\/:lessonId\/incomplete', authenticateToken/);
+  assert.match(server, /\.update\(\{ completed: false, completed_at: null \}\)/);
+  assert.match(server, /completed_hours: summary\.completedHours/);
+});
