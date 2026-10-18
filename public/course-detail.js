@@ -927,20 +927,24 @@ async function fetchCompletedLessons() {
             return;
         }
 
-        const courseTitle = t(`courseMetadata.${course.id}.title`, course.title);
+        const courseTitle = t(`courseMetadata.${course.id}.title`, course.title || t('coverage.untitledCourse', 'Untitled course'));
         const courseDescription = t(`courseMetadata.${course.id}.description`, course.description || '');
         const availability = course.status === 'coming_soon'
             ? t('ui.comingSoon', 'Coming soon')
             : course.status === 'available' ? '' : t('ui.notAvailable', 'Not available');
+        const durationWeeks = Number(course.duration_weeks);
+        const level = typeof course.level === 'string' && course.level.trim()
+            ? course.level.charAt(0).toUpperCase() + course.level.slice(1)
+            : '';
 
         courseHeaderDiv.innerHTML = `
-            <img src="${course.image_url}" alt="${courseTitle}" class="course-detail-image">
-            <h1 class="course-detail-title">${courseTitle}</h1>
-            <p class="course-detail-description">${courseDescription}</p>
-            ${availability ? `<p class="course-availability" role="status">${availability}</p>` : ''}
+            <img src="${esc(course.image_url || '')}" alt="${esc(courseTitle)}" class="course-detail-image">
+            <h1 class="course-detail-title">${esc(courseTitle)}</h1>
+            <p class="course-detail-description">${esc(courseDescription)}</p>
+            ${availability ? `<p class="course-availability" role="status">${esc(availability)}</p>` : ''}
             <div class="course-detail-meta">
-                <span><i class="fas fa-clock"></i> ${t('coverage.weekDuration', '{count} weeks', { count: course.duration_weeks })}</span>
-                <span><i class="fas fa-signal"></i> ${course.level.charAt(0).toUpperCase() + course.level.slice(1)}</span>
+                ${Number.isFinite(durationWeeks) && durationWeeks > 0 ? `<span><i class="fas fa-clock"></i> ${esc(t('coverage.weekDuration', '{count} weeks', { count: durationWeeks }))}</span>` : ''}
+                ${level ? `<span><i class="fas fa-signal"></i> ${esc(level)}</span>` : ''}
             </div>
         `;
     }
