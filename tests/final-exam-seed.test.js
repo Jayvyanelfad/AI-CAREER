@@ -12,7 +12,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const {
-  EXAM_ID, COURSE_ID, PASSING_SCORE, MAX_ATTEMPTS, DURATION_MINUTES,
+  EXAM_ID, COURSE_ID, PASSING_SCORE, MAX_ATTEMPTS, DURATION_MINUTES, MCQ_QUESTION_COUNT,
   buildExamPlan, examRow, seedIntroToAiFinalExam
 } = require('../seed-exam');
 const assessment = require('../intro-ai-assessment-content');
@@ -103,8 +103,10 @@ update(values) {
 
 test('the exam plan is built from the course-authored assessment content', () => {
   const plan = buildExamPlan();
-  assert.equal(plan.length, assessment.foundationsQuiz.length + assessment.finalExamAdditions.length);
-  assert.ok(plan.length >= 10, 'a final exam needs a meaningful number of questions');
+  assert.equal(plan.length, MCQ_QUESTION_COUNT);
+  assert.equal(plan.length, 10, 'the final exam contains exactly ten MCQs');
+  assert.equal(plan.filter(q => assessment.foundationsQuiz.some(source => source.question === q.question_text)).length, 5);
+  assert.equal(plan.filter(q => assessment.finalExamAdditions.some(source => source.question === q.question_text)).length, 5);
 
   for (const [index, question] of plan.entries()) {
     assert.equal(question.question_order, index + 1, 'questions are ordered deterministically');
@@ -205,4 +207,10 @@ test('exam eligibility requires an enrollment and every lesson complete', () => 
   assert.match(server, /if \(progress\.completedLessons < progress\.totalLessons\)/);
   assert.match(server, /submit_exam_attempt/,
     'answers are evaluated on the server, not in the browser');
+});
+
+test('new exam attempts are limited to ten MCQs while legacy questions are retained', () => {
+  const server = fs.readFileSync(path.join(__dirname, '..', 'server.js'), 'utf8');
+  assert.match(server, /\(eligibilityQuestionIds\.data \|\| \[\]\)\.slice\(0, 10\)/);
+  assert.match(server, /Older question\s*\n\s*\/\/ rows remain in the database to preserve historical attempts/);
 });
