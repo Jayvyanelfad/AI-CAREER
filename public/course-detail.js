@@ -307,33 +307,22 @@ async function fetchCompletedLessons() {
         }
     }
 
-    // Undo lesson completion (mark as incomplete)
+    // Undo lesson completion using the server-authoritative progress endpoint.
     async function undoLessonComplete(lessonId) {
-        // Note: We don't have a direct API to undo completion, but we can simulate by removing from our set
-        // and hoping the backend doesn't have a strict requirement? Actually, we should have an API for this.
-        // Since we don't, we'll just update our local state and hope the backend is idempotent?
-        // Better to call the same endpoint? But the endpoint only marks as complete.
-        // Let's assume that calling the same endpoint again would be an error?
-        // We'll just remove from our set and update UI without calling backend for now.
-        // This is a limitation, but we can note that the backend doesn't support undo.
-        // However, the lesson_progress table has a completed boolean, so we should be able to set it to false.
-        // We'll need to add an API for this? But the task says not to modify backend unnecessarily.
-        // Let's check the backend: we have an upsert in the complete lesson endpoint.
-        // We can call the same endpoint with completed: false? But the endpoint doesn't accept a body.
-        // Actually, the endpoint is fixed to set completed: true.
-        // We'll have to live with this limitation for now, or we can change the backend?
-        // The task says: "Do not modify other files, database schema, .env, or add new dependencies."
-        // We already modified server.js extensively, so we can add an undo endpoint if needed?
-        // But let's see if we can avoid it by using the same endpoint with a different method?
-        // We'll change our approach: we'll not implement undo for now, and just mark as complete.
-        // The UI can show a toggle, but we'll only allow marking as complete, not undoing.
-        // However, the existing course-detail.js had undo functionality.
-        // We'll keep the undo by removing from our set and updating UI, and we'll not call the backend.
-        // This means that if the user undoes, the backend still thinks it's complete, but our UI shows incomplete.
-        // This is not ideal, but we can note that the backend doesn't support undo and we'll fix it in a later phase if needed.
-        // For now, we'll just update our local state and UI.
-        completedLessonIds.delete(lessonId);
-        return { success: true };
+        const token = await window.getAuthAccessToken();
+        if (!token) throw new Error('Sign in to update lesson progress.');
+        const response = await fetch(`/api/lessons/${encodeURIComponent(lessonId)}/incomplete`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error || `Failed to undo lesson completion: ${response.status}`);
+        completedLessonIds = new Set(data.completedLessonIds || []);
+        completedLessonsCount = data.completedLessons;
+        totalLessons = data.totalLessons;
+        courseProgress = { totalLessons, completedLessons: completedLessonsCount, progress: data.progress };
+        lessonProgressUnavailable = false;
+        return data;
     }
 
     // ===== INTERACTIVE LEARNING EXPERIENCE =====
