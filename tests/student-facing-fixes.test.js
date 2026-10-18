@@ -158,3 +158,12 @@ test('lesson uncompletion is persisted through the authenticated API', () => {
   assert.match(fs.readFileSync(path.join(__dirname, '..', 'lesson-progress-api.js'), 'utf8'), /\.update\(\{ completed: false, completed_at: null \}\)/);
   assert.match(fs.readFileSync(path.join(__dirname, '..', 'lesson-progress-api.js'), 'utf8'), /completed_hours: summary\.completedHours/);
 });
+
+test('crossword supports continuous typing and keyboard navigation', () => {
+  const exam = fs.readFileSync(path.join(__dirname, '..', 'public', 'exam.js'), 'utf8');
+  assert.match(exam, /input\.addEventListener\('keydown', onCrosswordKeydown\)/);
+  assert.match(exam, /if \(letter\) focusClueCell\(clue, index \+ 1\)/);
+  assert.match(exam, /ArrowLeft: 'across', ArrowRight: 'across', ArrowUp: 'down', ArrowDown: 'down'/);
+  assert.match(exam, /event\.key === 'Backspace'/);
+  assert.match(exam, /saveCrosswordCellAnswers\(key\)/);
+});
