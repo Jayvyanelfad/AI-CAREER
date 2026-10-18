@@ -323,11 +323,17 @@
         crossword = data.crossword || data;
         crossword.deadline_at = data.deadline_at || crossword.deadline_at;
         crosswordLetters.clear();
+        // A cell can belong to both an Across and a Down clue. Persisted
+        // answers contain spaces for unanswered cells; never let those spaces
+        // erase a real crossing letter when the puzzle is reloaded.
         (crossword.clues || []).forEach(clue => {
             const answer = String(clue.submitted_answer || '').toUpperCase().replace(/[^A-Z0-9 ]/g, '');
             clueCells(clue).forEach(([row, col], index) => {
                 const key = `${row},${col}`;
-                if (answer[index]) crosswordLetters.set(key, answer[index]);
+                const letter = answer[index];
+                if (letter && letter !== ' ' && !crosswordLetters.has(key)) {
+                    crosswordLetters.set(key, letter);
+                }
             });
         });
         examHeaderDiv.innerHTML = `<h1 class="exam-title">${escapeHtml(exam.title)}</h1><div class="exam-course">Part B: Crossword</div><div class="exam-timer" id="exam-timer" role="status" aria-live="polite"></div>`;
@@ -399,8 +405,15 @@
     let activeCrosswordClueId = null;
 
     function clueForCell(key, direction = activeCrosswordDirection) {
-        const clues = (crossword?.clues || []).filter(clue => clue.direction === direction && clueCells(clue).some(([row, col]) => `${row},${col}` === key));
-        return clues[0] || (crossword?.clues || []).find(clue => clueCells(clue).some(([row, col]) => `${row},${col}` === key)) || null;
+        const containing = (crossword?.clues || []).filter(clue =>
+            clueCells(clue).some(([row, col]) => `${row},${col}` === key));
+        // At an intersection, keep the learner's selected Across/Down clue.
+        // Only fall back to the other direction when no clue matches it.
+        return containing.find(clue => clue.id === activeCrosswordClueId && clue.direction === direction)
+            || containing.find(clue => clue.direction === direction)
+            || containing.find(clue => clue.id === activeCrosswordClueId)
+            || containing[0]
+            || null;
     }
 
     function saveCrosswordCellAnswers(key) {
