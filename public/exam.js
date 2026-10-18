@@ -365,11 +365,25 @@
             <div class="crossword-clues"><section><h3>Across</h3><ol>${clueList(across)}</ol></section><section><h3>Down</h3><ol>${clueList(down)}</ol></section></div>
             <p id="exam-status-message" role="status" aria-live="polite" hidden></p>`;
         examActionsDiv.innerHTML = `<button id="btn-submit-crossword" class="btn-exam component-button">Submit final exam</button><button id="btn-return-course" class="btn-exam component-button">Return to Course</button>`;
-        examQuestionAreaDiv.querySelectorAll('.crossword-letter').forEach(input => input.addEventListener('input', onCrosswordInput));
+        examQuestionAreaDiv.querySelectorAll('.crossword-letter').forEach(input => {
+            input.addEventListener('input', onCrosswordInput);
+            input.addEventListener('keydown', onCrosswordKeydown);
+            input.addEventListener('focus', () => {
+                const clue = clueForCell(input.dataset.cell);
+                if (clue) {
+                    activeCrosswordClueId = clue.id;
+                    activeCrosswordDirection = clue.direction;
+                }
+            });
+        });
         examQuestionAreaDiv.querySelectorAll('.crossword-clue').forEach(button => button.addEventListener('click', () => {
             const clue = (crossword.clues || []).find(item => item.id === button.dataset.clue);
             const first = clue && clueCells(clue)[0];
-            if (first) examQuestionAreaDiv.querySelector(`[data-cell="${first[0]},${first[1]}"]`)?.focus();
+            if (first) {
+                activeCrosswordClueId = clue.id;
+                activeCrosswordDirection = clue.direction;
+                examQuestionAreaDiv.querySelector(`[data-cell="${first[0]},${first[1]}"]`)?.focus();
+            }
         }));
         document.getElementById('btn-submit-crossword').addEventListener('click', async () => {
             if (!window.confirm(t('coverage.examConfirmCrossword', 'Submit Part B and finish this final exam?'))) return;
@@ -381,28 +395,85 @@
         document.getElementById('btn-return-course').addEventListener('click', () => { window.location.href = `course-detail.html?id=${encodeURIComponent(exam.course_id)}`; });
     }
 
-    function onCrosswordInput(event) {
-        const input = event.currentTarget;
-        const key = input.dataset.cell;
-        const letter = String(input.value || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(-1);
-        input.value = letter;
-        if (letter) crosswordLetters.set(key, letter); else crosswordLetters.delete(key);
+    let activeCrosswordDirection = 'across';
+    let activeCrosswordClueId = null;
+
+    function clueForCell(key, direction = activeCrosswordDirection) {
+        const clues = (crossword?.clues || []).filter(clue => clue.direction === direction && clueCells(clue).some(([row, col]) => `${row},${col}` === key));
+        return clues[0] || (crossword?.clues || []).find(clue => clueCells(clue).some(([row, col]) => `${row},${col}` === key)) || null;
+    }
+
+    function saveCrosswordCellAnswers(key) {
         const clueIds = new Set();
-        (crossword?.clues || []).forEach(clue => {
-            if (clueCells(clue).some(([row, col]) => `${row},${col}` === key)) clueIds.add(clue.id);
-        });
+        (crossword?.clues || []).forEach(clue => { if (clueCells(clue).some(([row, col]) => `${row},${col}` === key)) clueIds.add(clue.id); });
         clueIds.forEach(clueId => {
             const clue = crossword.clues.find(item => item.id === clueId);
             const answer = clueCells(clue).map(([row, col]) => crosswordLetters.get(`${row},${col}`) || ' ').join('');
             const previous = crosswordSaveTimers.get(clueId);
             if (previous) window.clearTimeout(previous);
             crosswordSaveTimers.set(clueId, window.setTimeout(async () => {
+                crosswordSaveTimers.delete(clueId);
                 try { await saveCrosswordAnswer(exam.id, attemptId, clueId, answer); }
                 catch (error) { showAnswerSaveError(error.message || 'A crossword answer could not be saved.'); }
             }, 300));
         });
     }
 
+    function focusClueCell(clue, index) {
+        const cells = clueCells(clue);
+        if (index < 0 || index >= cells.length) return false;
+        const [row, col] = cells[index];
+        const target = examQuestionAreaDiv.querySelector('[data-cell="' + row + ',' + col + '"]');
+        if (!target) return false;
+        activeCrosswordClueId = clue.id;
+        activeCrosswordDirection = clue.direction;
+        target.focus();
+        return true;
+    }
+
+    function onCrosswordInput(event) {
+        const input = event.currentTarget;
+        const key = input.dataset.cell;
+        const letter = String(input.value || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(-1);
+        input.value = letter;
+        if (letter) crosswordLetters.set(key, letter); else crosswordLetters.delete(key);
+        saveCrosswordCellAnswers(key);
+        if (letter) {
+            const clue = clueForCell(key);
+            if (clue) {
+                activeCrosswordClueId = clue.id;
+                activeCrosswordDirection = clue.direction;
+                const cells = clueCells(clue);
+                const index = cells.findIndex(([row, col]) => `${row},${col}` === key);
+                if (index >= 0 && index < cells.length - 1) focusClueCell(clue, index + 1);
+            }
+        }
+    }
+
+    function onCrosswordKeydown(event) {
+        const input = event.currentTarget;
+        const key = input.dataset.cell;
+        const clue = clueForCell(key);
+        const cells = clue ? clueCells(clue) : [];
+        const index = cells.findIndex(([row, col]) => `${row},${col}` === key);
+        if (event.key === 'Backspace') {
+            if (input.value) { input.value = ''; input.dispatchEvent(new Event('input', { bubbles: true })); }
+            else if (clue) focusClueCell(clue, Math.max(0, index - 1));
+            event.preventDefault();
+            return;
+        }
+        const wantedDirection = ({ ArrowLeft: 'across', ArrowRight: 'across', ArrowUp: 'down', ArrowDown: 'down' })[event.key];
+        if (!wantedDirection) return;
+        event.preventDefault();
+        const directionalClue = clueForCell(key, wantedDirection);
+        if (!directionalClue) return;
+        const directionalCells = clueCells(directionalClue);
+        const current = directionalCells.findIndex(([row, col]) => `${row},${col}` === key);
+        const delta = (event.key === 'ArrowLeft' || event.key === 'ArrowUp') ? -1 : 1;
+        activeCrosswordDirection = wantedDirection;
+        activeCrosswordClueId = directionalClue.id;
+        focusClueCell(directionalClue, current + delta);
+    }
     async function flushCrosswordSaves() {
         for (const timer of crosswordSaveTimers.values()) window.clearTimeout(timer);
         crosswordSaveTimers.clear();
