@@ -51,8 +51,7 @@ function createCourseCard(course) {
   const level = typeof course.level === 'string'
     ? course.level.charAt(0).toUpperCase() + course.level.slice(1)
     : '';
-  const duration = Number(course.duration_weeks);
-  meta.textContent = [level, duration > 0 ? `${t("coverage.weekDuration", "{count} weeks", { count: duration })}` : ''].filter(Boolean).join(' · ');
+  meta.textContent = level;
 
   const action = document.createElement('a');
   action.className = 'home-course-link';
