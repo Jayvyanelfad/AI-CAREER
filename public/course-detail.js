@@ -23,6 +23,10 @@
     let courseProgress = null;
     let certificateEligible = false;
     let certificateResult = null;
+    // True only while the staged learning experience is showing its own
+    // "Complete Lesson" button. It decides whether the generic lesson-actions
+    // button is redundant, so it is read by renderLessonContent().
+    let lxpOwnCompleteVisible = false;
 
     async function authHeaders() {
         const token = await window.getAuthAccessToken();
@@ -460,9 +464,19 @@ async function fetchCompletedLessons() {
     // Saved stage position. This only remembers *where the learner was reading*
     // inside the current lesson. It is never used as completion state - completion
     // always goes through markLessonComplete() -> the backend.
-    function getSavedLxpStage() {
+    //
+    // The key is built from the id of the lesson actually being rendered rather
+    // than from the id hard-coded above. The learning experience is selected by
+    // course + lesson title, so the configured id can drift from the database id
+    // after a re-seed. Keying on the real lesson keeps each lesson's saved
+    // position separate instead of inheriting a stale position.
+    function lxpStageKey(lessonId) {
+        return LXP_STAGE_KEY + lessonId;
+    }
+
+    function getSavedLxpStage(lessonId) {
         try {
-            const idx = parseInt(sessionStorage.getItem(LXP_STAGE_KEY + AI_LEARNING_EXPERIENCE.lessonId), 10);
+            const idx = parseInt(sessionStorage.getItem(lxpStageKey(lessonId)), 10);
             if (Number.isInteger(idx) && idx >= 0 && idx < AI_LEARNING_EXPERIENCE.stages.length) {
                 return idx;
             }
@@ -470,15 +484,15 @@ async function fetchCompletedLessons() {
         return 0;
     }
 
-    function saveLxpStage(index) {
+    function saveLxpStage(lessonId, index) {
         try {
-            sessionStorage.setItem(LXP_STAGE_KEY + AI_LEARNING_EXPERIENCE.lessonId, String(index));
+            sessionStorage.setItem(lxpStageKey(lessonId), String(index));
         } catch (e) { /* sessionStorage unavailable - non fatal */ }
     }
 
-    function clearSavedLxpStage() {
+    function clearSavedLxpStage(lessonId) {
         try {
-            sessionStorage.removeItem(LXP_STAGE_KEY + AI_LEARNING_EXPERIENCE.lessonId);
+            sessionStorage.removeItem(lxpStageKey(lessonId));
         } catch (e) { /* sessionStorage unavailable - non fatal */ }
     }
 
@@ -784,7 +798,7 @@ async function fetchCompletedLessons() {
 
         // Revisiting a finished lesson: everything is open, completion is already done.
         const freelyNavigable = !!alreadyCompleted;
-        let currentStage = getSavedLxpStage();
+        let currentStage = getSavedLxpStage(lesson.id);
         let maxReachedStage = currentStage;
         const answeredScenarios = {};
 
@@ -807,6 +821,7 @@ async function fetchCompletedLessons() {
             const isLastStage = currentStage === stages.length - 1;
             nextBtn.hidden = isLastStage;
             completeBtn.hidden = !isLastStage;
+            lxpOwnCompleteVisible = isLastStage;
 
             // The challenge gates progress until every scenario has been answered.
             const stage = stages[currentStage];
@@ -820,7 +835,7 @@ async function fetchCompletedLessons() {
 
             counterEl.textContent = t('coverage.lxpStageCounter', 'Stage {current} of {total}', { current: currentStage + 1, total: stages.length });
             progressFill.style.width = `${((currentStage + 1) / stages.length) * 100}%`;
-            saveLxpStage(currentStage);
+            saveLxpStage(lesson.id, currentStage);
         }
 
         function goToStage(index) {
@@ -905,7 +920,7 @@ async function fetchCompletedLessons() {
 
             try {
                 await markLessonComplete(lesson.id);
-                clearSavedLxpStage();
+                clearSavedLxpStage(lesson.id);
                 await loadAndRenderData();
             } catch (error) {
                 console.error('Error completing lesson:', error);
@@ -1294,8 +1309,14 @@ async function fetchCompletedLessons() {
             : t('coverage.markingComplete', 'Mark as Complete');
 
         // The learning experience owns completion at the end of its final stage, so the
-        // generic bar button is hidden while it is active to avoid two competing controls.
-        completeBtn.style.display = isLearningExperience ? 'none' : '';
+        // generic bar button is hidden only while that button is actually on
+        // screen. Before that point the bar button stays visible: it is the same
+        // endpoint, the same enrollment guard and the same server-side
+        // persistence, and hiding it outright used to leave this one lesson with
+        // no reachable completion control at all, which stranded the learner at
+        // 25/26 and, because exam eligibility requires every lesson, also locked
+        // the exam and the certificate.
+        completeBtn.style.display = (isLearningExperience && lxpOwnCompleteVisible) ? 'none' : '';
 
 // Disable completion button if not enrolled
         if (completed) {

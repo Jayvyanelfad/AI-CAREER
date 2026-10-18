@@ -154,7 +154,7 @@ test('lesson uncompletion is persisted through the authenticated API', () => {
   const server = fs.readFileSync(path.join(__dirname, '..', 'server.js'), 'utf8');
   assert.match(detail, /\/api\/lessons\/\$\{encodeURIComponent\(lessonId\)\}\/incomplete/);
   assert.match(detail, /completedLessonIds = new Set\(data\.completedLessonIds \|\| \[\]\)/);
-  assert.match(server, /app\.post\('\/api\/lessons\/:lessonId\/incomplete', authenticateToken/);
-  assert.match(server, /\.update\(\{ completed: false, completed_at: null \}\)/);
-  assert.match(server, /completed_hours: summary\.completedHours/);
+  assert.match(server, /app\.use\('\/api\/lessons', createLessonProgressRouter/);
+  assert.match(fs.readFileSync(path.join(__dirname, '..', 'lesson-progress-api.js'), 'utf8'), /\.update\(\{ completed: false, completed_at: null \}\)/);
+  assert.match(fs.readFileSync(path.join(__dirname, '..', 'lesson-progress-api.js'), 'utf8'), /completed_hours: summary\.completedHours/);
 });

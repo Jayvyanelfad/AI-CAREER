@@ -1116,7 +1116,8 @@
     "continueOutstanding": "Jaari rakhein: {title}",
     "progressMismatch": "Aapka saved progress abhi course ki lesson list se match nahi kar raha. Page refresh karein.",
     "allLessonsComplete": "Course poora hua. Saare {total} lessons ho gaye.",
-    "takeFinalExam": "Final Exam dein"
+    "takeFinalExam": "Final Exam dein",
+    "untitledCourse": "Bina title ka course"
   },
   "careerResult": {
     "eyebrow": "AAPKI CAREER DIRECTION",
@@ -1188,40 +1189,52 @@
   },
   "courseMetadata": {
     "intro_to_ai": {
-      "title": "AI aur ML ka parichay"
+      "title": "AI aur ML ka parichay",
+      "description": "Seekhiye ki AI aur machine learning mein kya antar hai, kaise data aur models predictions banate hain, aur results ko zimmedari se kaise check karein. Foundation terms aur learning methods se aage neural networks, real applications aur ek guided beginner project tak jaiye: ek chhota classifier jismein test plan aur documented limitations hon. AI ka koi purana experience zaroori nahi."
     },
     "python_for_careers": {
-      "title": "Career growth ke liye Python"
+      "title": "Career growth ke liye Python",
+      "description": "Python ke basics se shuru karein: values, conditions aur loops. Phir functions, collections, files, JSON aur ek beginner API request use karein. Ant mein plan, build, safe testing aur ek local file-organization assistant ka presentation karke khatam karein. Koi programming experience pehle se zaroori nahi."
     },
     "data_analytics_basics": {
-      "title": "Data Analytics ki basics"
+      "title": "Data Analytics ki basics",
+      "description": "Ek analysis question banao, chhota dataset clean karo, summaries aur charts se patterns explore karo, aur apna finding uski limits ke saath communicate karo."
     },
     "web_dev": {
-      "title": "Web development ki buniyad"
+      "title": "Web development ki buniyad",
+      "description": "HTML, CSS aur JavaScript se ek semantic, responsive web page banao. Accessible forms, client-side interactions aur frontend publish karne ke basics par practice karo."
     },
     "dsa": {
-      "title": "Data Structures aur Algorithms"
+      "title": "Data Structures aur Algorithms",
+      "description": "Core data structures aur algorithms ko common problems par choose karke apply karo, time aur space cost compare karo, aur solution ke peeche ki trade-offs explain karo."
     },
     "devops": {
-      "title": "DevOps aur cloud ki basics"
+      "title": "DevOps aur cloud ki basics",
+      "description": "Linux commands aur shell scripts use karo, Docker se ek application package karo, aur samjhao ki cloud services deployment aur operations ko kaise support karte hain."
     },
     "cybersecurity": {
-      "title": "Cybersecurity ki buniyad"
+      "title": "Cybersecurity ki buniyad",
+      "description": "Common threats pehchano, basic web application risks kam karo, security signals review karo, aur authorized environment mein responsible incident response ka outline banao."
     },
     "ui_ux": {
-      "title": "UI/UX design ke usool"
+      "title": "UI/UX design ke usool",
+      "description": "User ki needs ko ek simple flow aur interface mein badlo, uska prototype banao, accessibility basics check karo, aur usability feedback se design refine karo."
     },
     "advanced_ml": {
-      "title": "Advanced Machine Learning"
+      "title": "Advanced Machine Learning",
+      "description": "Text aur image tasks ke liye neural approaches compare karo, training aur evaluation ke trade-offs par socho, aur samjhao ki deployed hone ke baad model ko kaise monitor kiya ja sakta hai."
     },
     "aws_architect": {
-      "title": "AWS Solutions Architect"
+      "title": "AWS Solutions Architect",
+      "description": "AWS compute, storage, database, networking aur security services chun kar ek resilient architecture sketch karne aur uske trade-offs batane ke liye. Practical cloud deployment assume nahi kiya gaya."
     },
     "data_science": {
-      "title": "Data Science Professional"
+      "title": "Data Science Professional",
+      "description": "Dataset prepare aur explore karo, ek appropriate model bana kar evaluate karo, aur yeh communicate karo ki evidence kya support karta hai aur kahan kam padta hai."
     },
     "full_stack": {
-      "title": "Full Stack Web Development"
+      "title": "Full Stack Web Development",
+      "description": "Ek full stack application ke hisse plan karo, responsive frontend interactions banao, server APIs ko data se jodo, aur testing aur delivery workflows ki roles samjhao."
     },
     "prompt_engineering": {
       "title": "Prompt Engineering aur LLM workflows",

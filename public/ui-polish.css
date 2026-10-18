@@ -1,0 +1,464 @@
+/* ============================================================
+   CareerPath AI â€” presentation polish layer
+   ------------------------------------------------------------
+   Additive styling only. Loaded AFTER styles.css, dashboard.css and
+   career-result.css on the pages that already have their own design
+   rules, so this file refines what exists instead of competing with it.
+
+   Rules of engagement:
+     * Every selector is anchored to a page class or an element that only
+       exists inside one component. No bare element selectors, no `!important`
+       except where a shared utility rule must be beaten deliberately.
+     * Tokens come from the site :root variables; no new colour system.
+     * Nothing here changes behaviour, data, ordering or copy.
+   ============================================================ */
+
+/* ------------------------------------------------------------
+   1. Shared design tokens
+   ------------------------------------------------------------ */
+/* Page anchors. `courses-page` and `career-test-page` are added to <body> by
+   courses.html / career-test.html purely to scope this stylesheet; they carry no
+   behaviour meaning. */
+.dashboard-home,
+.courses-page,
+.career-test-page, .course-detail-page {
+  /* One rhythm for surfaces, radii and control height. */
+  --ui-surface-1: var(--surface, #fffdf9);
+  --ui-surface-2: color-mix(in srgb, var(--surface, #fffdf9) 72%, transparent);
+  --ui-line: var(--border-light, rgba(32, 60, 51, .14));
+  --ui-line-strong: var(--border, rgba(32, 60, 51, .26));
+  --ui-accent: var(--bege, #a96f4d);
+  --ui-accent-soft: color-mix(in srgb, var(--bege, #a96f4d) 12%, transparent);
+  --ui-ink: var(--text-primary, #203c33);
+  --ui-ink-soft: var(--text-secondary, #5d6b64);
+  --ui-ink-faint: var(--text-muted, #6c7871);
+  --ui-radius-sm: 10px;
+  --ui-radius: 14px;
+  --ui-radius-lg: 20px;
+  --ui-control-height: 44px;
+  --ui-gap-1: 6px;
+  --ui-gap-2: 10px;
+  --ui-gap-3: 16px;
+  --ui-gap-4: 24px;
+  --ui-gap-5: 34px;
+  --ui-gap-6: 48px;
+  --ui-gap-7: 68px;
+  --ui-shadow-1: 0 1px 2px rgba(16, 32, 26, .06), 0 4px 14px rgba(16, 32, 26, .05);
+  --ui-shadow-2: 0 2px 6px rgba(16, 32, 26, .08), 0 12px 30px rgba(16, 32, 26, .08);
+  --ui-focus: 0 0 0 2px var(--ui-surface-1, #fffdf9), 0 0 0 4px var(--ui-accent, #a96f4d);
+}
+
+/* Consistent, always-visible keyboard focus across the polished surfaces. */
+.dashboard-home :is(a, button, [tabindex]):focus-visible,
+.courses-page :is(a, button, [tabindex]):focus-visible,
+.career-test-page :is(a, button, [tabindex]):focus-visible {
+  outline: 2px solid var(--ui-accent, #a96f4d);
+  outline-offset: 3px;
+  border-radius: var(--ui-radius-sm, 10px);
+}
+
+/* ------------------------------------------------------------
+   2. Dashboard â€” hierarchy, spacing, cards
+   ------------------------------------------------------------ */
+.dashboard-home .dashboard-block { margin-block-end: var(--ui-gap-6); }
+
+.dashboard-home .section-heading { margin-block-end: var(--ui-gap-3); }
+.dashboard-home .section-heading h2 { letter-spacing: -.012em; }
+
+/* Section eyebrows become a clear step marker above each heading. */
+.dashboard-home .section-heading .eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 10px;
+  color: var(--ui-accent, #b86649);
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .16em;
+}
+.dashboard-home .section-heading .eyebrow::after {
+  content: "";
+  inline-size: 26px;
+  block-size: 1px;
+  background: currentColor;
+  opacity: .45;
+}
+
+/* Welcome panel: keep the photograph, calm the copy, lift the actions. */
+.dashboard-home .welcome-panel {
+  border-radius: var(--ui-radius-lg);
+  box-shadow: var(--ui-shadow-2);
+  padding: clamp(30px, 5vw, 64px);
+}
+.dashboard-home .welcome-panel h1 { letter-spacing: -.02em; }
+.dashboard-home .welcome-subtitle { line-height: 1.6; }
+.dashboard-home .welcome-actions { gap: var(--ui-gap-2); margin-block-start: 28px; }
+
+/* Journey cards: numbered, evenly divided, clearly interactive. */
+.dashboard-home .path-grid { border-radius: var(--ui-radius); overflow: hidden; }
+.dashboard-home .path-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  padding: 26px 26px 30px;
+  transition: background-color .2s ease, transform .2s ease;
+}
+.dashboard-home .path-card:hover {
+  background: var(--ui-surface-2);
+  transform: translateY(-2px);
+}
+.dashboard-home .path-card h3 { margin: 22px 0 8px; letter-spacing: -.01em; }
+.dashboard-home .path-card p { line-height: 1.6; }
+.dashboard-home .path-link { margin-block-start: auto; padding-block-start: 20px; }
+
+/* Insight panel: the learner's headline result. */
+.dashboard-home .insight-panel {
+  border-radius: var(--ui-radius);
+  border-inline-start-width: 3px;
+  box-shadow: var(--ui-shadow-1);
+  gap: 34px;
+}
+.dashboard-home .insight-direction h3 { letter-spacing: -.015em; margin-block: 6px 10px; }
+.dashboard-home .signals { padding-inline-start: 30px; }
+.dashboard-home .signals li { margin: 10px 0; line-height: 1.5; }
+.dashboard-home .insight-panel .button { margin-block-start: 4px; }
+
+/* Learning / explore / certificate cards. */
+.dashboard-home :is(.learning-card, .explore-card, .certificate-card) {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  padding: 24px;
+  border: 1px solid var(--ui-line);
+  border-block-start: 2px solid color-mix(in srgb, var(--ui-accent, #b86649) 72%, transparent);
+  border-radius: var(--ui-radius);
+  box-shadow: var(--ui-shadow-1);
+  transition: box-shadow .2s ease, border-color .2s ease, transform .2s ease;
+}
+.dashboard-home :is(.learning-card, .explore-card, .certificate-card):hover {
+  box-shadow: var(--ui-shadow-2);
+  transform: translateY(-2px);
+}
+.dashboard-home :is(.learning-card, .explore-card, .certificate-card) h3 {
+  letter-spacing: -.01em;
+  line-height: 1.25;
+}
+.dashboard-home .progress-track {
+  block-size: 8px;
+  border-radius: var(--radius-full, 9999px);
+  background: color-mix(in srgb, var(--ui-ink) 12%, transparent);
+  overflow: hidden;
+}
+.dashboard-home .progress-track span {
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--ui-accent, #b86649), color-mix(in srgb, var(--ui-accent, #b86649) 62%, var(--green_light, #86a48e)));
+  transition: inline-size .4s cubic-bezier(.4, 0, .2, 1);
+}
+.dashboard-home :is(.learning-card, .explore-card, .certificate-card) :is(.button, .course-btn, .text-link) {
+  margin-block-start: auto;
+  align-self: flex-start;
+}
+
+/* Empty states read as guidance, not as an error. */
+.dashboard-home :is(.empty-panel, .empty-copy) {
+  border-radius: var(--ui-radius);
+  border: 1px dashed var(--ui-line-strong);
+  padding: var(--ui-gap-4);
+  line-height: 1.6;
+}
+.dashboard-home .dashboard-shortcuts { padding-block: var(--ui-gap-3); gap: 12px 26px; }
+.dashboard-home .dashboard-shortcuts a { padding-block: 4px; }
+
+/* ------------------------------------------------------------
+   3. Buttons & controls â€” one size, one radius, one focus ring
+   ------------------------------------------------------------ */
+.dashboard-home .button,
+.courses-page .course-btn,
+.career-test-page .component-button,
+.dashboard-home .component-button {
+  min-block-size: var(--ui-control-height);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 20px;
+  border-radius: var(--ui-radius-sm);
+  font-size: .9rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
+  transition: background-color .2s ease, border-color .2s ease, color .2s ease, transform .2s ease, box-shadow .2s ease;
+}
+.dashboard-home .button:hover:not([disabled]),
+.courses-page .course-btn:hover:not([disabled]),
+.dashboard-home .component-button:hover:not([disabled]) {
+  transform: translateY(-1px);
+}
+.dashboard-home .button[disabled],
+.courses-page .course-btn[disabled],
+.career-test-page .component-button[disabled] {
+  opacity: .55;
+  cursor: not-allowed;
+  transform: none;
+}
+.dashboard-home .button-primary,
+.dashboard-home .component-button {
+  box-shadow: var(--ui-shadow-1);
+}
+.dashboard-home .button-quiet { background: transparent; }
+
+/* The `display` rules above would otherwise beat the user-agent `[hidden]`
+   rule and reveal controls the page deliberately keeps out of sight. */
+.dashboard-home :is(.button, .component-button, .course-btn)[hidden],
+.courses-page :is(.course-btn, button)[hidden],
+.career-test-page :is(.component-button, button)[hidden] { display: none; }
+
+/* ------------------------------------------------------------
+   4. Course catalogue
+   ------------------------------------------------------------ */
+.courses-page .courses-grid { gap: var(--ui-gap-4); }
+.courses-page .course-card {
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--ui-radius);
+  border-color: var(--ui-line);
+  box-shadow: var(--ui-shadow-1);
+  transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+}
+.courses-page .course-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--ui-shadow-2);
+  border-color: color-mix(in srgb, var(--ui-accent) 40%, var(--ui-line));
+}
+.courses-page .course-image { overflow: hidden; }
+.courses-page .course-image img {
+  transition: transform .5s cubic-bezier(.4, 0, .2, 1), opacity .25s ease;
+}
+.courses-page .course-card:hover .course-image img { transform: scale(1.04); }
+.courses-page .course-card-content {
+  gap: 12px;
+  padding: var(--ui-gap-3);
+  flex: 1;
+}
+.courses-page .course-card h3 {
+  letter-spacing: -.01em;
+  line-height: 1.24;
+  overflow-wrap: anywhere;
+}
+.courses-page .course-title-link {
+  text-decoration: none;
+  background-image: linear-gradient(currentColor, currentColor);
+  background-size: 0% 1px;
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  transition: background-size .25s ease, color .2s ease;
+}
+.courses-page .course-title-link:hover,
+.courses-page .course-title-link:focus-visible {
+  background-size: 100% 1px;
+  color: var(--ui-accent);
+}
+.courses-page .course-card-level {
+  letter-spacing: .1em;
+  font-weight: 700;
+}
+.courses-page .course-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  padding-block: 10px;
+  border-block: 1px solid var(--ui-line);
+}
+/* Actions sit at the bottom so every card aligns. */
+.courses-page .course-card .course-btn,
+.courses-page .course-card .course-title-link + .course-btn { margin-block-start: auto; }
+.courses-page .course-category-group { margin-block: var(--ui-gap-6); }
+.courses-page .course-category-heading { margin-block-end: var(--ui-gap-3); }
+.courses-page .courses-section-title { letter-spacing: -.015em; }
+
+/* Filter controls read as a single toolbar. */
+.courses-page .course-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ui-gap-2);
+  padding: var(--ui-gap-2);
+  border: 1px solid var(--ui-line);
+  border-radius: var(--ui-radius);
+  background: var(--ui-surface-2);
+}
+.courses-page .course-filters :is(button, select, input) {
+  min-block-size: 40px;
+  padding: 8px 14px;
+  border-radius: var(--ui-radius-sm);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--ui-ink, var(--text-primary));
+  font: inherit;
+  font-size: .9rem;
+}
+.courses-page .course-filters :is(button, select):hover { background: var(--ui-surface-1); }
+.courses-page .course-filters :is(button[aria-pressed="true"], [aria-selected="true"]) {
+  background: var(--ui-accent);
+  color: #fff;
+}
+
+/* ------------------------------------------------------------
+   5. Career assessment results
+   ------------------------------------------------------------ */
+.career-test-page .career-result-hero,
+.career-test-page .career-result-section,
+.career-test-page .career-assessment-detail {
+  border-radius: var(--ui-radius);
+  border: 1px solid var(--ui-line);
+  box-shadow: var(--ui-shadow-1);
+  padding: clamp(20px, 3.4vw, 34px);
+  margin-block-end: var(--ui-gap-4);
+}
+.career-test-page .career-result-domain {
+  letter-spacing: .14em;
+  font-weight: 700;
+  color: var(--ui-accent);
+}
+.career-test-page .career-result-section h2,
+.career-test-page .career-assessment-detail h3 { letter-spacing: -.012em; }
+.career-test-page .career-detail-list li {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding-block: 9px;
+  border-block-end: 1px solid var(--ui-line);
+  line-height: 1.5;
+}
+.career-test-page .career-detail-list li:last-child { border-block-end: 0; }
+
+/* Dimension rows: the percentage is the payload, so make it scannable. */
+.career-test-page .career-detail-list li {
+  font-variant-numeric: tabular-nums;
+}
+.career-test-page .career-course-step {
+  border-radius: var(--ui-radius-sm);
+  border: 1px solid var(--ui-line);
+  border-inline-start: 3px solid var(--ui-accent);
+  padding: 14px 16px;
+  background: var(--ui-surface-2);
+  line-height: 1.55;
+}
+.career-test-page .career-course-step h3 {
+  letter-spacing: -.01em;
+  line-height: 1.3;
+  margin-block: 0 6px;
+}
+.career-test-page .career-course-empty {
+  padding: var(--ui-gap-3);
+  border: 1px dashed var(--ui-line-strong);
+  border-radius: var(--ui-radius-sm);
+  color: var(--ui-ink-soft);
+  line-height: 1.6;
+}
+.career-test-page .career-course-list a {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 40px;
+  margin-block-start: 10px;
+}
+
+/* Collapsible detail keeps its affordance obvious. */
+.career-test-page .career-result-details > summary {
+  min-block-size: var(--ui-control-height);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-inline: 4px;
+  cursor: pointer;
+  border-radius: var(--ui-radius-sm);
+}
+.career-test-page .career-result-details > summary:hover { color: var(--ui-accent); }
+
+/* ------------------------------------------------------------
+   6. Responsive
+   ------------------------------------------------------------ */
+@media (max-width: 860px) {
+  .dashboard-home .insight-panel { gap: var(--ui-gap-4); }
+  .dashboard-home .signals { padding-inline-start: 0; padding-block-start: var(--ui-gap-3);
+    border-inline-start: 0; border-block-start: 1px solid var(--ui-line); }
+  html[dir="rtl"] .dashboard-home .signals { padding-inline-start: 0; padding-inline-end: 0;
+    border-inline-start: 0; border-block-start: 1px solid var(--ui-line); }
+}
+
+@media (max-width: 620px) {
+  .dashboard-home .welcome-actions .button,
+  .dashboard-home .welcome-panel .button { flex: 1 1 100%; }
+  .dashboard-home .path-card { padding: 20px 18px 22px; }
+  .dashboard-home :is(.learning-card, .explore-card, .certificate-card) { padding: 20px; }
+  .career-test-page .career-result-hero,
+  .career-test-page .career-result-section,
+  .career-test-page .career-assessment-detail { padding: 18px; }
+  .career-test-page .career-detail-list li { flex-direction: column; gap: 4px; }
+}
+
+/* Below 380px keep long titles and URLs from forcing a horizontal scrollbar. */
+@media (max-width: 380px) {
+  .courses-page .course-card h3 { font-size: 1.05rem; }
+  .courses-page .course-filters { padding: 6px; }
+  .career-test-page .career-course-step { padding: 12px 13px; }
+  .dashboard-home :is(.learning-card, .explore-card, .certificate-card) { padding: 18px 16px; }
+}
+
+/* Long unbroken strings never widen the layout. Deliberately omitted from the
+   reduced-motion !important set below, which only targets components. */
+.dashboard-home :is(h1, h2, h3, .text-link, .next-lesson, .muted-copy),
+.courses-page :is(.course-card, .course-category-heading),
+.career-test-page :is(.career-result-section, .career-course-step) { overflow-wrap: anywhere; }
+
+/* ------------------------------------------------------------
+   7. Motion & contrast preferences
+   ------------------------------------------------------------ */
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-home :is(.button, .path-card, .learning-card, .explore-card, .certificate-card, .progress-track span),
+  .courses-page :is(.course-card, .course-image img, .course-title-link, .course-btn),
+  .career-test-page :is(.component-button, .career-course-step) {
+    transition: none !important;
+    animation: none !important;
+  }
+  .dashboard-home :is(.path-card, .learning-card, .explore-card, .certificate-card):hover,
+  .courses-page .course-card:hover { transform: none; }
+  .dashboard-home .button:hover:not([disabled]),
+  .courses-page .course-btn:hover:not([disabled]) { transform: none; }
+}
+
+@media (prefers-contrast: more) {
+  .dashboard-home :is(.learning-card, .explore-card, .certificate-card),
+  .courses-page .course-card,
+  .career-test-page :is(.career-result-section, .career-result-hero, .career-assessment-detail) {
+    border-color: currentColor;
+  }
+  .dashboard-home .progress-track,
+  .career-test-page .career-course-step { border: 1px solid currentColor; }
+
+}
+/* ------------------------------------------------------------
+   8. Course detail - one centred content track
+   ------------------------------------------------------------
+   The hero is deliberately full-bleed. Everything below it is not:
+   styles.css gives #course-progress, #exam-button-container,
+   #course-modules and #lesson-content the same centred 1100px track with
+   `margin-inline: auto`. An older `margin: 18px 0 !important` shorthand on
+   .course-detail-progress outranks that (an !important shorthand beats a
+   non-important longhand), so the progress row pinned itself to the left edge
+   at 0 and left ~270px of dead space on the right while every sibling below it
+   sat centred.
+
+   This restores the shared track. The id in :is() also outranks the
+   body:has(...) selectors in styles.css, so no other rule is disturbed. The
+   full-bleed hero and the module styling are left exactly as designed.
+   ------------------------------------------------------------ */
+.course-detail-page :is(#course-progress, #exam-button-container, #course-modules, #lesson-content, #btn-back-to-curriculum) {
+  width: min(1100px, calc(100% - 40px));
+  margin-inline: auto !important;
+}
+
+@media (max-width: 620px) {
+  .course-detail-page :is(#course-progress, #exam-button-container, #course-modules, #lesson-content, #btn-back-to-curriculum) {
+    width: calc(100% - 28px);
+  }
+}

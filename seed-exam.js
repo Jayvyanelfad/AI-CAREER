@@ -1,191 +1,236 @@
+// Seeds the Introduction to AI & ML final exam.
+//
+// Why this exists: the course-detail page only offers the final exam when
+// /api/exams?course_id=intro_to_ai returns an exam it recognises as final, and
+// certificate issuance is gated on passing that exam. Until the row exists the
+// page correctly says "No final exam has been configured for this course yet",
+// and the whole course-completion chain stays closed.
+//
+// The questions are NOT invented here. They are the course-authored assessment
+// content that already ships in this repository:
+//   intro-ai-assessment-content.js -> foundationsQuiz    (10 questions)
+//   intro-ai-assessment-content.js -> finalExamAdditions (10 questions)
+// Together they cover every module of intro-to-ai-course-content.js.
+//
+// The script is idempotent: rerunning it updates the exam row in place and
+// reconciles questions and options instead of appending duplicates.
+//
+// It deliberately writes only long-standing columns, never the newer
+// final-exam flag, so it runs both before and after that column's backfill
+// migration. The existing API recognises the exam by its "Final Exam" title
+// on either schema.
+//
+// Usage (requires service-role credentials):
+//   $env:SUPABASE_URL='...' ; $env:SUPABASE_SERVICE_ROLE_KEY='...' ; node seed-exam.js
+//
+// It only ever writes the exam for the intro_to_ai course. It never touches
+// learners, attempts, grades or certificates.
 const { createClient } = require('@supabase/supabase-js');
 require('dotenv').config();
-const { v4: uuidv4 } = require('uuid');
 
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const assessment = require('./intro-ai-assessment-content');
 
-if (!supabaseUrl || !supabaseServiceKey) {
-  console.error('Missing Supabase URL or service role key in .env');
-  process.exit(1);
+// Stable primary key. `exams.id` is TEXT, and reusing the historical id keeps
+// any existing attempt rows pointing at the same exam.
+const EXAM_ID = 'intro_to_ai_exam_1';
+const COURSE_ID = 'intro_to_ai';
+
+// Matches the conventions already used by the exam API: an integer percentage,
+// a bounded number of attempts, and the schema's 60-minute default duration.
+const PASSING_SCORE = 70;
+const MAX_ATTEMPTS = 3;
+const DURATION_MINUTES = 60;
+
+// Builds the complete, ordered question plan from the course-authored content.
+// Pure and side-effect free so it can be asserted in tests without a database.
+function buildExamPlan() {
+  const source = [...assessment.foundationsQuiz, ...assessment.finalExamAdditions];
+  if (!source.length) throw new Error('intro-ai-assessment-content.js produced no questions');
+
+  return source.map((entry, index) => {
+    const options = entry.options || [];
+    if (options.length < 2) {
+      throw new Error(`Question ${index + 1} has fewer than two options`);
+    }
+    if (!Number.isInteger(entry.correct) || entry.correct < 0 || entry.correct >= options.length) {
+      throw new Error(`Question ${index + 1} has an out-of-range correct index`);
+    }
+    return {
+      question_order: index + 1,
+      question_text: entry.question,
+      points: 1,
+      options: options.map((text, optionIndex) => ({
+        option_text: text,
+        option_order: optionIndex + 1,
+        is_correct: optionIndex === entry.correct
+      }))
+    };
+  });
 }
 
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
+function examRow() {
+  return {
+    id: EXAM_ID,
+    course_id: COURSE_ID,
+    // The "Final Exam" wording is what both the course-detail page and the
+    // certificate issuer use to recognise this as the course's final exam.
+    title: 'Introduction to AI & ML Final Exam',
+    description: 'Final exam covering every module of Introduction to AI & ML, including AI foundations, machine-learning fundamentals, neural networks, real-world applications and building a first AI project.',
+    passing_score: PASSING_SCORE,
+    max_attempts: MAX_ATTEMPTS,
+    duration_minutes: DURATION_MINUTES
+  };
+}
 
-// Simple exam data for intro_to_ai course
-const examData = {
-  id: 'intro_to_ai_exam_1',
-  course_id: 'intro_to_ai',
-  title: 'Introduction to AI & ML Final Exam',
-  description: 'Final exam covering all modules of the Introduction to AI & ML course',
-  passing_score: 70,
-  max_attempts: 3
-};
+// Returns an existing exam row when one already holds these questions, so a
+// rerun never duplicates the exam.
+async function upsertExam(supabase, log) {
+  const examData = examRow();
+  const { data, error } = await supabase
+    .from('exams')
+    .upsert(examData, { onConflict: 'id' })
+    .select();
 
-// Sample questions for the exam
-const questions = [
-  {
-    question_text: 'What is Artificial Intelligence?',
-    question_order: 1,
-    points: 1,
-    options: [
-      { option_text: 'A type of traditional programming', option_order: 1, is_correct: false },
-      { option_text: 'Systems designed to perform tasks that typically require human intelligence', option_order: 2, is_correct: true },
-      { option_text: 'Only refers to physical robots', option_order: 3, is_correct: false },
-      { option_text: 'A database technology', option_order: 4, is_correct: false }
-    ]
-  },
-  {
-    question_text: 'Which of the following is NOT a type of machine learning?',
-    question_order: 2,
-    points: 1,
-    options: [
-      { option_text: 'Supervised learning', option_order: 1, is_correct: false },
-      { option_text: 'Unsupervised learning', option_order: 2, is_correct: false },
-      { option_text: 'Reinforcement learning', option_order: 3, is_correct: false },
-      { option_text: 'Database learning', option_order: 4, is_correct: true }
-    ]
-  },
-  {
-    question_text: 'What does NLP stand for?',
-    question_order: 3,
-    points: 1,
-    options: [
-      { option_text: 'Natural Language Processing', option_order: 1, is_correct: true },
-      { option_text: 'Neural Language Programming', option_order: 2, is_correct: false },
-      { option_text: 'Natural Laser Processing', option_order: 3, is_correct: false },
-      { option_text: 'Network Language Protocol', option_order: 4, is_correct: false }
-    ]
-  }
-];
+  if (error) throw error;
+  if (!data || data.length === 0) throw new Error('No exam data returned');
+  const examRecord = data[0];
+  log(`Exam ready: ${examRecord.id} (${examRecord.title})`);
+  return examRecord;
+}
 
-async function seedExam() {
-  console.log('Starting exam seeding...');
+async function seedIntroToAiFinalExam(supabase, log = () => {}) {
+  const plan = buildExamPlan();
+  const examRecord = await upsertExam(supabase, log);
 
-  try {
-    // Idempotent exam write: the stable id is reused across reruns and the
-    // row is updated in place instead of failing on primary-key conflict.
-    const { data: exam, error: examError } = await supabase
-      .from('exams')
-      .upsert(examData, { onConflict: 'id' })
-      .select();
+  // Existing question orders are reused so reruns never duplicate rows or
+  // orphan the options already attached to them.
+  const { data: existingQuestions, error: existingError } = await supabase
+    .from('exam_questions')
+    .select('id, question_order')
+    .eq('exam_id', examRecord.id);
+  if (existingError) throw existingError;
+  const questionIdByOrder = new Map((existingQuestions || []).map(row => [row.question_order, row.id]));
 
-    if (examError) {
-      console.error('Error inserting exam:', examError);
-      process.exit(1);
-    }
+  let writtenQuestions = 0;
+  for (const question of plan) {
+    let questionId = questionIdByOrder.get(question.question_order);
 
-    if (!exam || exam.length === 0) {
-      console.error('No exam data returned');
-      process.exit(1);
-    }
-
-    const examRecord = exam[0];
-    console.log(`Upserted exam: ${examRecord.title} with ID: ${examRecord.id}`);
-
-    // Existing question orders are reused so reruns never duplicate rows or
-    // orphan the options already attached to them.
-    const { data: existingQuestions, error: existingError } = await supabase
-      .from('exam_questions')
-      .select('id, question_order')
-      .eq('exam_id', examRecord.id);
-    if (existingError) {
-      console.error('Error reading existing exam questions:', existingError);
-      process.exit(1);
-    }
-    const questionIdByOrder = new Map((existingQuestions || []).map(row => [row.question_order, row.id]));
-
-    // Insert questions and options
-    for (const questionData of questions) {
-      let questionId = questionIdByOrder.get(questionData.question_order);
-      if (!questionId) {
-        const { data: question, error: questionError } = await supabase
-          .from('exam_questions')
-          .insert({
-            exam_id: examRecord.id,
-            question_text: questionData.question_text,
-            question_order: questionData.question_order,
-            points: questionData.points
-          })
-          .select();
-        if (questionError) {
-          // A concurrent seed run won the unique (exam_id, question_order)
-          // race: fall back to the winning row instead of duplicating it.
-          if (questionError.code === '23505') {
-            const { data: winner } = await supabase
-              .from('exam_questions')
-              .select('id')
-              .eq('exam_id', examRecord.id)
-              .eq('question_order', questionData.question_order)
-              .maybeSingle();
-            if (winner) {
-              questionId = winner.id;
-              console.log(`  Reusing existing question order ${questionData.question_order}`);
-            } else {
-              console.error(`Error inserting question "${questionData.question_text}":`, questionError);
-              continue;
-            }
+    if (questionId) {
+      const { error } = await supabase
+        .from('exam_questions')
+        .update({ question_text: question.question_text, points: question.points })
+        .eq('id', questionId);
+      if (error) throw error;
+    } else {
+      const { data, error: questionError } = await supabase
+        .from('exam_questions')
+        .insert({ exam_id: examRecord.id, ...question })
+        .select('id')
+        .single();
+      if (questionError) {
+        // A concurrent seed run won the unique (exam_id, question_order)
+        // race: fall back to the winning row instead of duplicating it.
+        if (questionError.code === '23505') {
+          const { data: winner } = await supabase
+            .from('exam_questions')
+            .select('id')
+            .eq('exam_id', examRecord.id)
+            .eq('question_order', question.question_order)
+            .maybeSingle();
+          if (winner) {
+            questionId = winner.id;
           } else {
-            console.error(`Error inserting question "${questionData.question_text}":`, questionError);
-            continue;
+            throw questionError;
           }
-        } else if (!question || question.length === 0) {
-          console.error(`No question data returned for "${questionData.question_text}"`);
-          continue;
         } else {
-          questionId = question[0].id;
-          console.log(`  Inserted question: ${question[0].question_text}`);
+          throw questionError;
         }
       } else {
-        console.log(`  Reusing existing question order ${questionData.question_order}`);
-      }
-
-      // Fill options only when the question has none, so interrupted reruns
-      // complete partial work instead of duplicating options.
-      const { data: existingOptions, error: optionsReadError } = await supabase
-        .from('exam_options')
-        .select('id')
-        .eq('question_id', questionId);
-      if (optionsReadError) {
-        console.error(`    Error reading options for question order ${questionData.question_order}:`, optionsReadError);
-        continue;
-      }
-      if (existingOptions && existingOptions.length > 0) {
-        console.log(`    Reusing ${existingOptions.length} existing options`);
-        continue;
-      }
-
-      // Insert options for this question
-      for (const optionData of questionData.options) {
-        const { error: optionError } = await supabase
-          .from('exam_options')
-          .insert({
-            question_id: questionId,
-            option_text: optionData.option_text,
-            option_order: optionData.option_order,
-            is_correct: optionData.is_correct
-          });
-
-        if (optionError) {
-          console.error(`    Error inserting option "${optionData.option_text}":`, optionError);
-          continue;
-        }
-
-        console.log(`    Inserted option: ${optionData.option_text} (${optionData.is_correct ? 'correct' : 'incorrect'})`);
+        questionId = data.id;
+        log(`  + question ${question.question_order}`);
       }
     }
 
-    console.log('\nExam seeding completed successfully!');
-    console.log(`Exam ID: ${examRecord.id}`);
-    console.log(`Course ID: ${examRecord.course_id}`);
+    // Options are owned by this seed and are reconciled in place: an existing
+    // row for a given option_order is corrected, and only genuinely missing
+    // options are inserted. Nothing is ever deleted, so a rerun cannot remove
+    // data it did not write.
+    const { data: existingOptions, error: optionsReadError } = await supabase
+      .from('exam_options')
+      .select('id, option_order, option_text, is_correct')
+      .eq('question_id', questionId);
+    if (optionsReadError) throw optionsReadError;
 
-  } catch (err) {
-    console.error('Error during exam seeding:', err);
-    process.exit(1);
+    const existingByOrder = new Map((existingOptions || []).map(option => [option.option_order, option]));
+    for (const expected of question.options) {
+      const current = existingByOrder.get(expected.option_order);
+      if (!current) {
+        const { error } = await supabase
+          .from('exam_options')
+          .insert({ question_id: questionId, ...expected });
+        if (error) throw error;
+        continue;
+      }
+      if (current.option_text === expected.option_text && current.is_correct === expected.is_correct) continue;
+      const { error } = await supabase
+        .from('exam_options')
+        .update({ option_text: expected.option_text, is_correct: expected.is_correct })
+        .eq('id', current.id);
+      if (error) throw error;
+    }
+
+    // Extra options left by an older seed would be scored against nothing.
+    // Removing them is a destructive write, so they are reported for a human
+    // to review instead of being silently dropped.
+    const extraOptions = (existingOptions || [])
+      .filter(option => !question.options.some(expected => expected.option_order === option.option_order));
+    if (extraOptions.length) {
+      log(`  ! question ${question.question_order} has ${extraOptions.length} option(s) outside this seed; review them manually`);
+    }
+    writtenQuestions++;
   }
+
+  // A stale extra question from an older, longer seed would be counted by the
+  // exam API and scored against nothing. Removing it is a destructive write,
+  // so it is reported for review rather than deleted.
+  const staleOrders = (existingQuestions || [])
+    .map(row => row.question_order)
+    .filter(order => !plan.some(question => question.question_order === order));
+  if (staleOrders.length) {
+    log(`! ${staleOrders.length} question order(s) exist outside this seed (${staleOrders.join(', ')}); review them manually`);
+  }
+
+  log(`Seeded ${writtenQuestions} questions with answers and options for ${COURSE_ID}.`);
+  return { examId: examRecord.id, courseId: COURSE_ID, questionCount: plan.length };
 }
 
-seedExam().catch(err => {
-  console.error('Exam seeding failed:', err);
-  process.exit(1);
-});
+module.exports = {
+  EXAM_ID,
+  COURSE_ID,
+  PASSING_SCORE,
+  MAX_ATTEMPTS,
+  DURATION_MINUTES,
+  buildExamPlan,
+  examRow,
+  seedIntroToAiFinalExam
+};
+
+if (require.main === module) {
+  const url = process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) {
+    console.error('Missing Supabase URL or service role key in .env');
+    process.exit(1);
+  }
+  seedIntroToAiFinalExam(createClient(url, key), line => console.log(line))
+    .then(result => {
+      console.log('\nExam seeding completed successfully!');
+      console.log(`Exam ID: ${result.examId}`);
+      console.log(`Course ID: ${result.courseId}`);
+      console.log(`Questions: ${result.questionCount}`);
+    })
+    .catch(error => {
+      console.error('Exam seeding failed:', error);
+      process.exit(1);
+    });
+}

@@ -993,7 +993,8 @@
     "continueOutstanding": "Continue: {title}",
     "progressMismatch": "Your saved progress and di course lesson list no match yet. Refresh di page abeg.",
     "allLessonsComplete": "Course don complete. All {total} lessons don finish.",
-    "takeFinalExam": "Take Di Final Exam"
+    "takeFinalExam": "Take Di Final Exam",
+    "untitledCourse": "Course wey get no name"
   },
   "page": {
     "openNavigation": "Open navigation",

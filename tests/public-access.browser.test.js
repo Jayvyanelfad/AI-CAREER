@@ -1,5 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
 const express = require('express');
 const { chromium } = require('playwright');
 
@@ -106,6 +108,77 @@ test('chatbot answers navigation questions honestly when AI is down', async t =>
   assert.doesNotMatch(unknown.text, /\.html/, 'unknown questions get no fabricated route');
   await page.close();
   await context.close();
+});
+
+// A signed-in learner, so auth-gated pages are not redirected away before the
+// stylesheet has a chance to load.
+async function signedInContext(t, browser) {
+  const context = await browser.newContext();
+  t.after(async () => { await context.close().catch(() => {}); });
+  await context.addInitScript(() => {
+    localStorage.setItem('token', 't');
+    localStorage.setItem('aicareer-language', 'en');
+    const session = { access_token: 't', user: { id: 'u1' } };
+    window.supabase = { auth: {
+      getSession: async () => ({ data: { session }, error: null }),
+      getUser: async () => ({ data: { user: { id: 'u1' } }, error: null }),
+      onAuthStateChange: () => ({ data: { subscription: { unsubscribe() {} } } })
+    } };
+  });
+  await context.route('**/cdn.jsdelivr.net/**', route => route.fulfill({ status: 200, contentType: 'text/javascript', body: '' }));
+  await context.route('**/fonts.googleapis.com/**', route => route.abort());
+  return context;
+}
+
+test('presentation polish layer is scoped to the pages that opt in', async t => {
+  const { base } = await staticServer(t);
+  const browser = await chromium.launch({ headless: true });
+  closeBrowser(t, browser);
+
+  // Only these pages deliberately load the shared polish stylesheet.
+  const opted = ['dashboard.html', 'courses.html', 'career-test.html', 'course-detail.html'];
+  const allPages = fs.readdirSync(path.join(__dirname, '..', 'public'))
+    .filter(file => file.endsWith('.html'));
+
+  for (const file of allPages) {
+    const markup = fs.readFileSync(path.join(__dirname, '..', 'public', file), 'utf8');
+    const linked = /<link[^>]+href="ui-polish\.css"/.test(markup);
+    assert.equal(linked, opted.includes(file),
+      `${file} should ${opted.includes(file) ? '' : 'not '}link the polish stylesheet`);
+  }
+
+  // Opting in must actually work at runtime, not just in markup: the sheet has
+  // to load. The design tokens are only declared for the three pages that
+  // adopted the full token set; course-detail opts in for its layout rules.
+  const tokenPages = ['dashboard.html', 'courses.html', 'career-test.html'];
+  const context = await signedInContext(t, browser);
+  const page = await context.newPage();
+  for (const file of opted) {
+    await page.goto(`${base}/${file}`, { waitUntil: 'domcontentloaded' });
+    await page.waitForLoadState('load').catch(() => {});
+    await page.waitForTimeout(1200);
+    const applied = await page.evaluate(() => ({
+      loaded: [...document.styleSheets].some(sheet => (sheet.href || '').includes('ui-polish.css')),
+      token: getComputedStyle(document.body).getPropertyValue('--ui-radius').trim()
+    }));
+    assert.equal(applied.loaded, true, `${file} loads the polish stylesheet at runtime`);
+    if (tokenPages.includes(file)) {
+      assert.equal(applied.token, '14px', `${file} receives the polish design tokens`);
+    }
+  }
+  await page.close();
+
+  // A page that did not opt in must stay completely untouched by it.
+  const anon = await browser.newPage();
+  await anon.goto(`${base}/certificate.html?verify=11111111-1111-4111-8111-111111111111`, { waitUntil: 'domcontentloaded' });
+  await anon.waitForTimeout(1000);
+  const untouched = await anon.evaluate(() => ({
+    loaded: [...document.styleSheets].some(sheet => (sheet.href || '').includes('ui-polish.css')),
+    token: getComputedStyle(document.body).getPropertyValue('--ui-radius').trim()
+  }));
+  assert.equal(untouched.loaded, false, 'certificate.html does not load the polish stylesheet');
+  assert.equal(untouched.token, '', 'no polish tokens leak onto pages that did not opt in');
+  await anon.close();
 });
 
 test('public certificate verification stays public, private views stay gated', async t => {

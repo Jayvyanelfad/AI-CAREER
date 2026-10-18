@@ -13,6 +13,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,600;1,400;1,500&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css" />
     <link rel="stylesheet" href="chatbot-widget.css" />
+    <!-- Presentation polish layer; loaded last so it settles the page alignment. -->
+    <link rel="stylesheet" href="ui-polish.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <style>
         /* Inline fallback for any overrides */
@@ -55,7 +57,7 @@
         }
     </style>
 </head>
-<body>
+<body class="course-detail-page">
     <!-- ===== NAVIGATION ===== -->
     <div class="nav-wrapper-absolute">
         <div class="navbar">
@@ -89,7 +91,7 @@
         <div class="course-detail-container container">
             <!-- Back to Courses -->
             <div style="margin-bottom: var(--space-4);">
-                <a href="courses.html" class="text-button" style="color: var(--bege_light);" data-i18n="ui.backCourses" data-i18n-fallback="« Back to Courses">&laquo; Back to Courses</a>
+                <a href="courses.html" class="text-button" style="color: var(--bege_light);" data-i18n="ui.backCourses" data-i18n-fallback="Â« Back to Courses">&laquo; Back to Courses</a>
             </div>
 
             <!-- Course Header -->
@@ -150,7 +152,7 @@
                 <span class="text-footer color-bege_light" style="display: block; opacity: 0.6;">B.Tech Final Year Project</span>
             </div>
             <div class="footer-block" style="text-align: center;">
-                <div class="text-footer color-bege_light" style="opacity: 0.7;">© CareerPath AI</div>
+                <div class="text-footer color-bege_light" style="opacity: 0.7;">Â© CareerPath AI</div>
             </div>
             <div class="footer-block" style="text-align: end;">
                 <span class="text-footer color-bege_light" style="opacity: 0.6;">Symbiosis Institute of Technology, Pune</span>
