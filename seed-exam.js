@@ -8,9 +8,8 @@
 //
 // The questions are NOT invented here. They are the course-authored assessment
 // content that already ships in this repository:
-//   intro-ai-assessment-content.js -> foundationsQuiz    (10 questions)
-//   intro-ai-assessment-content.js -> finalExamAdditions (10 questions)
-// Together they cover every module of intro-to-ai-course-content.js.
+//   intro-ai-assessment-content.js -> foundationsQuiz and finalExamAdditions
+// The exam uses a balanced selection of 5 questions from each section (10 MCQs total).
 //
 // The script is idempotent: rerunning it updates the exam row in place and
 // reconciles questions and options instead of appending duplicates.
@@ -40,12 +39,18 @@ const COURSE_ID = 'intro_to_ai';
 const PASSING_SCORE = 70;
 const MAX_ATTEMPTS = 3;
 const DURATION_MINUTES = 60;
+const MCQ_QUESTION_COUNT = 10;
 
 // Builds the complete, ordered question plan from the course-authored content.
 // Pure and side-effect free so it can be asserted in tests without a database.
 function buildExamPlan() {
-  const source = [...assessment.foundationsQuiz, ...assessment.finalExamAdditions];
-  if (!source.length) throw new Error('intro-ai-assessment-content.js produced no questions');
+  const source = [
+    ...assessment.foundationsQuiz.slice(0, MCQ_QUESTION_COUNT / 2),
+    ...assessment.finalExamAdditions.slice(0, MCQ_QUESTION_COUNT / 2)
+  ];
+  if (source.length !== MCQ_QUESTION_COUNT) {
+    throw new Error(`Expected ${MCQ_QUESTION_COUNT} authored exam questions, found ${source.length}`);
+  }
 
   return source.map((entry, index) => {
     const options = entry.options || [];
@@ -190,14 +195,14 @@ async function seedIntroToAiFinalExam(supabase, log = () => {}) {
     writtenQuestions++;
   }
 
-  // A stale extra question from an older, longer seed would be counted by the
-  // exam API and scored against nothing. Removing it is a destructive write,
-  // so it is reported for review rather than deleted.
+  // Older questions above this 10-question selection are retained so existing
+  // attempts and their answer history are not destroyed. New attempts select
+  // only the first MCQ_QUESTION_COUNT questions in server.js.
   const staleOrders = (existingQuestions || [])
     .map(row => row.question_order)
     .filter(order => !plan.some(question => question.question_order === order));
   if (staleOrders.length) {
-    log(`! ${staleOrders.length} question order(s) exist outside this seed (${staleOrders.join(', ')}); review them manually`);
+    log(`Retaining ${staleOrders.length} legacy question order(s) (${staleOrders.join(', ')}) for historical attempts; new attempts use only ${MCQ_QUESTION_COUNT} MCQs.`);
   }
 
   log(`Seeded ${writtenQuestions} questions with answers and options for ${COURSE_ID}.`);
@@ -210,6 +215,7 @@ module.exports = {
   PASSING_SCORE,
   MAX_ATTEMPTS,
   DURATION_MINUTES,
+  MCQ_QUESTION_COUNT,
   buildExamPlan,
   examRow,
   seedIntroToAiFinalExam
