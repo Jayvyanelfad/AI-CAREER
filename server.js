@@ -988,7 +988,10 @@ app.post('/api/exams/:examId/start', authenticateToken, async (req, res) => {
       .eq('exam_id', examId)
       .order('question_order', { ascending: true });
     if (eligibilityQuestionIds.error) throw eligibilityQuestionIds.error;
-    const allQuestions = eligibilityQuestionIds.data || [];
+    // Keep the Introduction to AI & ML final to 10 MCQs. Older question
+    // rows remain in the database to preserve historical attempts, but they
+    // are not included in new attempts.
+    const allQuestions = (eligibilityQuestionIds.data || []).slice(0, 10);
     if (!allQuestions.length) return res.status(409).json({ error: 'This exam has no questions yet.' });
 
     const { data: previousNumberRows, count: attemptCount, error: attemptsError } = await supabase
