@@ -64,7 +64,10 @@
     verifyLink.rel = 'noopener';
     const verifyCell = document.getElementById('certificate-verification-link');
     verifyCell.replaceChildren(verifyLink);
-    document.getElementById('certificate-print').onclick = () => window.print();
+    document.getElementById('certificate-print').onclick = () => {
+      document.title = `${certificate.learnerName || 'Learner'} - ${certificate.courseTitle || 'Course'} Certificate`;
+      window.print();
+    };
   }
 
   // Design preview. Renders the certificate with clearly-labelled sample data so
