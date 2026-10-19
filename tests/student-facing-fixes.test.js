@@ -187,6 +187,10 @@ test('profile crop preview uses the selected image and external certificate uplo
     'the visible crop preview must render the selected image, not only the off-screen crop source');
   assert.match(profileJs, /coverage\.downloadCertificatePdf', 'Download \/ Print PDF'/,
     'earned certificates expose an obvious PDF/print action');
+  assert.match(profileJs, /coverage\.getCertificate', 'Get certificate'/,
+    'completed course cards offer a certificate action');
+  assert.match(profileJs, /\/certificate\/\$\{encodeURIComponent\(enrollment\.courseId\)\}\/issue/,
+    'the certificate action uses the server eligibility-checked issue endpoint');
 });
 
 test('certificate page offers PDF download through the browser print dialog', () => {
