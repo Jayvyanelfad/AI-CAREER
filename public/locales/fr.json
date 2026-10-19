@@ -1117,7 +1117,11 @@
     "progressMismatch": "Votre progression enregistrée et la liste des leçons ne correspondent pas encore. Veuillez actualiser la page.",
     "allLessonsComplete": "Cours terminé. Les {total} leçons sont validées.",
     "takeFinalExam": "Passer l’examen final",
-    "untitledCourse": "Cours sans titre"
+    "untitledCourse": "Cours sans titre",
+    "getCertificate": "Obtenir le certificat",
+    "certificateUnavailable": "Le certificat n’est pas encore disponible.",
+    "downloadCertificatePdf": "Télécharger / imprimer le PDF",
+    "certificateReady": "Votre certificat est prêt."
   },
   "careerResult": {
     "eyebrow": "VOTRE ORIENTATION PROFESSIONNELLE",
