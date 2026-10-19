@@ -560,6 +560,34 @@
       link.className = 'btn-primary profile-course-action';
       link.textContent = hasCourseId ? (completed ? t('coverage.viewCourseLower', 'View course') : t('coverage.continueLearning', 'Continue learning')) : t('coverage.exploreCoursesLower', 'Explore courses');
       card.appendChild(link);
+      if (completed && hasCourseId) {
+        const certificateButton = document.createElement('button');
+        certificateButton.type = 'button';
+        certificateButton.className = 'btn-outline profile-course-certificate-action';
+        certificateButton.textContent = t('coverage.getCertificate', 'Get certificate');
+        certificateButton.addEventListener('click', async () => {
+          certificateButton.disabled = true;
+          try {
+            const issued = await apiRequest(`/certificate/${encodeURIComponent(enrollment.courseId)}/issue`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({})
+            });
+            const certificateId = issued?.certificate?.certificateId;
+            if (!certificateId) throw new Error(t('coverage.certificateUnavailable', 'Certificate is not available yet.'));
+            const certificateLink = document.createElement('a');
+            certificateLink.href = `certificate.html?certificateId=${encodeURIComponent(certificateId)}`;
+            certificateLink.className = 'btn-primary';
+            certificateLink.textContent = t('coverage.downloadCertificatePdf', 'Download / Print PDF');
+            certificateButton.replaceWith(certificateLink);
+            showMessage(t('coverage.certificateReady', 'Your certificate is ready.'));
+          } catch (error) {
+            showMessage(error.message || t('coverage.certificateUnavailable', 'Certificate is not available yet.'), true);
+            certificateButton.disabled = false;
+          }
+        });
+        card.appendChild(certificateButton);
+      }
       enrollmentContainer.appendChild(card);
     });
   }
