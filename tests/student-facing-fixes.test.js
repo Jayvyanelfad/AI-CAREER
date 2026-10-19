@@ -244,6 +244,6 @@ test('homepage hero uses localized strings for supported languages', () => {
 });
 
 test('public homepage course catalog endpoint does not require a signed-in session', () => {
-  const server = read('server.js');
+  const server = fs.readFileSync(path.join(__dirname, '..', 'server.js'), 'utf8');
   assert.match(server, /app\.get\('\/api\/courses', async \(_req, res\) =>/);
 });
