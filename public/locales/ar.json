@@ -1117,7 +1117,11 @@
     "progressMismatch": "تقدّمك المحفوظ لا يطابق بعد قائمة دروس الدورة. يرجى تحديث الصفحة.",
     "allLessonsComplete": "اكتملت الدورة. تم إنجاز كل الدروس البالغة {total}.",
     "takeFinalExam": "خُذ الاختبار النهائي",
-    "untitledCourse": "دورة بلا عنوان"
+    "untitledCourse": "دورة بلا عنوان",
+    "getCertificate": "الحصول على الشهادة",
+    "certificateUnavailable": "الشهادة غير متاحة بعد.",
+    "downloadCertificatePdf": "تنزيل / طباعة PDF",
+    "certificateReady": "شهادتك جاهزة."
   },
   "project": {
     "eyebrow": "أُنجز كمشروع بكالوريوس في التقنية",
