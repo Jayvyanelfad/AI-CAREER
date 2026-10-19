@@ -207,7 +207,7 @@ test('certificate page downloads a single-page landscape PDF directly', () => {
 });
 
 test('final exam timing is enforced by the server, not just displayed in the browser', () => {
-  const server = read('server.js');
+  const server = fs.readFileSync(path.join(__dirname, '..', 'server.js'), 'utf8');
   assert.match(server, /function effectiveExamDurationMinutes\(exam\)/);
   assert.match(server, /if \(exam\?\.id === 'intro_to_ai_exam_1'\) return 10/);
   assert.match(server, /effectiveExamDurationMinutes\(exam\) \* 60_000/);
@@ -216,7 +216,7 @@ test('final exam timing is enforced by the server, not just displayed in the bro
 
 
 test('public homepage course highlights do not require a learner session', () => {
-  const server = read('server.js');
+  const server = fs.readFileSync(path.join(__dirname, '..', 'server.js'), 'utf8');
   const home = read('index.js');
   assert.match(server, /app\.get\('\/api\/public\/courses', async/);
   assert.match(server, /\.eq\('status', 'published'\)/);
