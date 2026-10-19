@@ -49,12 +49,8 @@ test('career result heading stays below navigation at desktop and mobile widths'
   t.after(async () => browser.close().catch(() => {}));
   const page = await browser.newPage();
   await page.goto(`${base}/career-test.html`, { waitUntil: 'domcontentloaded' });
-  await page.addStyleTag({ content: `
-    body.career-test-page > header { position:relative!important; inset:auto!important; display:flex!important; flex-wrap:wrap!important; height:auto!important; }
-    body.career-test-page > header nav { position:static!important; display:flex!important; flex-wrap:wrap!important; }
-    #results-container { display:block!important; position:relative!important; margin-top:48px!important; }
-    #results-container > .dashboard-header { position:relative!important; }
-  ` });
+  // Reveal the result section without overriding the layout rules under test.
+  await page.addStyleTag({ content: '#results-container { display:block!important; }' });
   for (const width of [1440, 768, 390, 320]) {
     await page.setViewportSize({ width, height: 900 });
     await page.evaluate(() => window.setCareerPathLanguage?.('wo'));
