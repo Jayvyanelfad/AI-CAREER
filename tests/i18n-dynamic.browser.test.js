@@ -36,7 +36,7 @@ test('explicitly keyed elements inserted after load use the selected locale', as
     document.getElementById('dynamic-root').appendChild(item);
   });
   await page.waitForFunction(() => document.getElementById('inserted-translation')?.textContent !== 'Loading...');
-  assert.equal(await page.locator('#inserted-translation').innerText(), 'Chargement…');
+  assert.equal(await page.locator('#inserted-translation').innerText(), 'Chargement...');
   await page.evaluate(() => window.setCareerPathLanguage('en'));
   await page.waitForFunction(() => document.getElementById('inserted-translation')?.textContent === 'Loading...');
   assert.equal(await page.locator('#inserted-translation').innerText(), 'Loading...');
