@@ -582,8 +582,18 @@
             certificateButton.replaceWith(certificateLink);
             showMessage(t('coverage.certificateReady', 'Your certificate is ready.'));
           } catch (error) {
-            showMessage(error.message || t('coverage.certificateUnavailable', 'Certificate is not available yet.'), true);
-            certificateButton.disabled = false;
+            if (error.status === 409 && /single configured final exam/i.test(error.message || '')) {
+              const notice = document.createElement('p');
+              notice.className = 'text-body_small color-green_light profile-certificate-unavailable';
+              notice.textContent = 'A verified certificate is not available for this course yet because its final exam is not configured. Please contact the course team.';
+              certificateButton.replaceWith(notice);
+            } else {
+              const friendly = error.status === 403 && /Pass the latest submitted final exam/i.test(error.message || '')
+                ? 'Pass the latest final exam attempt to unlock your certificate.'
+                : (error.message || t('coverage.certificateUnavailable', 'Certificate is not available yet.'));
+              showMessage(friendly, true);
+              certificateButton.disabled = false;
+            }
           }
         });
         card.appendChild(certificateButton);
