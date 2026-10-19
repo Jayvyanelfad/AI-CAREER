@@ -51,6 +51,8 @@
     const wasPreview = paper.classList.contains('is-preview');
     const safeName = `${certificate.learnerName || 'Learner'}-${certificate.courseTitle || 'Course'}-Certificate`
       .normalize('NFKD').replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 100) || 'CareerPath-Certificate';
+    const certificateMain = document.querySelector('.certificate-main');
+    certificateMain.classList.add('pdf-exporting');
     paper.classList.add('pdf-exporting');
     const options = {
       margin: 0,
@@ -77,6 +79,7 @@
       })
       .finally(() => {
         paper.classList.remove('pdf-exporting');
+        certificateMain.classList.remove('pdf-exporting');
         if (wasPreview) paper.classList.add('is-preview');
         button.disabled = false;
         button.textContent = oldLabel;
