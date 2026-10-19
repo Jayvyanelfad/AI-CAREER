@@ -1117,7 +1117,11 @@
     "progressMismatch": "Your saved progress and the course lesson list do not match yet. Please refresh the page.",
     "allLessonsComplete": "Course complete. All {total} lessons are done.",
     "takeFinalExam": "Take Final Exam",
-    "untitledCourse": "Untitled course"
+    "untitledCourse": "Untitled course",
+    "getCertificate": "Get certificate",
+    "certificateUnavailable": "Certificate is not available yet.",
+    "downloadCertificatePdf": "Download / Print PDF",
+    "certificateReady": "Your certificate is ready."
   },
   "careerResult": {
     "eyebrow": "YOUR CAREER DIRECTION",
