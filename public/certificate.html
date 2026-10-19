@@ -37,6 +37,7 @@
     .certificate-preview-note[hidden] { display: none; }
     .certificate-preview-note { margin: 0 0 26px; padding: 9px 13px; border: 1px solid #b16f4d; border-radius: 6px; background: rgba(177, 111, 77, .09); color: #8a4c2e; font: 600 .72rem/1.5 "IBM Plex Sans", sans-serif; letter-spacing: .06em; text-align: center; text-transform: uppercase; }
     .certificate-paper.is-preview { border-style: dashed; border-color: #b16f4d; }
+    .certificate-paper.pdf-exporting { box-sizing: border-box; width: 277mm; height: 190mm; min-height: 0; max-width: none; padding: 13mm; overflow: hidden; }
     .certificate-lookup { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 18px; }
     .certificate-lookup input { width: min(420px, 100%); min-height: 46px; padding: 10px 14px; color: var(--text); background: var(--bg); border: 1px solid var(--border-light); border-radius: var(--radius-sm); }
     .certificate-lookup button { min-height: 46px; }
@@ -50,10 +51,11 @@
     }
     @page { size: landscape; margin: 12mm; }
     @media print {
-      html, body { width: 100%; min-height: 0; background: #fff !important; color: #12372b !important; }
+      @page { size: A4 landscape; margin: 0; }
+      html, body { width: 100%; min-height: 0; margin: 0 !important; background: #fff !important; color: #12372b !important; }
       .nav-wrapper-absolute, .certificate-intro, .certificate-actions, .certificate-state, footer, .theme-toggle { display: none !important; }
       .certificate-main { width: 100%; max-width: none; margin: 0; padding: 0; }
-      .certificate-paper { width: 100%; max-width: none; min-height: 175mm; padding: 20mm; box-shadow: none; break-inside: avoid; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .certificate-paper { box-sizing: border-box; width: 297mm; height: 210mm; max-width: none; min-height: 0; margin: 0; padding: 13mm; overflow: hidden; box-shadow: none; break-inside: avoid; page-break-inside: avoid; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     }
   </style>
 </head>
@@ -113,6 +115,7 @@
     </div>
   </main>
 
+  <script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.2/dist/html2pdf.bundle.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js"></script>
   <script src="auth-navigation.js"></script>
