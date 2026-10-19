@@ -1292,7 +1292,7 @@ app.get('/api/public/courses', async (_req, res) => {
   }
 });
 
-app.get('/api/courses', authenticateToken, async (_req, res) => {
+app.get('/api/courses', async (_req, res) => {
   try {
     const { data, error } = await supabase
       .from('courses')
