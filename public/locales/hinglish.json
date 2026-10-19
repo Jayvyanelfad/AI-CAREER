@@ -1117,7 +1117,11 @@
     "progressMismatch": "Aapka saved progress abhi course ki lesson list se match nahi kar raha. Page refresh karein.",
     "allLessonsComplete": "Course poora hua. Saare {total} lessons ho gaye.",
     "takeFinalExam": "Final Exam dein",
-    "untitledCourse": "Bina title ka course"
+    "untitledCourse": "Bina title ka course",
+    "getCertificate": "Certificate lo",
+    "certificateUnavailable": "Certificate abhi available nahi hai.",
+    "downloadCertificatePdf": "PDF download / print karo",
+    "certificateReady": "Aapka certificate ready hai."
   },
   "careerResult": {
     "eyebrow": "AAPKI CAREER DIRECTION",
