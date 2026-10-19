@@ -74,7 +74,7 @@ async function renderFeaturedCourses() {
   if (!grid) return;
 
   try {
-    const response = await fetch(`${window.API_BASE || '/api'}/courses`, {
+    const response = await fetch(`${window.API_BASE || '/api'}/public/courses`, {
       headers: { Accept: 'application/json' }
     });
     if (!response.ok) throw new Error(`Course catalog returned ${response.status}`);
