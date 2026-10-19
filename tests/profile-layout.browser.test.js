@@ -80,7 +80,7 @@ test('profile photo follows the size system', async t => {
     const r = document.querySelector('#profile-avatar').getBoundingClientRect();
     return { w: Math.round(r.width), h: Math.round(r.height) };
   });
-  assert.ok(avatar.w >= 112 && avatar.w <= 144, `profile photo ~112-144px, got ${avatar.w}`);
+  assert.ok(avatar.w >= 156 && avatar.w <= 164, `profile photo should honor the 160px desktop size, got ${avatar.w}`);
   await desktop.context().close();
   const mobile = await profilePage(t, 390);
   const small = await mobile.evaluate(() => {

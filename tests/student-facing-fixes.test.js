@@ -198,16 +198,52 @@ test('certificate page downloads a single-page landscape PDF directly', () => {
   const js = read('certificate.js');
   assert.match(html, /Download Certificate \(PDF\)/);
   assert.match(html, /html2pdf\.bundle\.min\.js/);
-  assert.match(html, /\.certificate-paper\.pdf-exporting[^}]*height: 190mm/);
+  assert.match(html, /\.certificate-paper\.pdf-exporting[^}]*height: 210mm/);
+  assert.equal((html.match(/html2pdf\.bundle\.min\.js/g) || []).length, 1, 'load the PDF library once');
+  assert.equal((js.match(/function downloadCertificatePdf/g) || []).length, 1, 'define the PDF download function once');
   assert.match(js, /downloadCertificatePdf\(certificate\)/);
   assert.match(js, /orientation: 'landscape'/);
   assert.match(js, /pdf\.deletePage\(pdf\.getNumberOfPages\(\)\)/);
 });
 
 test('final exam timing is enforced by the server, not just displayed in the browser', () => {
-  const server = read('server.js');
+  const server = fs.readFileSync(path.join(__dirname, '..', 'server.js'), 'utf8');
   assert.match(server, /function effectiveExamDurationMinutes\(exam\)/);
   assert.match(server, /if \(exam\?\.id === 'intro_to_ai_exam_1'\) return 10/);
   assert.match(server, /effectiveExamDurationMinutes\(exam\) \* 60_000/);
   assert.match(server, /duration_minutes: effectiveExamDurationMinutes\(exam\)/);
+});
+
+
+test('public homepage course highlights do not require a learner session', () => {
+  const server = fs.readFileSync(path.join(__dirname, '..', 'server.js'), 'utf8');
+  const home = read('index.js');
+  assert.match(server, /app\.get\('\/api\/public\/courses', async/);
+  assert.match(server, /\.eq\('status', 'published'\)/);
+  assert.match(server, /app\.get\('\/api\/courses', authenticateToken/);
+  assert.match(home, /\/public\/courses/);
+});
+
+test('career assessment header occupies layout space instead of overlapping its heading', () => {
+  const polish = read('ui-polish.css');
+  assert.match(polish, /\.career-test-page > header\s*\{[^}]*position:\s*relative/s);
+  assert.match(polish, /\.career-test-page > main\s*\{[^}]*padding-top:/s);
+});
+
+test('homepage hero uses localized strings for supported languages', () => {
+  const html = read('index.html');
+  const wolof = JSON.parse(read('locales/wo.json'));
+  const pidgin = JSON.parse(read('locales/pcm.json'));
+  for (const key of ['ui.homeHeroEyebrow', 'ui.homeHeroLine1', 'ui.homeHeroLine2', 'ui.homeHeroLine3', 'ui.discoverMyCareerPath', 'ui.homeJourneySummary']) {
+    assert.match(html, new RegExp('data-i18n="' + key.replaceAll('.', '\\.') + '"'));
+    assert.equal(typeof wolof.ui[key.split('.')[1]], 'string', 'Wolof missing ' + key);
+    assert.equal(typeof pidgin.ui[key.split('.')[1]], 'string', 'Naijá missing ' + key);
+  }
+  assert.equal(typeof wolof.courseMetadata.intro_to_ai.title, 'string');
+  assert.equal(typeof wolof.courseMetadata.intro_to_ai.description, 'string');
+});
+
+test('public homepage course catalog endpoint does not require a signed-in session', () => {
+  const server = fs.readFileSync(path.join(__dirname, '..', 'server.js'), 'utf8');
+  assert.match(server, /app\.get\('\/api\/courses', async \(_req, res\) =>/);
 });
