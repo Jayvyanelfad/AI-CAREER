@@ -229,3 +229,21 @@ test('career assessment header occupies layout space instead of overlapping its 
   assert.match(polish, /\.career-test-page > header\s*\{[^}]*position:\s*relative/s);
   assert.match(polish, /\.career-test-page > main\s*\{[^}]*padding-top:/s);
 });
+
+test('homepage hero uses localized strings for supported languages', () => {
+  const html = read('index.html');
+  const wolof = JSON.parse(read('locales/wo.json'));
+  const pidgin = JSON.parse(read('locales/pcm.json'));
+  for (const key of ['ui.homeHeroEyebrow', 'ui.homeHeroLine1', 'ui.homeHeroLine2', 'ui.homeHeroLine3', 'ui.discoverMyCareerPath', 'ui.homeJourneySummary']) {
+    assert.match(html, new RegExp('data-i18n="' + key.replaceAll('.', '\\.') + '"'));
+    assert.equal(typeof wolof.ui[key.split('.')[1]], 'string', 'Wolof missing ' + key);
+    assert.equal(typeof pidgin.ui[key.split('.')[1]], 'string', 'Naijá missing ' + key);
+  }
+  assert.equal(typeof wolof.courseMetadata.intro_to_ai.title, 'string');
+  assert.equal(typeof wolof.courseMetadata.intro_to_ai.description, 'string');
+});
+
+test('public homepage course catalog endpoint does not require a signed-in session', () => {
+  const server = read('server.js');
+  assert.match(server, /app\.get\('\/api\/courses', async \(_req, res\) =>/);
+});
