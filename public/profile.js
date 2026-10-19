@@ -589,7 +589,7 @@
         const link = document.createElement('a');
         link.href = `certificate.html?certificateId=${encodeURIComponent(certificate.id)}`;
         link.className = 'btn-outline';
-        link.textContent = t('coverage.viewCertificate', 'View Certificate');
+        link.textContent = t('coverage.downloadCertificatePdf', 'Download / Print PDF');
         item.appendChild(link);
       }
       certificatesContainer.appendChild(item);
@@ -723,6 +723,10 @@
     if (pendingAvatarPreview) URL.revokeObjectURL(pendingAvatarPreview);
     pendingAvatarFile = file;
     pendingAvatarPreview = URL.createObjectURL(file);
+    // The crop viewport renders a separate IMG element; give it the selected file too.
+    // Without this src, the dialog opens as an empty dark square even though the
+    // off-screen image loads successfully for canvas cropping.
+    cropImage.src = pendingAvatarPreview;
     cropSourceImage = new Image();
     cropSourceImage.onload = () => {
       cropDialog.showModal();
