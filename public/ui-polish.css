@@ -500,3 +500,41 @@
   .career-test-page > header nav { flex-basis: 100%; justify-content: flex-start; }
   .career-test-page > .theme-toggle { top: 14px; inset-inline-end: 14px; }
 }
+
+
+/* Career assessment: the legacy global header is absolutely positioned.
+   Give this page a real header row so its title cannot slide underneath it. */
+.career-test-page > header {
+  position: relative;
+  inset: auto;
+  z-index: 20;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px 24px;
+  width: 100%;
+  min-height: 82px;
+  padding: 16px clamp(18px, 5vw, 72px);
+  background: var(--green_dark, #17382e);
+}
+.career-test-page > header .logo { flex: 0 0 auto; }
+.career-test-page > header nav {
+  display: flex;
+  flex: 1 1 560px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px 10px;
+  min-width: 0;
+}
+.career-test-page > header nav a,
+.career-test-page > header nav #profile-nav,
+.career-test-page > header nav #auth-action-nav { min-width: 0; }
+.career-test-page > main { padding-top: clamp(20px, 3vw, 36px); }
+.career-test-page > .theme-toggle { position: absolute; top: 18px; inset-inline-end: 18px; z-index: 30; }
+@media (max-width: 760px) {
+  .career-test-page > header { align-items: flex-start; padding: 16px 18px; }
+  .career-test-page > header nav { flex-basis: 100%; justify-content: flex-start; }
+  .career-test-page > .theme-toggle { top: 14px; inset-inline-end: 14px; }
+}
