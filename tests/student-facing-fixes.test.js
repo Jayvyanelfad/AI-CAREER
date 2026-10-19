@@ -199,7 +199,7 @@ test('certificate page downloads a single-page landscape PDF directly', () => {
   assert.match(html, /Download Certificate \(PDF\)/);
   assert.match(html, /html2pdf\.bundle\.min\.js/);
   assert.match(html, /\.certificate-paper\.pdf-exporting[^}]*height: 210mm/);
-  assert.equal((html.match(/html2pdf\\.bundle\\.min\\.js/g) || []).length, 1, 'load the PDF library once');
+  assert.equal((html.match(/html2pdf\.bundle\.min\.js/g) || []).length, 1, 'load the PDF library once');
   assert.equal((js.match(/function downloadCertificatePdf/g) || []).length, 1, 'define the PDF download function once');
   assert.match(js, /downloadCertificatePdf\(certificate\)/);
   assert.match(js, /orientation: 'landscape'/);
