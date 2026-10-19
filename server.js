@@ -699,8 +699,8 @@ function shuffleExamItems(items) {
 
 function effectiveExamDurationMinutes(exam) {
   // The Intro to AI & ML final includes both MCQs and a crossword; keep its
-  // server-enforced total attempt window to 30 minutes for new attempts.
-  if (exam?.id === 'intro_to_ai_exam_1') return 30;
+  // server-enforced total attempt window to 10 minutes for new attempts.
+  if (exam?.id === 'intro_to_ai_exam_1') return 10;
   const configured = Number(exam?.duration_minutes);
   return Number.isFinite(configured) && configured > 0 ? configured : 60;
 }

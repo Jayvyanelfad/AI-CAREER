@@ -3659,7 +3659,7 @@ html[dir="rtl"] .course-detail-container .lesson-item.active { box-shadow: inset
 
 /* User profile identity and shared navigation avatars. */
 .profile-identity-row { display: flex; align-items: center; gap: 22px; margin: 8px 0 22px; }
-.profile-avatar { position: relative; display: grid; width: 120px; height: 120px; flex: 0 0 auto; place-items: center; overflow: hidden; border: 1px solid rgba(220, 168, 133, .5); border-radius: 50%; background: #29483b; color: #f4eee7; font: 400 3.1rem/1 var(--font-display); }
+ .profile-avatar { position: relative; display: grid; width: 160px; height: 160px; flex: 0 0 auto; place-items: center; overflow: hidden; border: 1px solid rgba(220, 168, 133, .5); border-radius: 50%; background: #29483b; color: #f4eee7; font: 400 3.1rem/1 var(--font-display); }
 .profile-avatar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .profile-avatar img[hidden] { display: none; }
 .profile-avatar-controls { display: grid; flex: 1 1 0; gap: 8px; min-width: 0; max-width: 100%; }
@@ -3680,7 +3680,7 @@ html[dir="rtl"] .course-detail-container .lesson-item.active { box-shadow: inset
 .profile-personal-section .profile-personal-details > p { overflow-wrap: anywhere; }
 .profile-edit-form textarea { width: 100%; min-height: 104px; padding: 12px 14px; border: 1px solid var(--border-light); border-radius: 4px; background: var(--surface); color: var(--text-primary); font: inherit; resize: vertical; }
 .nav-profile-link { display: inline-flex; align-items: center; gap: 8px; }
-.nav-profile-avatar { display: inline-grid; width: 28px; height: 28px; flex: 0 0 auto; place-items: center; overflow: hidden; border: 1px solid rgba(226, 184, 151, .65); border-radius: 50%; background: #24483d; color: #f4eee7; font-size: .78rem; }
+.nav-profile-avatar { display: inline-grid; width: 36px; height: 36px; flex: 0 0 auto; place-items: center; overflow: hidden; border: 1px solid rgba(226, 184, 151, .65); border-radius: 50%; background: #24483d; color: #f4eee7; font-size: .78rem; }
 .nav-profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
 .dashboard-profile-avatar { position: relative; display: grid; width: 84px; height: 84px; margin: 0 0 18px; place-items: center; overflow: hidden; border: 1px solid rgba(226, 184, 151, .7); border-radius: 50%; background: #24483d; color: #f4eee7; font: 400 2.3rem/1 var(--font-display); }
 .dashboard-profile-avatar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }

@@ -43,6 +43,85 @@
       : 'Date unavailable';
   }
 
+  function downloadCertificatePdf(certificate) {
+    if (typeof window.html2pdf !== 'function') {
+      showState('The PDF download tool could not load. Refresh the page and try again, or use your browser’s Print → Save as PDF option.');
+      return;
+    }
+    const wasPreview = paper.classList.contains('is-preview');
+    const safeName = `${certificate.learnerName || 'Learner'}-${certificate.courseTitle || 'Course'}-Certificate`
+      .normalize('NFKD').replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 100) || 'CareerPath-Certificate';
+    paper.classList.add('pdf-exporting');
+    const options = {
+      margin: 0,
+      filename: `${safeName}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true, backgroundColor: '#f4ece6', logging: false },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape', compress: true },
+      pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+    };
+    const button = document.getElementById('certificate-print');
+    const oldLabel = button.textContent;
+    button.disabled = true;
+    button.textContent = 'Preparing PDF…';
+    window.html2pdf().set(options).from(paper).toPdf().get('pdf')
+      .then(pdf => {
+        // Keep the certificate to one sheet; the export layout is landscape A4.
+        while (pdf.getNumberOfPages() > 1) pdf.deletePage(pdf.getNumberOfPages());
+        return pdf;
+      })
+      .then(pdf => pdf.save())
+      .catch(error => {
+        console.error('Certificate PDF download failed:', error);
+        showState('The PDF could not be generated. Refresh the page and try again, or use Print → Save as PDF.');
+      })
+      .finally(() => {
+        paper.classList.remove('pdf-exporting');
+        if (wasPreview) paper.classList.add('is-preview');
+        button.disabled = false;
+        button.textContent = oldLabel;
+      });
+  }
+
+  function downloadCertificatePdf(certificate) {
+    if (typeof window.html2pdf !== 'function') {
+      showState('The PDF download tool could not load. Refresh the page and try again, or use your browser’s Print → Save as PDF option.');
+      return;
+    }
+    const wasPreview = paper.classList.contains('is-preview');
+    const safeName = `${certificate.learnerName || 'Learner'}-${certificate.courseTitle || 'Course'}-Certificate`
+      .normalize('NFKD').replace(/[^a-zA-Z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 100) || 'CareerPath-Certificate';
+    paper.classList.add('pdf-exporting');
+    const options = {
+      margin: 0,
+      filename: `${safeName}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true, backgroundColor: '#f4ece6', logging: false },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape', compress: true },
+      pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+    };
+    const button = document.getElementById('certificate-print');
+    const oldLabel = button.textContent;
+    button.disabled = true;
+    button.textContent = 'Preparing PDF…';
+    window.html2pdf().set(options).from(paper).toPdf().get('pdf')
+      .then(pdf => {
+        while (pdf.getNumberOfPages() > 1) pdf.deletePage(pdf.getNumberOfPages());
+        return pdf;
+      })
+      .then(pdf => pdf.save())
+      .catch(error => {
+        console.error('Certificate PDF download failed:', error);
+        showState('The PDF could not be generated. Refresh the page and try again, or use Print → Save as PDF.');
+      })
+      .finally(() => {
+        paper.classList.remove('pdf-exporting');
+        if (wasPreview) paper.classList.add('is-preview');
+        button.disabled = false;
+        button.textContent = oldLabel;
+      });
+  }
+
   function render(certificate, isPublic) {
     state.hidden = true;
     paper.hidden = false;
@@ -64,10 +143,7 @@
     verifyLink.rel = 'noopener';
     const verifyCell = document.getElementById('certificate-verification-link');
     verifyCell.replaceChildren(verifyLink);
-    document.getElementById('certificate-print').onclick = () => {
-      document.title = `${certificate.learnerName || 'Learner'} - ${certificate.courseTitle || 'Course'} Certificate`;
-      window.print();
-    };
+    document.getElementById('certificate-print').onclick = () => downloadCertificatePdf(certificate);
   }
 
   // Design preview. Renders the certificate with clearly-labelled sample data so
@@ -103,7 +179,7 @@
 
     const cell = document.getElementById('certificate-verification-link');
     cell.replaceChildren(document.createTextNode('Verification is available only for issued certificates.'));
-    document.getElementById('certificate-print').onclick = () => window.print();
+    document.getElementById('certificate-print').onclick = () => downloadCertificatePdf(PREVIEW_SAMPLE);
   }
 
   async function load() {

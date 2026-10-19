@@ -193,17 +193,21 @@ test('profile crop preview uses the selected image and external certificate uplo
     'the certificate action uses the server eligibility-checked issue endpoint');
 });
 
-test('certificate page offers PDF download through the browser print dialog', () => {
+test('certificate page downloads a single-page landscape PDF directly', () => {
   const html = read('certificate.html');
   const js = read('certificate.js');
   assert.match(html, /Download Certificate \(PDF\)/);
-  assert.match(js, /window\.print\(\)/);
+  assert.match(html, /html2pdf\.bundle\.min\.js/);
+  assert.match(html, /\.certificate-paper\.pdf-exporting[^}]*height: 190mm/);
+  assert.match(js, /downloadCertificatePdf\(certificate\)/);
+  assert.match(js, /orientation: 'landscape'/);
+  assert.match(js, /pdf\.deletePage\(pdf\.getNumberOfPages\(\)\)/);
 });
 
 test('final exam timing is enforced by the server, not just displayed in the browser', () => {
   const server = read('server.js');
   assert.match(server, /function effectiveExamDurationMinutes\(exam\)/);
-  assert.match(server, /if \(exam\?\.id === 'intro_to_ai_exam_1'\) return 30/);
+  assert.match(server, /if \(exam\?\.id === 'intro_to_ai_exam_1'\) return 10/);
   assert.match(server, /effectiveExamDurationMinutes\(exam\) \* 60_000/);
   assert.match(server, /duration_minutes: effectiveExamDurationMinutes\(exam\)/);
 });
