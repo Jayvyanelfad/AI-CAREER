@@ -128,6 +128,7 @@ test('the exam row follows the existing exam conventions', () => {
   assert.equal(row.passing_score, PASSING_SCORE);
   assert.equal(row.max_attempts, MAX_ATTEMPTS);
   assert.equal(row.duration_minutes, DURATION_MINUTES);
+  assert.equal(DURATION_MINUTES, 30, 'the combined MCQ and crossword final exam uses a 30-minute limit');
   assert.match(row.title, /\bfinal\s+exam\b/i,
     'the title fallback is how the page and the certificate issuer recognise a final exam');
   assert.equal(row.passing_score, 70, 'passing mark matches the existing course convention');

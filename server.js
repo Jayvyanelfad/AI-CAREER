@@ -697,6 +697,14 @@ function shuffleExamItems(items) {
   return shuffled;
 }
 
+function effectiveExamDurationMinutes(exam) {
+  // The Intro to AI & ML final includes both MCQs and a crossword; keep its
+  // server-enforced total attempt window to 30 minutes for new attempts.
+  if (exam?.id === 'intro_to_ai_exam_1') return 30;
+  const configured = Number(exam?.duration_minutes);
+  return Number.isFinite(configured) && configured > 0 ? configured : 60;
+}
+
 function examMetadata(exam, questionCount) {
   return {
     id: exam.id,
@@ -704,7 +712,7 @@ function examMetadata(exam, questionCount) {
     title: exam.title,
     description: exam.description || '',
     passing_score: exam.passing_score,
-    duration_minutes: exam.duration_minutes,
+    duration_minutes: effectiveExamDurationMinutes(exam),
     max_attempts: exam.max_attempts,
     question_count: questionCount,
     is_final: exam.is_final === true
@@ -1022,7 +1030,7 @@ app.post('/api/exams/:examId/start', authenticateToken, async (req, res) => {
     }
 
     const startedAt = new Date();
-    const deadlineAt = new Date(startedAt.getTime() + Number(exam.duration_minutes) * 60_000);
+    const deadlineAt = new Date(startedAt.getTime() + effectiveExamDurationMinutes(exam) * 60_000);
     const { data: createdAttempt, error: createError } = await supabase
       .from('exam_attempts')
       .insert({

@@ -247,7 +247,7 @@
         document.getElementById('btn-return-course').addEventListener('click', () => {
             window.location.href = `course-detail.html?id=${encodeURIComponent(exam.course_id)}`;
         });
-        if (result.passed && !expired) issuePassedCertificate();
+        if (result.passed) issuePassedCertificate();
     }
 
     async function issuePassedCertificate() {
