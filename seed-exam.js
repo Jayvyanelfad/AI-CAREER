@@ -38,7 +38,7 @@ const COURSE_ID = 'intro_to_ai';
 // a bounded number of attempts, and the schema's 60-minute default duration.
 const PASSING_SCORE = 70;
 const MAX_ATTEMPTS = 3;
-const DURATION_MINUTES = 30;
+const DURATION_MINUTES = 10;
 const MCQ_QUESTION_COUNT = 10;
 
 // Builds the complete, ordered question plan from the course-authored content.
