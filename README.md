@@ -1,59 +1,115 @@
-# AI Career Guidance Platform (CareerPath AI)
+# CareerPath AI — AI Career Guidance & Personalised Learning
 
-Live: `https://ai-careerr.onrender.com` · Repo: `Jayvyanelfad/AI-CAREER` (`main`)
+**CareerPath AI** is a multilingual web platform that helps learners explore technology career paths, discover learning resources and build skills through guided learning experiences.
 
-## Setup (local)
-1. Install dependencies: `npm install`
-2. Copy `.env.example` to `.env` and fill in values (never commit `.env`).
-3. Run: `npm start`
-4. Visit: `http://localhost:5000`
+[🌐 Live Platform](https://ai-careerr.onrender.com) · [📦 GitHub Repository](https://github.com/Jayvyanelfad/AI-CAREER)
 
-Required env: `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`.
-Optional: `GEMINI_API_KEY` (AI chat; without it the chatbot answers navigation
-guidance only), `PROGRAMMING_EXECUTION_PROVIDER=piston` + `PISTON_BASE_URL`
-(Python/JavaScript sandbox; without them Run is honestly disabled).
+## What the platform offers
+
+- **Career discovery:** an assessment that helps learners explore suitable technology domains.
+- **Learning resources:** course catalogues, enrolment and structured learning content.
+- **Story-based learning:** Donkey Learning content designed to make concepts more approachable.
+- **Multilingual interface:** English, French, Hinglish, Swahili, Arabic, Hausa, Nigerian Pidgin and Wolof interface resources, with English fallback for intentionally partial locales.
+- **Learning progress:** lesson progress, exams and certificates tied to verified learning activity.
+- **AI-assisted support:** optional Gemini-powered chat; navigation guidance remains available without the API key.
+- **Programming practice:** an optional Python/JavaScript execution integration that remains disabled unless an approved Piston provider is configured.
+
+## Technology
+
+| Area | Technologies |
+|---|---|
+| Frontend | HTML, CSS, JavaScript |
+| Backend | Node.js, Express |
+| Database & authentication | Supabase, PostgreSQL, Supabase JWT |
+| AI integration | Google Gemini API |
+| Testing | Node.js test runner, Playwright |
+| Deployment | Render |
+
+The frontend is served from `public/`; the Express application is started from `server.js`. Supabase service-role access is kept on the server, not exposed to the browser.
+
+## Run locally
+
+**Requirements:** Node.js 24.x and access to a configured Supabase project.
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/Jayvyanelfad/AI-CAREER.git
+   cd AI-CAREER
+   ```
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Copy `.env.example` to `.env` and configure the required variables:
+   ```env
+   SUPABASE_URL=your_supabase_url
+   SUPABASE_ANON_KEY=your_supabase_anon_key
+   SUPABASE_SERVICE_ROLE_KEY=your_server_only_service_role_key
+   ```
+4. Start the application:
+   ```bash
+   npm start
+   ```
+5. Open [http://localhost:5000](http://localhost:5000).
+
+Optional integrations:
+
+- Set `GEMINI_API_KEY` to enable Gemini-powered AI chat responses.
+- Configure `PROGRAMMING_EXECUTION_PROVIDER=piston` and `PISTON_BASE_URL` to enable the supported programming execution integration. Without this configuration, code execution stays disabled.
+
+**Security:** Never commit `.env` or expose `SUPABASE_SERVICE_ROLE_KEY` in frontend code.
 
 ## Tests
+
+Run the automated test suite:
+
 ```bash
 node --test tests/*.test.js
 ```
-Unit/integration suites use mocked Supabase and ephemeral localhost servers;
-browser suites use Playwright with mocked API routes. No test touches a real
-database. `node --check <file>` for syntax; `git diff --check` for whitespace.
 
-## Database (staging order — Supabase SQL editor, never psql a destructive file)
-1. `staging_step1.sql` (7 base tables; run once, not re-runnable).
-2. `staging_step2_schema.sql` (Sections 0–11 in order; re-runnable).
-3. Seed scripts: `seed-courses.js` → `seed-modern-ai-courses.js` →
-   `seed-course-content.js` → `seed-career-test-questions.js` → `seed-exam.js`.
-4. `staging_step3_postseed.sql` (requires `exams.id = 'intro_to_ai_exam_1'`).
-5. `migrations/20261012_certificate_revoke_client_insert.sql`,
-   `migrations/20261012_exam_final_discriminator.sql`,
-   `migrations/20261012_account_classification.sql`,
-   `migrations/20260930_admin_users.sql` (each transactional and re-runnable).
+The unit and integration suites use mocked Supabase services and local test servers. Browser tests use Playwright with mocked API routes; they are not intended to modify a live database.
 
-> WARNING: never run `SUPABASE_MIGRATION_FIXED.sql` — its header drops all
-> application tables. It is kept only as migration history.
+## Database setup and migration notes
 
-## Architecture
-- Frontend: static HTML/CSS/JS in `public/`, dark-green/cream theme, 8 locales
-  (`en` canonical; `fr`/`hinglish`/`sw`/`ar` full; `ha`/`pcm`/`wo` intentional
-  subsets with English fallback). Lesson/catalog bodies are English by design.
-- Backend: Express (`server.js`) + Supabase (service-role server-side only).
-  Auth via Supabase JWT; admin via `admin_users` membership (fail-closed).
-- Exams are server-graded through service-role RPCs; exam tables deny browser
-  access. Certificates issue only from verified enrollment + lessons + passed
-  final exam; public verification stays open, private views stay owned.
+Database setup is documented in the SQL files and migration history. For the documented staging sequence:
 
-## Capability matrix (default configuration)
-| Feature | State |
+1. Run `staging_step1.sql` once to create the base tables.
+2. Apply `staging_step2_schema.sql` sections in order.
+3. Run the seed scripts in the order documented below.
+4. Apply `staging_step3_postseed.sql` after the required exam seed exists.
+5. Apply the listed transactional migrations.
+
+Seed order:
+
+```text
+seed-courses.js
+seed-modern-ai-courses.js
+seed-course-content.js
+seed-career-test-questions.js
+seed-exam.js
+```
+
+> **Important:** Do not run `SUPABASE_MIGRATION_FIXED.sql`. Its header contains destructive table drops. It is retained as migration history, not as a setup script. Review every SQL file and take a database backup before applying migrations to any environment.
+
+## Current implementation notes
+
+| Capability | Configuration / status |
 |---|---|
-| Registration, assessment, courses, progress, exams, certificates, admin | Working (needs configured database) |
-| AI chat replies | Needs `GEMINI_API_KEY`; offline navigation guide otherwise |
-| Studio code execution | Needs approved Piston provider; honestly disabled otherwise |
-| Activity feeds, completion rates | Not tracked by design; UI labels them unavailable |
+| Registration, assessment, courses, progress, exams, certificates and admin | Available with a correctly configured database |
+| Gemini chat responses | Requires `GEMINI_API_KEY`; navigation guidance is available without it |
+| Programming execution | Requires the approved Piston provider configuration; otherwise disabled |
+| Activity feeds and completion-rate analytics | Not currently tracked |
 
-## Known limitations
-- `seed-career-test-questions.js` reuses identical active rows and retires only stale ones, so reruns are no-ops.
-- `ha`/`pcm`/`wo` cover core UI only.
-- Deployment is manual/via Render dashboard; no deployment-as-code in repo.
+## Language support
+
+The interface uses English as its canonical locale. French, Hinglish, Swahili and Arabic have fuller translation coverage; Hausa, Nigerian Pidgin and Wolof intentionally cover core interface areas and fall back to English where translations are not yet available. Lesson and catalogue bodies are currently in English.
+
+## Project status and contributions
+
+CareerPath AI is an evolving project. Contributions, bug reports and thoughtful suggestions are welcome through GitHub Issues.
+
+When reporting a problem, include the steps to reproduce it, expected behaviour and actual behaviour. Please do not include credentials, private learner data or API keys in issues.
+
+---
+
+Built to make career exploration and learning more accessible.
