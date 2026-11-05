@@ -1117,7 +1117,11 @@
     "progressMismatch": "Maendeleo yako yaliyohifadhiwa bado hayalingani na orodha ya somo. Tafadhali onyesha upya ukurasa.",
     "allLessonsComplete": "Kozi imekamilika. Somo zote {total} zimefanyika.",
     "takeFinalExam": "Fanya Mtihani wa Mwisho",
-    "untitledCourse": "Kozi bila jina"
+    "untitledCourse": "Kozi bila jina",
+    "getCertificate": "Pata cheti",
+    "certificateUnavailable": "Cheti bado hakipatikani.",
+    "downloadCertificatePdf": "Pakua / Chapisha PDF",
+    "certificateReady": "Cheti chako kiko tayari."
   },
   "project": {
     "eyebrow": "Umetengenezwa kama mradi wa B.Tech",

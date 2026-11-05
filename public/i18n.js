@@ -239,17 +239,26 @@
     });
   }
 
-  function applyExplicitTranslations() {
-    document.querySelectorAll('[data-i18n]').forEach(element => {
+  function applyExplicitTranslations(root = document) {
+    const elements = [];
+    if (root.nodeType === Node.ELEMENT_NODE && root.matches('[data-i18n]')) elements.push(root);
+    if (root.querySelectorAll) elements.push(...root.querySelectorAll('[data-i18n]'));
+    elements.forEach(element => {
       const vars = element.dataset.i18nVars ? safeJsonVars(element.dataset.i18nVars) : undefined;
       const fallback = element.dataset.i18nFallback || element.textContent;
       element.textContent = translate(element.dataset.i18n, fallback, vars);
     });
-    document.querySelectorAll('[data-i18n-placeholder], [data-i18n-aria-label]').forEach(element => {
+    const attributeElements = [];
+    if (root.nodeType === Node.ELEMENT_NODE && root.matches('[data-i18n-placeholder], [data-i18n-aria-label]')) attributeElements.push(root);
+    if (root.querySelectorAll) attributeElements.push(...root.querySelectorAll('[data-i18n-placeholder], [data-i18n-aria-label]'));
+    attributeElements.forEach(element => {
       if (element.dataset.i18nPlaceholder) element.setAttribute('placeholder', translate(element.dataset.i18nPlaceholder, element.getAttribute('placeholder') || ''));
       if (element.dataset.i18nAriaLabel) element.setAttribute('aria-label', translate(element.dataset.i18nAriaLabel, element.getAttribute('aria-label') || ''));
     });
-    document.querySelectorAll('[data-language-preference]').forEach(select => {
+    const selectors = [];
+    if (root.nodeType === Node.ELEMENT_NODE && root.matches('[data-language-preference]')) selectors.push(root);
+    if (root.querySelectorAll) selectors.push(...root.querySelectorAll('[data-language-preference]'));
+    selectors.forEach(select => {
       if (select.tagName === 'SELECT') select.value = activeLanguage === 'fon' ? 'en' : activeLanguage;
       select.setAttribute('aria-label', translate('settings.language', 'Language'));
     });
@@ -314,6 +323,10 @@
             const nested = node.querySelector('select[data-language-preference]');
             if (nested) syncHardcodedSelectors();
           }
+          // Dynamically rendered UI often carries explicit i18n keys and
+          // interpolation variables. Apply those keys before the English-text
+          // fallback pass so new buttons, counters and validation UI are localized.
+          applyExplicitTranslations(node);
           localizeTextNodes(node);
           localizeAttributes(node);
         } else if (node.nodeType === Node.TEXT_NODE) {

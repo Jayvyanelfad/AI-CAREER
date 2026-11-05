@@ -1,8 +1,72 @@
 {
-  "_meta": {"version": 1, "code": "wo", "name": "Gambian Wolof", "nativeName": "Wolof", "dir": "ltr", "langTag": "wo"},
-  "nav": {"home": "Kër gi", "careerTest": "Nattu yoonu liggéey", "courses": "Kurs yi", "programming": "Programmasyon", "dashboard": "Bord bi", "profile": "Sa profil", "login": "Dugg", "register": "Bindu", "logout": "Génn"},
-  "common": {"start": "Tambali", "continue": "Kontine", "back": "Dellu ginnaaw", "next": "Ci kanam", "previous": "Ci ginnaaw", "save": "Denc", "cancel": "Neenal", "loading": "Mi ngi yebbi…", "error": "Am na njuumte", "tryAgain": "Jéemaat", "pleaseSignIn": "Dugg nga jëkk"},
-  "settings": {"language": "Làkk"},
-  "programming": {"runCode": "Doxal kod bi", "running": "Mi ngi dox…", "output": "Génne bi", "stdinLabel": "Duggal bu soxla (tànn rekk)", "unavailable": "Doxal kod bi amul fii léegi.", "timedOut": "Doxal bi yàgg na lool."},
-  "notifications": {"eyebrow": "YEESAL", "title": "Yégle yi", "loading": "Mi ngi yebbi yégle yi…", "empty": "Amuloo yégle fii léegi.", "unavailable": "Yégle yi amul fii léegi.", "markAll": "Jàngal lépp", "markRead": "Marke ko ni jàng na", "open": "Ubbi", "update": "Yeesal"}
+  "_meta": {
+    "version": 1,
+    "code": "wo",
+    "name": "Gambian Wolof",
+    "nativeName": "Wolof",
+    "dir": "ltr",
+    "langTag": "wo"
+  },
+  "nav": {
+    "home": "Kër gi",
+    "careerTest": "Nattu yoonu liggéey",
+    "courses": "Kurs yi",
+    "programming": "Programmasyon",
+    "dashboard": "Bord bi",
+    "profile": "Sa profil",
+    "login": "Dugg",
+    "register": "Bindu",
+    "logout": "Génn"
+  },
+  "common": {
+    "start": "Tambali",
+    "continue": "Kontine",
+    "back": "Dellu ginnaaw",
+    "next": "Ci kanam",
+    "previous": "Ci ginnaaw",
+    "save": "Denc",
+    "cancel": "Neenal",
+    "loading": "Mi ngi yebbi…",
+    "error": "Am na njuumte",
+    "tryAgain": "Jéemaat",
+    "pleaseSignIn": "Dugg nga jëkk"
+  },
+  "settings": {
+    "language": "Làkk"
+  },
+  "programming": {
+    "runCode": "Doxal kod bi",
+    "running": "Mi ngi dox…",
+    "output": "Génne bi",
+    "stdinLabel": "Duggal bu soxla (tànn rekk)",
+    "unavailable": "Doxal kod bi amul fii léegi.",
+    "timedOut": "Doxal bi yàgg na lool."
+  },
+  "notifications": {
+    "eyebrow": "YEESAL",
+    "title": "Yégle yi",
+    "loading": "Mi ngi yebbi yégle yi…",
+    "empty": "Amuloo yégle fii léegi.",
+    "unavailable": "Yégle yi amul fii léegi.",
+    "markAll": "Jàngal lépp",
+    "markRead": "Marke ko ni jàng na",
+    "open": "Ubbi",
+    "update": "Yeesal"
+  },
+  "ui": {
+    "homeHeroEyebrow": "WUTTU YONU LIGGÉEY × JÀNG TEKNOLOSI CI TALE",
+    "homeHeroLine1": "Tànnal sa yoonu liggéey.",
+    "homeHeroLine2": "Jàng teknolosi bu bees ci nettali.",
+    "homeHeroLine3": "Jéem li nga jàng.",
+    "discoverMyCareerPath": "Wone ma sama yoonu liggéey",
+    "homeJourneySummary": "Tànnal yoonu liggéey → jàng skill yi → jéem ci ay challenge → topp sa progrès",
+    "heroDescription": "Seetal yoonu liggéey yu teknolosi, xam xalaat yu jafe ci nettali yu leer, te yokk sa doole ci programmasyon.",
+    "exploreCourses": "Seetal kurs yi"
+  },
+  "courseMetadata": {
+    "intro_to_ai": {
+      "title": "Njàngum AI ak Machine Learning",
+      "description": "Xam ni AI ak machine learning di doxee, ni data ak modèle di joxe tontu, ak ni ñuy natt njariñu résultat yi. Jàng ba noppi jéem projet bu ndaw, te xam li projet bi man ak li mu manul."
+    }
+  }
 }

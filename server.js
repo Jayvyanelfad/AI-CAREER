@@ -1271,6 +1271,27 @@ function formatCourse(course) {
   };
 }
 
+// Public homepage highlights expose only published course metadata; learner-specific
+// course endpoints remain protected by authenticateToken.
+app.get('/api/public/courses', async (_req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('courses')
+      .select('id, title, description, image, badge, difficulty, weeks, level, status')
+      .eq('status', 'published')
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching public course highlights:', error);
+      return res.status(500).json({ error: 'Failed to fetch public courses' });
+    }
+    res.json({ courses: (data || []).map(formatCourse) });
+  } catch (error) {
+    console.error('Error in /api/public/courses:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 app.get('/api/courses', authenticateToken, async (_req, res) => {
   try {
     const { data, error } = await supabase

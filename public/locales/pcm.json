@@ -102,7 +102,7 @@
     "learnStories": "Learn modern tech through stories.",
     "practiceLearn": "Practise wetin you learn.",
     "discoverPath": "Find the tech career wey fit me.",
-    "exploreCourses": "Explore courses",
+    "exploreCourses": "Explore Courses",
     "exploreJourney": "Explore the journey",
     "howLearningWorks": "HOW LEARNING DEY WORK",
     "discoverTech": "You no sure where",
@@ -201,7 +201,13 @@
     "notAvailable": "E no dey",
     "pleaseSignIn": "Abeg log in",
     "signInRequired": "You must log in",
-    "heroDescription": "Explore tech careers, learn hard ideas through stories wey you fit relate to, and build better programming skills at your own pace."
+    "heroDescription": "Explore tech careers, learn hard ideas through stories wey you fit relate to, and build better programming skills at your own pace.",
+    "homeHeroEyebrow": "FIND CAREER DIRECTION × LEARN TECH THROUGH STORY",
+    "homeHeroLine1": "Find the direction wey fit you.",
+    "homeHeroLine2": "Learn modern tech through stories.",
+    "homeHeroLine3": "Practise wetin you learn.",
+    "discoverMyCareerPath": "Find my career direction",
+    "homeJourneySummary": "Find direction → learn connected skills → practise with lesson challenges → track your progress"
   },
   "coverage": {
     "toggleThemeAria": "Change theme",
@@ -994,7 +1000,11 @@
     "progressMismatch": "Your saved progress and di course lesson list no match yet. Refresh di page abeg.",
     "allLessonsComplete": "Course don complete. All {total} lessons don finish.",
     "takeFinalExam": "Take Di Final Exam",
-    "untitledCourse": "Course wey get no name"
+    "untitledCourse": "Course wey get no name",
+    "getCertificate": "Collect certificate",
+    "certificateUnavailable": "Certificate never ready yet.",
+    "downloadCertificatePdf": "Download / Print PDF",
+    "certificateReady": "Your certificate don ready."
   },
   "page": {
     "openNavigation": "Open navigation",
